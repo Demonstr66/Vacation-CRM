@@ -10,17 +10,17 @@
 
       <v-divider></v-divider>
 
-      <v-list-item link>
+      <v-list-item link to="/vocations">
         <v-list-item-icon>
           <v-icon>mdi-folder</v-icon>
         </v-list-item-icon>
-        <v-list-item-title>My Files</v-list-item-title>
+        <v-list-item-title>Мои отпуска</v-list-item-title>
       </v-list-item>
-      <v-list-item link>
+      <v-list-item  link to="/deportment">
         <v-list-item-icon>
           <v-icon>mdi-account-multiple</v-icon>
         </v-list-item-icon>
-        <v-list-item-title>Shared with me</v-list-item-title>
+        <v-list-item-title>Структура отдела</v-list-item-title>
       </v-list-item>
       <v-list-item link>
         <v-list-item-icon>
@@ -36,6 +36,8 @@
 export default {
   name: "SideNavigation",
 
-  data: () => ({}),
+  data: () => ({
+
+  }),
 };
 </script>

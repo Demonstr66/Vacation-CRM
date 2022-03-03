@@ -1,6 +1,6 @@
 <template>
   <v-app>
-    <!-- <side-navigation /> -->
+    <router-view name="SideNavigation" />
     <v-main>
       <router-view />
     </v-main>
@@ -10,16 +10,12 @@
 
 
 <script>
-import SideNavigation from './components/SideNavigation.vue'
+import SideNavigation from "./components/SideNavigation.vue";
 
 export default {
-  name: 'App',
   components: {
-    SideNavigation
-  },
-  data: () => ({
-    //
-  }),
+    SideNavigation,
+  }
 };
 </script>
 
