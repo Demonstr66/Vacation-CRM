@@ -34,7 +34,7 @@
           <v-icon>mdi-plus-circle-outline</v-icon>
           Добавить отпуск
         </v-btn>
-        <AddVocationModal
+        <AddVacationModal
           :show="isModalVisible"
           @cancel="closeModal"
           @submit="onSubmitModal"
@@ -49,13 +49,13 @@
 
 <script>
 import layout from "../layouts/Main.vue";
-import AddVocationModal from "../components/AddVocationModal.vue";
+import AddVacationModal from "../components/AddVacationModal.vue";
 import { dateDiff } from "../plugins/utils.js";
 
 export default {
   components: {
     layout,
-    AddVocationModal,
+    AddVacationModal,
   },
   data: () => ({
     items: [],

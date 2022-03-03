@@ -2,9 +2,7 @@
   <v-row justify="center">
     <v-dialog v-model="show" persistent max-width="700px">
       <v-card>
-        <v-card-title>
-          <span class="text-h5">Новый отпуск</span>
-        </v-card-title>
+        <v-toolbar color="primary" dark>Новый отпуск</v-toolbar>
         <v-divider />
         <v-card-text>
           <v-container>

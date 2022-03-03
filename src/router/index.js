@@ -1,7 +1,7 @@
 import Vue from 'vue'
 import VueRouter from 'vue-router'
 import Home from '../views/Home.vue'
-import Vocations from '../views/Vocations.vue'
+import Vacations from '../views/Vacations.vue'
 import Deportment from '../views/Deportment.vue'
 import Auth from '../views/Auth.vue'
 import SideNavigation from '../components/SideNavigation.vue'
@@ -20,10 +20,10 @@ const routes = [
     }
   },
   {
-    path: '/vocations',
-    name: 'Vocations',
+    path: '/vacations',
+    name: 'Vacations',
     components: {
-      default: Vocations,
+      default: Vacations,
       SideNavigation
     }
   },

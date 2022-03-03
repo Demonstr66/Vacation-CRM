@@ -10,7 +10,7 @@
 
       <v-divider></v-divider>
 
-      <v-list-item link to="/vocations">
+      <v-list-item link to="/vacations">
         <v-list-item-icon>
           <v-icon>mdi-folder</v-icon>
         </v-list-item-icon>
