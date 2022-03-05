@@ -2,13 +2,15 @@
   <v-dialog transition="dialog-top-transition" max-width="600" v-model="show">
     <template v-slot:default="">
       <v-card>
-        <v-toolbar color="primary" dark>Выберите файл</v-toolbar>
+        <v-toolbar color="accent" dark>Выберите файл</v-toolbar>
         <v-card-text>
           <v-file-input
             placeholder="Excel или CSV файл"
             label="Файл Excel"
-            @change="onChange"
             :loading="isLoading"
+            v-model="inputModel"
+            @change="onChange"
+            @click:clear="reset"
           ></v-file-input>
           <div v-if="isUploadSuccessful">
             <v-row>
@@ -20,7 +22,7 @@
                   </li>
                 </ul>
               </v-col>
-              <v-col> Найдено человек: {{ persons.length }} </v-col>
+              <v-col> Количество записей: {{ items.length }} </v-col>
             </v-row>
           </div>
           <div v-else-if="isFileUploading" class="red--text">
@@ -54,22 +56,25 @@ export default {
   props: {
     show: {
       type: Boolean,
+      required: true
     },
+    availibleFields: {
+      type: Array,
+      required: true
+    }
   },
   data: () => ({
     isFileUploading: false,
     isUploadSuccessful: false,
     isLoading: false,
-    availibleFields: [
-      { label: "ФИО", model: "fullname" },
-      { label: "E-mail", model: "email" },
-      { label: "Табельный номер", model: "id" },
-    ],
     fields: [],
-    persons: [],
+    items: [],
+    inputModel: null
   }),
   methods: {
     onChange(file) {
+      if ( !file ) return
+
       this.isLoading = true;
       this.readFileToJSON(file);
     },
@@ -108,15 +113,15 @@ export default {
       });
 
       data.map( row => {
-        let person = {};
+        let item = {};
 
         for( let cID in colToFieldId ) {
           let fID = colToFieldId[cID]
 
-          person[ this.availibleFields[ fID ].model ] = row[ cID ]
+          item[ this.availibleFields[ fID ].model ] = row[ cID ]
         }
 
-        this.persons.push(person)
+        this.items.push(item)
       });
 
       this.isLoading = false;
@@ -126,12 +131,16 @@ export default {
       this.isFileUploading = false;
       this.isUploadSuccessful = false;
       this.fields = [];
+      this.items = []
+      this.inputModel = null
     },
     onCancel() {
       this.$emit("cancel");
+      this.reset()
     },
     onSubmit() {
-      this.$emit("submit", this.persons);
+      this.$emit("submit", this.items);
+      this.reset()
     },
   },
 };
