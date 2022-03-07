@@ -100,6 +100,50 @@ export default new Vuex.Store({
         res()
       })
     },
+    updatePerson({ dispatch, state, getters }, payload) {
+      console.log('updatePerson')
+
+      return new Promise(async (res, rej) => {
+        if ( !payload.uid ) return rej('Поле UID обязательно')
+        if ( !payload.fullName ) return rej('Поле ФИО обязательно')
+
+        let newPersonInTeam = []
+
+        let person = {
+          uid: payload.uid,
+          tabId: payload.tabId || '',
+          fullName: payload.fullName,
+          email: payload.email || '',
+          post: payload.post || '',
+          role: payload.role || '',
+          workspace: payload.workspace || ''
+        }
+
+        if (payload.teams) {
+          payload.teams.map(team => {
+            newPersonInTeam.push({ personId: person.uid, teamId: team.id })
+          })
+        }
+        
+
+        //Добавляем в базу данных человеков
+        let persons = JSON.parse(localStorage.getItem('persons') || "[]")
+        persons = persons.map( p => {
+          if ( p.uid == person.uid ) return person
+
+          return p
+        })
+        localStorage.setItem('persons', JSON.stringify(persons))
+
+        //Добавляем в базу данных соответсвие человек -> команда
+        let personInTeam = JSON.parse(localStorage.getItem('personInTeam') || "[]")
+        personInTeam = personInTeam.filter( pit => pit.personId != person.uid)
+        personInTeam.push(...newPersonInTeam)
+        localStorage.setItem('personInTeam', JSON.stringify(personInTeam))
+
+        res()
+      })
+    },
     addTeamsToBase({ dispatch }, payload) {
       console.log('addTeamToBase')
       if (!Array.isArray(payload)) payload = [payload]
@@ -140,7 +184,6 @@ export default new Vuex.Store({
     },
     removeTeamToPerson({ }, payload) {
       return new Promise((res, rej) => {
-        console.log(payload)
         if (!payload.teamId || !payload.personId) rej('Поля personId, teamId обязательны')
 
         //Добавляем в базу данных соответсвие человек -> команда

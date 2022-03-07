@@ -101,6 +101,15 @@
                       </div>
                       <small v-else>Пока не в команде</small>
                     </v-col>
+                    <v-divider vertical></v-divider>
+                    <v-col cols="1">
+                      <v-btn icon @click="onEdit(person.uid)">
+                        <v-icon dark> mdi-account-edit </v-icon>
+                      </v-btn>
+                      <v-btn icon>
+                        <v-icon dark> mdi-close-thick </v-icon>
+                      </v-btn>
+                    </v-col>
                   </v-row>
                   <v-divider></v-divider>
                 </v-list-item-content>
@@ -154,20 +163,28 @@
       </v-tab-item>
     </v-tabs-items>
 
-    <ImportModal
-      :dataType="importType"
-      :title="importTitle"
-      :show="showImportModal"
-      :availibleFields="availibleFields"
-      @close="closeModal"
-    />
-    <ExportModal :show="showExportModal" :availibleFields="personFields" />
-    <PersonEditorModal :show="personEditor.show" @close="closeModal" />
+      <ImportModal
+        v-if="showImportModal"
+        :dataType="importType"
+        :title="importTitle"
+        :show="showImportModal"
+        :availibleFields="availibleFields"
+        @close="closeModal"
+      />
+      <ExportModal
+        v-if="showExportModal"
+        :show="showExportModal"
+        :availibleFields="personFields"
+      />
+
+      <PersonEditorModal
+        v-if="personEditor.show"
+        :show="personEditor.show"
+        :options="personEditor.options"
+        @close="closeModal"
+      />
   </layout>
 </template>
-
-
-
 
 <script>
 import layout from "../layouts/Main.vue";
@@ -175,7 +192,7 @@ import ImportModal from "../components/ImportModal.vue";
 import ExportModal from "../components/ExportModal.vue";
 import PersonEditorModal from "../components/PersonEditorModal.vue";
 
-import { mapState } from "vuex";
+import { mapState, mapGetters } from "vuex";
 
 export default {
   components: {
@@ -209,6 +226,7 @@ export default {
   }),
   computed: {
     ...mapState({ baseP: "persons", teams: "teams" }),
+    ...mapGetters(["getPersonById"]),
     persons: {
       get: function () {
         return this.baseP;
@@ -237,17 +255,25 @@ export default {
     onExport(type) {
       this.showExportModal = true;
     },
+    onEdit(persId) {
+      this.personEditor.options = this.getPersonById(persId);
+      this.showEditorModal();
+    },
     closeModal() {
       this.showImportModal = false;
       this.showExportModal = false;
       this.personEditor.show = false;
     },
     addBtnOnClick() {
+      this.personEditor.options = {};
+      this.showEditorModal();
+    },
+    showEditorModal() {
       this.personEditor.show = true;
     },
-    onDrugStart(team) {
+    onDrugStart(tId) {
       this.isDrag = true;
-      this.druggedTeam = team;
+      this.druggedTeam = tId;
     },
     onDragEnd(e) {
       this.isDrag = false;
@@ -313,14 +339,13 @@ export default {
       e.target.classList.remove("select");
 
       let isNewTeam = false;
-      
+
       this.persons = this.persons.map((p) => {
         if (p.uid != persID) return p;
 
         if (!p.teams.length) return;
-        
+
         p.teams = p.teams.filter((t) => {
-          
           if (t.status == "dragg") isNewTeam = true;
 
           t.status = "active";
@@ -329,7 +354,7 @@ export default {
 
         return p;
       });
-      
+
       if (isNewTeam) {
         this.$store
           .dispatch("addTeamToPerson", {

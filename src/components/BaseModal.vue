@@ -1,5 +1,5 @@
 <template>
-  <v-dialog transition="dialog-top-transition" max-width="700" v-model="isShow" persistent>
+  <v-dialog max-width="700" v-model="isShow" persistent>
     <template v-slot:default="">
       <v-card>
         <v-toolbar color="accent" dark v-if="title != ''" class="text-h4">
