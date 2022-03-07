@@ -11,6 +11,7 @@
     "core-js": "^3.6.5",
     "fs": "^0.0.1-security",
     "isdayoff": "^1.0.1",
+    "uuid": "^8.3.2",
     "v-year-calendar": "^1.0.2",
     "vue": "^2.6.11",
     "vue-moment": "^4.1.0",

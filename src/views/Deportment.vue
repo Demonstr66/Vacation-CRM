@@ -9,6 +9,9 @@
         </v-tabs>
       </v-col>
       <v-col cols="2" class="justify-self-end">
+        <v-btn color="primary" dark icon @click="this.addBtnOnClick">
+          <v-icon dark> mdi-plus </v-icon>
+        </v-btn>
         <v-menu transition="slide-y-transition" bottom offset-y>
           <template v-slot:activator="{ on, attrs }">
             <v-btn
@@ -38,7 +41,7 @@
           </template>
           <v-list>
             <v-list-item v-for="(item, i) in importItems" :key="i" link>
-              <v-list-item-title @click="onImport(item.type)">
+              <v-list-item-title @click="onExport(item.type)">
                 {{ item.title }}
               </v-list-item-title>
             </v-list-item>
@@ -51,22 +54,22 @@
       <v-tab-item>
         <v-row v-if="persons.length">
           <v-col cols="10">
-            <v-list>
+            <v-list max-height="80vh" class="overflow-y-auto">
               <v-list-item
                 :class="isDrag ? 'dropable' : ''"
                 @drop="onDrop"
                 @dragover="onDrugOver($event)"
-                @dragenter="onDrugEnter($event)"
-                @dragleave="onDrugLeave($event)"
+                @dragenter="onDrugEnter"
+                @dragleave="onDrugLeave"
                 v-for="(person, id) in persons"
                 :key="id"
-                :data-person="person.id"
+                :data-person="person.uid"
               >
                 <v-list-item-content>
                   <v-row>
                     <v-col>
                       <v-list-item-title>{{
-                        person.fullname
+                        person.fullName
                       }}</v-list-item-title>
                       <v-list-item-subtitle
                         tag="a"
@@ -76,16 +79,24 @@
                     </v-col>
                     <v-spacer />
                     <v-col cols="3">
-                      <div v-if="person.inTeams && person.inTeams.length !== 0">
+                      <div v-if="person.teams && person.teams.length !== 0">
                         <v-chip
-                          v-for="(team, index) in person.inTeams"
+                          v-for="(team, index) in person.teams"
                           :key="index"
-                          :color="team.status=='dragg' ? 'accent' : team.status == 'repeat' ? 'success' : ''"
+                          :color="
+                            team.status == 'dragg'
+                              ? 'accent'
+                              : team.status == 'repeat'
+                              ? 'success'
+                              : ''
+                          "
                           class="mb-1 mr-1"
                           close
-                          @click:close="onDeleteTeam(person.id, team.id)"
+                          label
+                          small
+                          @click:close="onDeleteTeam(person.uid, team.id)"
                         >
-                          {{ getTeamLabel(team.id) }}
+                          {{ getTeamTitle(team.id) }}
                         </v-chip>
                       </div>
                       <small v-else>Пока не в команде</small>
@@ -99,13 +110,14 @@
           <v-col cols="2">
             <v-chip
               draggable
-              class="ma-1"
+              class="ma-1 v-chip--clickable"
               v-for="(team, id) in teams"
               :key="id"
               @dragstart="onDrugStart(team.id)"
               @dragend="onDragEnd"
+              label
             >
-              {{ team.label }}
+              {{ team.title }}
             </v-chip>
           </v-col>
         </v-row>
@@ -120,10 +132,10 @@
                   <v-row>
                     <v-col>
                       <v-list-item-title>
-                        {{ team.label }}
+                        {{ team.title }}
                       </v-list-item-title>
                       <v-list-item-subtitle>
-                        Участников: {{ team.count }}
+                        ID: {{ team.id }}
                       </v-list-item-subtitle>
                     </v-col>
                   </v-row>
@@ -143,11 +155,14 @@
     </v-tabs-items>
 
     <ImportModal
+      :dataType="importType"
+      :title="importTitle"
       :show="showImportModal"
-      :availibleFields="personFields"
-      @cancel="onCancel"
-      @submit="onSubmit"
+      :availibleFields="availibleFields"
+      @close="closeModal"
     />
+    <ExportModal :show="showExportModal" :availibleFields="personFields" />
+    <PersonEditorModal :show="personEditor.show" @close="closeModal" />
   </layout>
 </template>
 
@@ -157,151 +172,181 @@
 <script>
 import layout from "../layouts/Main.vue";
 import ImportModal from "../components/ImportModal.vue";
+import ExportModal from "../components/ExportModal.vue";
+import PersonEditorModal from "../components/PersonEditorModal.vue";
+
+import { mapState } from "vuex";
 
 export default {
   components: {
     layout,
     ImportModal,
+    ExportModal,
+    PersonEditorModal,
   },
   data: () => ({
     isDrag: false,
     druggedTeam: null,
     tab: null,
     showImportModal: false,
+    showExportModal: false,
+    personEditor: {
+      show: false,
+      options: {},
+    },
     importItems: [{ title: "Excel (.xlsx)", type: "excel" }],
-    persons: [],
-    teams: [
-      { id: 1, label: "iField", count: 1 },
-      { id: 2, label: "Dimensions", count: 3 },
-      { id: 3, label: "Tiburon", count: 0 },
-      { id: 4, label: "Администрация", count: 1 },
-      { id: 5, label: "Финансы", count: 3 },
-      { id: 6, label: "Обработка", count: 0 },
-    ],
     personFields: [
-      { label: "ФИО", model: "fullname" },
+      { label: "ФИО", model: "fullName" },
       { label: "E-mail", model: "email" },
-      { label: "Табельный номер", model: "id" },
+      { label: "Табельный номер", model: "tabId" },
+      { label: "Должность", model: "post" },
+      { label: "Команды", model: "teams" },
+    ],
+    teamFields: [
+      { label: "ID", model: "id" },
+      { label: "Название", model: "title" },
     ],
   }),
-  mounted() {
-    const persons = localStorage.getItem("persons");
-
-    if (persons) this.persons = JSON.parse(persons);
+  computed: {
+    ...mapState({ baseP: "persons", teams: "teams" }),
+    persons: {
+      get: function () {
+        return this.baseP;
+      },
+      set: function (val) {
+        this.$store.commit("setPersons", val);
+      },
+    },
+    availibleFields: function () {
+      return this.tab == 0 ? this.personFields : this.teamFields;
+    },
+    importType: function () {
+      return this.tab == 0 ? "persons" : "teams";
+    },
+    importTitle: function () {
+      return this.tab == 0 ? "Добавление сотрудников" : "Добавление команд";
+    },
   },
   methods: {
+    getTeamTitle(tId) {
+      return this.teams.find((t) => t.id == tId).title;
+    },
     onImport(type) {
       this.showImportModal = true;
     },
+    onExport(type) {
+      this.showExportModal = true;
+    },
     closeModal() {
       this.showImportModal = false;
+      this.showExportModal = false;
+      this.personEditor.show = false;
     },
-    onCancel() {
-      this.closeModal();
-    },
-    onSubmit(persons) {
-      this.persons = persons;
-      this.savePersons(persons);
-      this.closeModal();
-    },
-    savePersons(persons) {
-      localStorage.setItem("persons", JSON.stringify(persons));
-    },
-    getTeamLabel(teamId) {
-      const notFoundText = "Команда id: ";
-      const team = this.teams.filter((t) => t.id === teamId);
-
-      return team.length ? team[0].label : notFoundText + teamId;
+    addBtnOnClick() {
+      this.personEditor.show = true;
     },
     onDrugStart(team) {
       this.isDrag = true;
-      this.druggedTeam = team
+      this.druggedTeam = team;
     },
     onDragEnd(e) {
       this.isDrag = false;
-      this.druggedTeam = null
+      this.druggedTeam = null;
     },
     onDrugEnter(e) {
-      const persID = e.target.getAttribute("data-person")
-      if ( !persID ) return
-      
+      const persID = e.target.getAttribute("data-person");
+      if (!persID) return;
+
       e.target.classList.add("select");
-      
-      let team = {id: this.druggedTeam, status: 'dragg'}
 
-      this.persons = this.persons.map( p => {
-        if ( p.id != persID ) return p
+      let team = { id: this.druggedTeam, status: "dragg" };
 
-        if ( !p['inTeams'] ) p['inTeams'] = []
-        
-        if ( p.inTeams.find( t => t.id == team.id) ) {
-          p.inTeams.map( t => {
-            if ( t.id == team.id) t.status = 'repeat'
-            
-            return t          
-          })
-        }else {
-          p.inTeams.push(team)
+      this.persons.map((p) => {
+        if (p.uid != persID) return p;
+
+        if (!p["teams"]) p["teams"] = [];
+
+        if (p.teams.find((t) => t.id == team.id)) {
+          p.teams.map((t) => {
+            if (t.id == team.id) t.status = "repeat";
+
+            return t;
+          });
+        } else {
+          p.teams.push(team);
         }
 
-        return p
-      })
+        return p;
+      });
     },
     onDrugOver(e) {
-      const persID = e.target.getAttribute("data-person")
-      if ( !persID ) return
+      const persID = e.target.getAttribute("data-person");
+      if (!persID) return;
+
       e.preventDefault();
     },
     onDrugLeave(e) {
-      const persID = e.target.getAttribute("data-person")
-      if ( !persID ) return
+      const persID = e.target.getAttribute("data-person");
+      if (!persID) return;
 
-      e.preventDefault();
       e.target.classList.remove("select");
 
-      this.persons = this.persons.map( p => {
-        if ( p.id != persID ) return p
+      this.persons.map((p) => {
+        if (p.uid != persID) return p;
 
-        if ( !p.inTeams ) return
+        if (!p.teams) return;
 
-        p.inTeams = p.inTeams.filter( t => {
-          if ( t.status == 'dragg') return false
+        p.teams = p.teams.filter((t) => {
+          if (t.status == "dragg") return false;
 
-          t.status = 'active'
-          return true
-        })
+          t.status = "active";
+          return true;
+        });
 
-        return p
-      })
-
+        return p;
+      });
     },
     onDrop(e) {
-      const persID = e.target.getAttribute("data-person")
-      if ( !persID ) return
+      const persID = e.target.getAttribute("data-person");
+      if (!persID) return;
 
-      e.preventDefault();
       e.target.classList.remove("select");
 
-      this.persons = this.persons.map( p => {
-        if ( p.id != persID ) return p
+      let isNewTeam = false;
+      
+      this.persons = this.persons.map((p) => {
+        if (p.uid != persID) return p;
 
-        if ( !p.inTeams ) return
+        if (!p.teams.length) return;
+        
+        p.teams = p.teams.filter((t) => {
+          
+          if (t.status == "dragg") isNewTeam = true;
 
-        p.inTeams = p.inTeams.filter( t => {
-          t.status = 'active'
-          return true
-        })
+          t.status = "active";
+          return true;
+        });
 
-        return p
-      })
+        return p;
+      });
+      
+      if (isNewTeam) {
+        this.$store
+          .dispatch("addTeamToPerson", {
+            personId: persID,
+            teamId: this.druggedTeam,
+          })
+          .then(this.$store.dispatch("getDataFromBase"));
+      }
     },
-    onDeleteTeam(pID, tID) {
-      this.persons = this.persons.map( p => {
-        if ( p.id == pID) p.inTeams = p.inTeams.filter( t => t.id !== tID)
-
-        return p
-      })
-    }
+    onDeleteTeam(personId, teamId) {
+      this.$store
+        .dispatch("removeTeamToPerson", {
+          personId,
+          teamId,
+        })
+        .then(this.$store.dispatch("getDataFromBase"));
+    },
   },
 };
 </script>
@@ -309,10 +354,18 @@ export default {
 <style scoped>
 .dropable::after {
   position: absolute;
+
+  margin: 6px;
+
   top: 0;
   left: 0;
+
   width: 100%;
   height: 90%;
+
+  width: -webkit-fill-available;
+  height: -webkit-fill-available;
+
   background-color: rgba(138, 255, 255, 0.1);
   border-radius: 15px;
   border: 3px;
