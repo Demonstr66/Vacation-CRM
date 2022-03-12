@@ -1,5 +1,5 @@
 <template>
-  <v-navigation-drawer app permanent>
+  <v-navigation-drawer app :mini-variant="!expand" :expand-on-hover="!expand">
     <v-list nav dense>
       <v-list-item link>
         <v-list-item-icon>
@@ -16,7 +16,7 @@
         </v-list-item-icon>
         <v-list-item-title>Мои отпуска</v-list-item-title>
       </v-list-item>
-      <v-list-item  link to="/deportment">
+      <v-list-item link to="/deportment">
         <v-list-item-icon>
           <v-icon>mdi-account-multiple</v-icon>
         </v-list-item-icon>
@@ -35,9 +35,12 @@
 <script>
 export default {
   name: "SideNavigation",
-
-  data: () => ({
-
-  }),
+  props: {
+    expand: {
+      type: Boolean,
+      required: true,
+    },
+  },
+  data: () => ({}),
 };
 </script>

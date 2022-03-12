@@ -1,26 +1,22 @@
 <template>
-    <layout title="Личный кабинет">
-        Welcome!
-        <v-btn @click="tryAdd">Try</v-btn>
-    </layout>
+  <div>
+    <span> Welcome! </span>
+    <v-btn @click="click">open</v-btn>
+  </div>
 </template>
 
 
 
 
 <script>
-import layout from "../layouts/Main.vue";
-
 export default {
-  components: {
-    layout,
-  },
+  data: () => ({
+    snackbar: false,
+  }),
   methods: {
-    async tryAdd() {
-      this.$store.dispatch('addPersonsToBase', [{fullName:'aaa'}, {fullName:'bbb'},{fullName:'ccc'},])
-        .then((res) => console.log(res))
-        .catch((err) => console.error(err))
-    }
-  }
+    click() {
+      this.$store.commit("setMessage", { type: "error", text: "Успех" });
+    },
+  },
 };
 </script>

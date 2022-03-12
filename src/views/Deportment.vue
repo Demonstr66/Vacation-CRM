@@ -1,5 +1,5 @@
 <template>
-  <layout title="Структура">
+  <div>
     <v-row>
       <v-col cols="10">
         <v-tabs v-model="tab">
@@ -183,7 +183,7 @@
         :options="personEditor.options"
         @close="closeModal"
       />
-  </layout>
+  </div>
 </template>
 
 <script>

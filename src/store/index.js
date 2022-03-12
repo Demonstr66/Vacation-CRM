@@ -1,11 +1,14 @@
 import Vue from 'vue'
 import Vuex from 'vuex'
+import auth from './auth'
+import message from './message'
 import { v4 as uuidv4 } from 'uuid';
 
 Vue.use(Vuex)
 
 export default new Vuex.Store({
   state: {
+    appName: 'Vacation CRM',
     persons: [],
     teams: [],
     personInTeam: []
@@ -28,7 +31,6 @@ export default new Vuex.Store({
   },
   actions: {
     getDataFromBase({ commit, getters }) {
-      console.log('getDataFromBase')
       return new Promise(async (res, rej) => {
         let persons = await localStorage.getItem('persons')
         const teams = await localStorage.getItem('teams')
@@ -41,8 +43,8 @@ export default new Vuex.Store({
 
           persons = persons.map(p => {
             if (!p.teams) p.teams = []
-            
-            getters.getTeamsByPersonId(p.uid).map( t => {
+
+            getters.getTeamsByPersonId(p.uid).map(t => {
               p.teams.push({
                 id: t.teamId,
                 status: 'active'
@@ -104,8 +106,8 @@ export default new Vuex.Store({
       console.log('updatePerson')
 
       return new Promise(async (res, rej) => {
-        if ( !payload.uid ) return rej('Поле UID обязательно')
-        if ( !payload.fullName ) return rej('Поле ФИО обязательно')
+        if (!payload.uid) return rej('Поле UID обязательно')
+        if (!payload.fullName) return rej('Поле ФИО обязательно')
 
         let newPersonInTeam = []
 
@@ -124,12 +126,12 @@ export default new Vuex.Store({
             newPersonInTeam.push({ personId: person.uid, teamId: team.id })
           })
         }
-        
+
 
         //Добавляем в базу данных человеков
         let persons = JSON.parse(localStorage.getItem('persons') || "[]")
-        persons = persons.map( p => {
-          if ( p.uid == person.uid ) return person
+        persons = persons.map(p => {
+          if (p.uid == person.uid) return person
 
           return p
         })
@@ -137,7 +139,7 @@ export default new Vuex.Store({
 
         //Добавляем в базу данных соответсвие человек -> команда
         let personInTeam = JSON.parse(localStorage.getItem('personInTeam') || "[]")
-        personInTeam = personInTeam.filter( pit => pit.personId != person.uid)
+        personInTeam = personInTeam.filter(pit => pit.personId != person.uid)
         personInTeam.push(...newPersonInTeam)
         localStorage.setItem('personInTeam', JSON.stringify(personInTeam))
 
@@ -177,7 +179,7 @@ export default new Vuex.Store({
 
         //Добавляем в базу данных соответсвие человек -> команда
         let personInTeam = JSON.parse(localStorage.getItem('personInTeam') || "[]")
-        personInTeam.push({personId: payload.personId, teamId: payload.teamId})
+        personInTeam.push({ personId: payload.personId, teamId: payload.teamId })
         localStorage.setItem('personInTeam', JSON.stringify(personInTeam))
         res()
       })
@@ -188,7 +190,7 @@ export default new Vuex.Store({
 
         //Добавляем в базу данных соответсвие человек -> команда
         let personInTeam = JSON.parse(localStorage.getItem('personInTeam') || "[]")
-        personInTeam = personInTeam.filter( pit => {
+        personInTeam = personInTeam.filter(pit => {
           if (pit.personId == payload.personId && pit.teamId == payload.teamId) return false
 
           return true
@@ -197,8 +199,10 @@ export default new Vuex.Store({
         localStorage.setItem('personInTeam', JSON.stringify(personInTeam))
         res()
       })
-    }
+    },
   },
   modules: {
+    auth,
+    message
   }
 })

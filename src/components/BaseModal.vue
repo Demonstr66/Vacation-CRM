@@ -67,11 +67,11 @@ export default {
   },
   methods: {
     onCancel() {
-      this.$popup_emit("cancel")
+      this.$emit("cancel")
       this.reset()
     },
     onSubmit() {
-      this.$popup_emit("submit", this.result || '')
+      this.$emit("submit", this.result || '')
       this.reset()
     },
     reset() {

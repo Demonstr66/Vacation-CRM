@@ -42,3 +42,10 @@ export function popup_emit(event) {
     return ret
   }
 };
+
+export const dictionary = {
+  "auth/user-not-found": "Пользователь с такими данными не найден",
+  "auth/wrong-password": "Пользователь с такими данными не найден",
+  "auth/email-already-in-use": "Пользователь с таким email существует",
+  "auth/too-many-requests": "Слишком рано, попробуйте позднее"
+}

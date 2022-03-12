@@ -1,5 +1,5 @@
 <template>
-  <layout title="Мои отпуска">
+  <div>
     <v-row>
       <v-col>
         <ul
@@ -41,7 +41,7 @@
         />
       </v-col>
     </v-row>
-  </layout>
+  </div>
 </template>
 
 

@@ -3,8 +3,14 @@ import VueRouter from 'vue-router'
 import Home from '../views/Home.vue'
 import Vacations from '../views/Vacations.vue'
 import Deportment from '../views/Deportment.vue'
-import Auth from '../views/Auth.vue'
-import SideNavigation from '../components/SideNavigation.vue'
+import Login from '../views/Login.vue'
+import Register from '../views/Register.vue'
+import ForgetPassword from '../views/ForgetPassword.vue'
+import EmailVerifed from '../views/EmailVerifed'
+import EmailSending from '../views/EmailSending'
+import store from '../store'
+import { getAuth } from "firebase/auth";
+
 
 
 Vue.use(VueRouter)
@@ -14,31 +20,101 @@ const routes = [
   {
     path: '/',
     name: 'Home',
-    components: {
-      default: Home,
-      SideNavigation
+    component: Home,
+    meta: {
+      layout: 'MainLayout',
+      title: 'Главная',
+      protected: {
+        auth: true
+      }
     }
   },
   {
     path: '/vacations',
     name: 'Vacations',
-    components: {
-      default: Vacations,
-      SideNavigation
+    component: Vacations,
+    meta: {
+      layout: 'MainLayout',
+      title: 'Мои отпуска',
+      protected: {
+        auth: true
+      }
     }
   },
   {
     path: '/deportment',
     name: 'Deportment',
-    components: {
-      default: Deportment,
-      SideNavigation
+    component: Deportment,
+    meta: {
+      layout: 'MainLayout',
+      title: 'Структура',
+      protected: {
+        auth: true
+      }
     }
   },
   {
-    path: '/auth',
-    name: 'Auth',
-    component: Auth
+    path: '/login',
+    name: 'Login',
+    component: Login,
+    meta: {
+      layout: 'EmptyLayout',
+      title: 'Авторизация',
+      protected: {
+        auth: false
+      }
+    }
+  },
+  {
+    path: '/register',
+    name: 'Register',
+    component: Register,
+    meta: {
+      layout: 'EmptyLayout',
+      title: 'Регистрация',
+      protected: {
+        auth: false
+      }
+    }
+  },
+  {
+    path: '/resetpassword',
+    name: 'Reset',
+    component: ForgetPassword,
+    meta: {
+      layout: 'EmptyLayout',
+      title: 'Восстановление пароля',
+      protected: {
+        auth: false
+      }
+    }
+  },
+  {
+    path: '/emailverify',
+    name: 'EmailVerifed',
+    component: EmailVerifed,
+    meta: {
+      layout: 'EmptyLayout',
+      title: 'Емейл подтверждён',
+      protected: {
+        query: true,
+        param: 'u'
+      }
+    }
+  },
+  {
+    path: '/emailsending',
+    name: 'EmailSending',
+    component: EmailSending,
+    meta: {
+      layout: 'EmptyLayout',
+      title: 'Запрос отправлен',
+      protected: {
+        auth: false,
+        query: true,
+        param: 'u'
+      }
+    }
   }
 ]
 
@@ -48,13 +124,31 @@ const router = new VueRouter({
 })
 
 router.beforeEach((to, from, next) => {
-  // let isAuthenticated = !!localStorage.getItem('user')
-  // console.log(isAuthenticated)
+  const isAuth = store.getters.isAuth
 
-  // if (!isAuthenticated) next({ name: 'Auth' })
-  // else if (to.name == 'Auth' && isAuthenticated)  next({ name: 'Home' })
-  // else next()
-  next()
+  if (!to.meta.protected) {
+    next()
+  } else {
+    const p = to.meta.protected
+    let path = ''
+
+    if (p.auth === true && !isAuth) path = 'Login'
+    if (p.auth === false && isAuth) path = 'Home'
+    if (p.query) {
+      if (!to.query[p.param]) path = isAuth ? 'Home' : 'Login'
+      else {
+        if (p.param == 'u') {
+          if (to.query[p.param] == getAuth().currentUser.uid) path = ''
+          else path = isAuth ? 'Home' : 'Login'
+        }
+      }
+    }
+
+    if (!path) next()
+    else next({ name: path })
+  }
+
+  // next()
 })
 
 export default router
