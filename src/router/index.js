@@ -4,6 +4,7 @@ import Home from '../views/Home.vue'
 import Vacations from '../views/Vacations.vue'
 import Deportment from '../views/Deportment.vue'
 import Login from '../views/Login.vue'
+import Account from '../views/Account.vue'
 import Register from '../views/Register.vue'
 import ForgetPassword from '../views/ForgetPassword.vue'
 import EmailVerifed from '../views/EmailVerifed'
@@ -48,6 +49,18 @@ const routes = [
     meta: {
       layout: 'MainLayout',
       title: 'Структура',
+      protected: {
+        auth: true
+      }
+    }
+  },
+  {
+    path: '/account',
+    name: 'Account',
+    component: Account,
+    meta: {
+      layout: 'MainLayout',
+      title: 'Настройки аккаунта',
       protected: {
         auth: true
       }

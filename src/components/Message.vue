@@ -45,7 +45,6 @@ export default {
         dictionary[msg.code] || msg.text || "Неизвестная ошибка";
 
       this.message.type = msg.type;
-      console.log(msg);
       if (msg.type == "error")
         this.message.text = "[Ошибка]: " + this.message.text;
     },

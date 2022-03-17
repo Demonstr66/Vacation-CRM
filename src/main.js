@@ -5,6 +5,7 @@ import store from './store'
 import vuetify from './plugins/vuetify'
 import { initializeApp } from "firebase/app";
 import { getAuth } from "firebase/auth";
+import { getDatabase } from "firebase/database";
 import { firebaseConfig } from './plugins/secure'
 
 const moment = require('moment')
@@ -16,11 +17,13 @@ Vue.use(require('vue-moment'), {
 
 Vue.config.productionTip = false
 
-initializeApp(firebaseConfig);
+const fapp = initializeApp(firebaseConfig);
+getDatabase(fapp)
+
 let app = false
 
-getAuth().onAuthStateChanged(() => {
-  store.dispatch('checkAuth')
+getAuth().onAuthStateChanged(async() => {
+  await store.dispatch('checkAuth')
 
   if (!app) {
     app = true

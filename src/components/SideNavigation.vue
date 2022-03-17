@@ -1,7 +1,13 @@
 <template>
-  <v-navigation-drawer app :mini-variant="!expand" :expand-on-hover="!expand">
+  <v-navigation-drawer
+    app
+    v-model="isExpand"
+    clipped
+    :mini-variant="!isExpand"
+    :permanent="!isMobile"
+  >
     <v-list nav dense>
-      <v-list-item link>
+      <v-list-item link to="/">
         <v-list-item-icon>
           <v-icon>mdi-calendar-month-outline</v-icon>
         </v-list-item-icon>
@@ -41,6 +47,33 @@ export default {
       required: true,
     },
   },
-  data: () => ({}),
+  data: () => ({ isMobile: false }),
+
+  beforeDestroy() {
+    if (typeof window === "undefined") return;
+
+    window.removeEventListener("resize", this.onResize, { passive: true });
+  },
+  mounted() {
+    this.onResize();
+
+    window.addEventListener("resize", this.onResize, { passive: true });
+  },
+  computed: {
+    isExpand: {
+      get: function () {
+        return this.expand;
+      },
+      set: function (val) {
+        if (!val) this.$emit("close");
+      },
+    },
+  },
+  methods: {
+    onResize() {
+      this.isMobile = window.innerWidth < 1264;
+    },
+  },
 };
 </script>
+

@@ -1,6 +1,9 @@
 <template>
   <div>
-    <SideNavigation :expand="expandNavigation" />
+    <SideNavigation
+      :expand="expandNavigation"
+      @close="expandNavigation = false"
+    />
     <Appbar @click="onExpandClick" :expand="expandNavigation" />
     <v-main>
       <v-container class="mx-16 mt-8">

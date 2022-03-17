@@ -1,11 +1,11 @@
 <template>
-  <v-main>
+  <div width="100%">
     На Ваш email: {{ email }} было направлено письмо для подтверждения
     регисрации.<br />
     Пожалуйста, следуйте инструкциям в письме.
     <v-divider />
     <small
-      >Если письмо не пришло, проверьте папку спам или Вы можете
+      >Если письмо не пришло, проверьте папку спам<br />Вы можете
       <v-btn
         x-small
         :disabled="disabled"
@@ -17,7 +17,7 @@
       письмо повторно
       {{ progress }}
     </small>
-  </v-main>
+  </div>
 </template>
 
 <script>
@@ -31,7 +31,7 @@ export default {
   }),
   computed: {
     email: function () {
-      return "123";
+      return this.$route.query.e || "123";
     },
     disabled() {
       return this.currTime < this.timeout;

@@ -15,7 +15,7 @@ export default {
   }),
   methods: {
     click() {
-      this.$store.commit("setMessage", { type: "error", text: "Успех" });
+      this.$store.dispatch("updateUser");
     },
   },
 };

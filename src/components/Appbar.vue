@@ -1,8 +1,6 @@
 <template>
-  <v-app-bar app dense flat>
-    <v-app-bar-nav-icon @click="onNavIconClick">
-      <v-icon v-if="expand">mdi-window-close</v-icon>
-    </v-app-bar-nav-icon>
+  <v-app-bar app dense flat clipped-left>
+    <v-app-bar-nav-icon @click="onNavIconClick"></v-app-bar-nav-icon>
 
     <v-app-bar-title>{{ appName }}</v-app-bar-title>
 
@@ -18,7 +16,10 @@
           link
           @click="onMenuItemClick(item.action)"
         >
-          <v-list-item-title>{{ item.title }}</v-list-item-title>
+          <v-list-item-title class="d-flex flex-row justify-space-between">
+            <v-icon>{{ item.icon }}</v-icon>
+            {{ item.title }}
+          </v-list-item-title>
         </v-list-item>
       </v-list>
     </v-menu>
@@ -38,7 +39,10 @@ export default {
     user: {
       name: "",
     },
-    menu: [{ title: "Выход", action: "onSignOut" }],
+    menu: [
+      { title: "Аккаунт", action: "onAccount", icon: "mdi-cog" },
+      { title: "Выход", action: "onSignOut", icon: "mdi-exit-to-app" },
+    ],
   }),
   computed: {
     ...mapState(["appName"]),
@@ -53,21 +57,26 @@ export default {
       this[action]();
     },
     onSignOut() {
-      this.$store.dispatch("signOut").then(() => {
-        this.$router.push("/login");
-        this.$store.commit("setMessage", {
+      this.$store
+        .dispatch("signOut")
+        .then(() => {
+          this.$router.push("/login");
+          this.$store.commit("setMessage", {
             type: "warning",
-            text: "Вы вышли из аккаунта"
+            text: "Вы вышли из аккаунта",
           });
-      })
-      .catch(err => {
-        this.$store.commit("setMessage", {
+        })
+        .catch((err) => {
+          this.$store.commit("setMessage", {
             type: "error",
             code: err.code,
-            text: err.message
+            text: err.message,
           });
-      });
+        });
     },
+    onAccount() {
+      this.$router.push('/account')
+    }
   },
 };
 </script>

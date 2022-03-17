@@ -12,6 +12,7 @@
     "firebase": "^9.6.8",
     "fs": "^0.0.1-security",
     "isdayoff": "^1.0.1",
+    "short-uuid": "^4.2.0",
     "uuid": "^8.3.2",
     "v-year-calendar": "^1.0.2",
     "vue": "^2.6.11",

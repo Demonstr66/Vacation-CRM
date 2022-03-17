@@ -1,7 +1,8 @@
 <template>
   <v-main>
-    <v-form v-model="valid" @submit.prevent="onSubmit">
+    <v-form v-model="valid" @submit.prevent="onSubmit" class="text-left">
       <v-text-field
+        name="email"
         label="Email"
         class="mx-3"
         :rules="loginRules"
@@ -9,6 +10,9 @@
         v-model.trim="email"
         prepend-icon="mdi-account"
       ></v-text-field>
+      <div class="mt-2 mx-3">
+        <small>На страницу <router-link to="/login">входа</router-link></small>
+      </div>
       <div class="d-flex flex-column align-stretch mx-3 mt-2">
         <v-btn
           class="mt-7"
@@ -47,7 +51,7 @@ export default {
             type: "success",
             text: "На указанный email отправлено письмо для восстановления",
           });
-          this.$router.push('/login')
+          this.$router.push("/login");
         })
         .catch((err) => {
           this.$store.commit("setMessage", {

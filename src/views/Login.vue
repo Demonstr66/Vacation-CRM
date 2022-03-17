@@ -2,6 +2,7 @@
   <v-form v-model="valid" @submit.prevent="onSubmit">
     <v-text-field
       label="Email"
+      name="email"
       class="mx-3"
       :rules="loginRules"
       hide-details="auto"
@@ -10,6 +11,7 @@
     ></v-text-field>
     <v-text-field
       label="Пароль"
+      name="password"
       class="mx-3"
       :rules="passRules"
       hide-details="auto"
@@ -57,12 +59,9 @@ export default {
     ],
     passRules: [
       (value) => !!value || "Обязательное поле.",
-      (value) => (value && value.length >= 5) || `Минимум 5 символов`,
+      (value) => (value && value.length >= 6) || `Минимум 6 символов`,
     ],
-  }),mounted() {
-
-      console.log(this.$vuetify.breakpoint.width)
-  },
+  }),
   methods: {
     onSubmit: async function () {
       this.$store
@@ -75,6 +74,12 @@ export default {
           });
         })
         .catch((err) => {
+          if (err.code == 'emeil not verify') {
+            this.$router.push({path: '/emailsending', query: {
+              u: err.u,
+              e: err.user.email
+            }})
+          }
           this.$store.commit("setMessage", {
             type: "error",
             code: err.code,

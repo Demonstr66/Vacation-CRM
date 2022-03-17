@@ -1,6 +1,7 @@
 import Vue from 'vue'
 import Vuex from 'vuex'
 import auth from './auth'
+import db from './db'
 import message from './message'
 import { v4 as uuidv4 } from 'uuid';
 
@@ -200,9 +201,18 @@ export default new Vuex.Store({
         res()
       })
     },
+    async registerHandler({ dispatch }, payload) {
+      let wid
+
+      if (payload.workspace.isNew) wid = await dispatch('addWorkspace', payload.workspace)
+      else wid = payload.workspace.id
+
+      return dispatch('createUser', { user: payload.user, wid })
+    }
   },
   modules: {
     auth,
-    message
+    message,
+    db
   }
 })
