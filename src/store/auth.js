@@ -9,24 +9,22 @@ import {
   sendPasswordResetEmail,
   updateProfile
 } from "firebase/auth";
+import { getDatabase, ref, set, child, get, push, update, onValue, remove } from "firebase/database";
 import { defUser, updateObject } from "../plugins/schema";
 const BASE_URL = process.env.VUE_APP_API;
 
 export default {
   state: () => ({
     user: null,
-    isAuth: false
+    isAuth: false,
   }),
   getters: {
-    isAuth: (s) => s.isAuth,
-    getAppName: (s) => s.appName,
     getUser: (s) => s.user,
-    getInfo: (s) => s.info,
+    isAuth: (s) => s.isAuth,
   },
   mutations: {
     setAuth: (s, v) => s.isAuth = v,
     setUser: (s, v) => s.user = v,
-    setInfo: (s, v) => s.info = v
   },
   actions: {
     createUser({ commit, dispatch }, payload) {
@@ -37,9 +35,9 @@ export default {
             createUserWithEmailAndPassword(auth, payload.user.email, payload.user.password)
               .then((userCredential) => {
                 const data = userCredential.user;
-                const user = defUser(data, payload.user)
+                const user = defUser(data, payload.user, { status: 'email sending' })
 
-                dispatch('addUserInfo', user).catch(err => {
+                dispatch('createUserInfo', user).catch(err => {
                   rej(err)
                 })
 
@@ -61,12 +59,12 @@ export default {
       })
 
     },
-    signOut({ commit }) {
+    signOut({ dispatch }) {
       const auth = getAuth();
       return new Promise((res, rej) => {
         signOut(auth)
           .then(() => {
-            commit('setUser', null)
+            dispatch('clearAllPersData')
             res()
           })
           .catch(e => rej(e))
@@ -82,14 +80,14 @@ export default {
               .then((userCredential) => {
                 const user = userCredential.user;
 
-                dispatch('checkAuth')
+                dispatch('onSignIn')
 
                 if (!user.emailVerified) {
                   rej({ code: 'emeil not verify', message: 'Емейл не подтверждён', u: user.uid, user })
 
                   return
                 }
-
+                console.log(user)
                 res()
               })
               .catch(e => rej(e))
@@ -111,17 +109,16 @@ export default {
       const auth = getAuth();
 
       const isAuth = auth.currentUser && auth.currentUser.emailVerified
-
       commit('setAuth', isAuth)
-
-      if (!isAuth) return
+    },
+    async fetchUserInfo({ commit, dispatch }) {
+      const auth = getAuth();
 
       const info = await dispatch('getUserInfo', auth.currentUser.uid)
       let userInfo = defUser(info)
       const user = updateObject(userInfo, auth.currentUser)
 
       commit('setUser', user)
-
     },
     resetPassword({ }, email) {
       const auth = getAuth();
@@ -136,17 +133,49 @@ export default {
       })
     },
     updateUser({ }, payload) {
-      const auth = getAuth();
-      updateProfile(auth.currentUser, {
-        displayName: "Jane Q. User",
-        photoURL: "https://example.com/jane-q-user/profile.jpg",
-        param: 'param'
-      }).then(() => {
-        console.log(auth.currentUser)
-      }).catch((error) => {
-        // An error occurred
-        // ...
-      });
+
+    },
+    addUserToArchive({ }, uid) {
+      const db = getDatabase();
+
+      return new Promise((res, rej) => {
+        set(ref(db, 'archive/' + uid), true)
+          .then(res())
+          .catch(err => rej(err))
+      })
+    },
+    removeUserFromArchive({ }, uid) {
+      const db = getDatabase();
+
+      return new Promise((res, rej) => {
+        remove(ref(db, 'archive/' + uid))
+          .then(res())
+          .catch(err => rej(err))
+      })
+    },
+    deleteUser({ dispatch, commit }, uid) {
+      return new Promise(async (res, rej) => {
+        const db = getDatabase();
+        commit('movePersonToArchive', uid)
+
+        Promise.all([
+          dispatch('updateUserInfo', { archive: true, uid }),
+          dispatch('addUserToArchive', uid)
+        ]).then(res())
+          .catch(err => rej(err))
+      })
+    },
+    restoreUser({ dispatch, commit }, uid) {
+      return new Promise(async (res, rej) => {
+        const db = getDatabase();
+        commit('movePersonFromArchive', uid)
+
+        Promise.all([
+          dispatch('updateUserInfo', { archive: false, uid }),
+          dispatch('removeUserFromArchive', uid)
+        ]).then(res())
+          .catch(err => rej(err))
+      })
     }
   }
 }

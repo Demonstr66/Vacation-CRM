@@ -1,50 +1,34 @@
 import { getDatabase, ref, set, child, get } from "firebase/database";
-import { defUser, defWorkspace } from "../plugins/schema";
+import { defWorkspace } from "../../plugins/schema";
 
 export default {
   state: () => ({
+    workspace: null
   }),
   getters: {
+    getWorkspace: (s) => s.workspace
   },
   mutations: {
+    setWorkspace: (s, v) => s.workspace = v,
+    updateWorkpace: (s, v) => {
+      s.workspace = updateObject(workspace, v)
+    }
   },
   actions: {
-    addUserInfo({ }, payload) {
+    createWorkspace({ }, payload) {
       const db = getDatabase();
 
       return new Promise((res, rej) => {
-        let user = defUser(payload)
+        let workspace = defWorkspace(payload)
 
-        set(ref(db, 'users/' + payload.uid), user).then(
-          res()
+        set(ref(db, 'workspaces/' + workspace.id), workspace).then(
+          res(workspace.id)
         ).catch(err => rej(err))
 
         res()
       })
     },
-    getUserInfo({ dispatch }, uid) {
-      const dbRef = ref(getDatabase());
-
-      return new Promise((res, rej) => {
-        get(child(dbRef, `users/${uid}`)).then((snapshot) => {
-          if (snapshot.exists()) {
-            let user = snapshot.val()
-
-            dispatch('getUserWorkspace', uid).then((val) => {
-              user.workspace = val
-
-              res(user)
-            })
-
-          } else {
-            rej({ message: "Данных по запросу не найдено" });
-          }
-        }).catch((error) => {
-          rej(error)
-        });
-      })
-    },
-    addWorkspace({ }, payload) {
+    updateWorkspace({ }, payload) {
       const db = getDatabase();
 
       return new Promise((res, rej) => {
@@ -65,7 +49,7 @@ export default {
           if (snapshot.exists()) {
             res(snapshot.val())
           } else {
-            rej({ message: "Данных по запросу не найдено" });
+            rej({ message: "Пространства с id = " + id + " по запросу не найдено" });
           }
         }).catch((error) => {
           rej(error)
@@ -80,7 +64,7 @@ export default {
           if (snapshot.exists()) {
             res(snapshot.val())
           } else {
-            rej({ message: "Данных по запросу не найдено" });
+            rej({ message: "Данных по запросу не найдено" + uid });
           }
         }).catch((error) => {
           rej(error)
@@ -95,6 +79,14 @@ export default {
           res()
         ).catch(err => rej(err))
 
+      })
+    },
+    fetchWorkspaceInfo({ dispatch, commit }, uid) {
+      return new Promise((res, rej) => {
+        dispatch('getUserWorkspace', uid).then(val => {
+          commit('setWorkspace', val)
+          res()
+        }).catch(err => rej(err))
       })
     }
   }

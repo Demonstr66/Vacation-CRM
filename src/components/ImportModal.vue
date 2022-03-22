@@ -57,7 +57,7 @@ export default {
     },
     title: {
       type: String,
-      default: "Выберите файл"
+      default: "Выберите файл",
     },
   },
   data: () => ({
@@ -109,7 +109,7 @@ export default {
       });
 
       data.map((row) => {
-        if ( !row.length ) return
+        if (!row.length) return;
         let item = {};
 
         for (let cID in colToFieldId) {
@@ -125,27 +125,26 @@ export default {
       this.isUploadSuccessful = !!this.fields.length;
     },
     saveData(data) {
-      console.log(data)
-      let func = "";
+      let func = "", callback = "";
       switch (this.dataType) {
         case "persons":
           func = "addPersonsToBase";
+          callback = "fetchPersons";
           break;
         case "teams":
           func = "addTeamsToBase";
+          callback = "fetchTeams";
           break;
       }
 
-      this.$store
-        .dispatch(func, data)
-        .then(this.$store.dispatch("getDataFromBase"));
+      this.$store.dispatch(func, data)//.then(this.$store.dispatch(callback));
     },
     reset() {
       this.isFileUploading = false;
       this.isUploadSuccessful = false;
       this.fields = [];
       this.items = [];
-      this.file = null
+      this.file = null;
     },
     onSubmit() {
       this.saveData(this.items);

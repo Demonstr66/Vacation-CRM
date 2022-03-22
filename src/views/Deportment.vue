@@ -52,10 +52,11 @@
 
     <v-tabs-items v-model="tab">
       <v-tab-item>
-        <v-row v-if="persons.length">
+        <v-row v-if="persons && persons.length">
           <v-col cols="10">
             <v-list max-height="80vh" class="overflow-y-auto">
               <v-list-item
+                dense
                 :class="isDrag ? 'dropable' : ''"
                 @drop="onDrop"
                 @dragover="onDrugOver($event)"
@@ -68,14 +69,33 @@
                 <v-list-item-content>
                   <v-row>
                     <v-col>
-                      <v-list-item-title>{{
-                        person.fullName
-                      }}</v-list-item-title>
+                      <v-list-item-title
+                        >{{ person.fullName }}
+
+                        <v-chip
+                          outlined
+                          label
+                          x-small
+                          class="ml-2"
+                          :color="
+                            person.role == 'admin'
+                              ? 'warning'
+                              : person.role == 'owner'
+                              ? 'success'
+                              : person.role == 'leader'
+                              ? 'accent'
+                              : ''
+                          "
+                        >
+                          {{ person.role }}
+                        </v-chip>
+                      </v-list-item-title>
                       <v-list-item-subtitle
                         tag="a"
                         :href="'mailto:' + person.email"
-                        >{{ person.email }}</v-list-item-subtitle
                       >
+                        {{ person.email }}
+                      </v-list-item-subtitle>
                     </v-col>
                     <v-spacer />
                     <v-col cols="3">
@@ -102,12 +122,19 @@
                       <small v-else>Пока не в команде</small>
                     </v-col>
                     <v-divider vertical></v-divider>
-                    <v-col cols="1">
-                      <v-btn icon @click="onEdit(person.uid)">
-                        <v-icon dark> mdi-account-edit </v-icon>
+                    <v-col class="text-center mr-2" style="max-width: fit-content;" align-self="center">
+                      <v-btn icon v-if="person.status === 'active'">
+                        <v-icon color="success"> mdi-check-decagram </v-icon>
                       </v-btn>
-                      <v-btn icon>
-                        <v-icon dark> mdi-close-thick </v-icon>
+
+                      <v-btn icon v-else>
+                        <v-icon color="primary"> mdi-account-plus </v-icon>
+                      </v-btn>
+                      <v-btn icon @click="onEdit(person.uid)">
+                        <v-icon color="primary"> mdi-account-edit </v-icon>
+                      </v-btn>
+                      <v-btn icon @click="onDeleteUser(person.uid)">
+                        <v-icon color="error"> mdi-close-thick </v-icon>
                       </v-btn>
                     </v-col>
                   </v-row>
@@ -135,7 +162,7 @@
       <v-tab-item>
         <v-row>
           <v-col>
-            <v-list v-if="teams.length">
+            <v-list v-if="teams && teams.length">
               <v-list-item v-for="(team, id) in teams" :key="id">
                 <v-list-item-content>
                   <v-row>
@@ -158,31 +185,66 @@
       </v-tab-item>
       <v-tab-item>
         <v-card flat>
-          <v-card-text>{{ tab }}</v-card-text>
+          <v-card-text>
+            <v-list max-height="80vh" class="overflow-y-auto">
+              <v-list-item
+                dense
+                v-for="(person, id) in archive"
+                :key="id"
+                :data-person="person.uid"
+              >
+                <v-list-item-content>
+                  <v-row>
+                    <v-col>
+                      <v-list-item-title>
+                        {{ person.fullName }}
+                      </v-list-item-title>
+                      <v-list-item-subtitle>
+                        {{ person.email }}
+                      </v-list-item-subtitle>
+                    </v-col>
+                    <v-divider vertical></v-divider>
+                    <v-col cols="1">
+                      <v-btn icon @click="onRecover(person.uid)">
+                        <v-icon color="primary"> mdi-restore-alert </v-icon>
+                      </v-btn>
+                    </v-col>
+                  </v-row>
+                  <v-divider></v-divider>
+                </v-list-item-content>
+              </v-list-item>
+            </v-list>
+          </v-card-text>
         </v-card>
       </v-tab-item>
     </v-tabs-items>
 
-      <ImportModal
-        v-if="showImportModal"
-        :dataType="importType"
-        :title="importTitle"
-        :show="showImportModal"
-        :availibleFields="availibleFields"
-        @close="closeModal"
-      />
-      <ExportModal
-        v-if="showExportModal"
-        :show="showExportModal"
-        :availibleFields="personFields"
-      />
+    <ImportModal
+      v-if="showImportModal"
+      :dataType="importType"
+      :title="importTitle"
+      :show="showImportModal"
+      :availibleFields="availibleFields"
+      @close="closeModal"
+    />
+    <ExportModal
+      v-if="showExportModal"
+      :show="showExportModal"
+      :availibleFields="personFields"
+    />
 
-      <PersonEditorModal
-        v-if="personEditor.show"
-        :show="personEditor.show"
-        :options="personEditor.options"
-        @close="closeModal"
-      />
+    <PersonEditorModal
+      v-if="personEditor.show"
+      :show="personEditor.show"
+      :options="personEditor.options"
+      @close="closeModal"
+    />
+    <AlertModal
+      v-if="isAlertShow"
+      :show="isAlertShow"
+      @cancel="closeModal"
+      @submit="onSubmitDeleteUser(deleatingUser)"
+    />
   </div>
 </template>
 
@@ -191,6 +253,7 @@ import layout from "../layouts/Main.vue";
 import ImportModal from "../components/ImportModal.vue";
 import ExportModal from "../components/ExportModal.vue";
 import PersonEditorModal from "../components/PersonEditorModal.vue";
+import AlertModal from "../components/AlertModal.vue";
 
 import { mapState, mapGetters } from "vuex";
 
@@ -200,9 +263,12 @@ export default {
     ImportModal,
     ExportModal,
     PersonEditorModal,
+    AlertModal,
   },
   data: () => ({
     isDrag: false,
+    isAlertShow: false,
+    deleatingUser: null,
     druggedTeam: null,
     tab: null,
     showImportModal: false,
@@ -225,7 +291,11 @@ export default {
     ],
   }),
   computed: {
-    ...mapState({ baseP: "persons", teams: "teams" }),
+    ...mapState({
+      baseP: (state) => state.db.importInfo.persons,
+      teams: (state) => state.db.importInfo.teams,
+      archive: (state) => state.db.importInfo.archive,
+    }),
     ...mapGetters(["getPersonById"]),
     persons: {
       get: function () {
@@ -263,6 +333,7 @@ export default {
       this.showImportModal = false;
       this.showExportModal = false;
       this.personEditor.show = false;
+      this.isAlertShow = false;
     },
     addBtnOnClick() {
       this.personEditor.options = {};
@@ -270,6 +341,9 @@ export default {
     },
     showEditorModal() {
       this.personEditor.show = true;
+    },
+    showAlert() {
+      this.isAlertShow = true;
     },
     onDrugStart(tId) {
       this.isDrag = true;
@@ -343,7 +417,7 @@ export default {
       this.persons = this.persons.map((p) => {
         if (p.uid != persID) return p;
 
-        if (!p.teams.length) return;
+        if (!p.teams || !p.teams.length) return;
 
         p.teams = p.teams.filter((t) => {
           if (t.status == "dragg") isNewTeam = true;
@@ -356,21 +430,61 @@ export default {
       });
 
       if (isNewTeam) {
-        this.$store
-          .dispatch("addTeamToPerson", {
-            personId: persID,
-            teamId: this.druggedTeam,
-          })
-          .then(this.$store.dispatch("getDataFromBase"));
+        this.$store.dispatch("addTeamToPerson", {
+          personId: persID,
+          teamId: this.druggedTeam,
+        });
+        // .then(this.$store.dispatch("fetchData"));
       }
     },
     onDeleteTeam(personId, teamId) {
+      this.$store.dispatch("removeTeamToPerson", {
+        personId,
+        teamId,
+      });
+    },
+    onDeleteUser(uid) {
+      this.deleatingUser = uid;
+      this.showAlert();
+    },
+    onSubmitDeleteUser(uid) {
+      this.removeUser(uid);
+      this.closeModal();
+      this.deleatingUser = null;
+    },
+    removeUser(uid) {
       this.$store
-        .dispatch("removeTeamToPerson", {
-          personId,
-          teamId,
-        })
-        .then(this.$store.dispatch("getDataFromBase"));
+        .dispatch("deleteUser", uid)
+        .then(
+          this.$store.commit("setMessage", {
+            type: "success",
+            text: "Пользователь перемещён в архив",
+          })
+        )
+        .catch((err) =>
+          this.$store.commit("setMessage", {
+            type: "error",
+            code: err.code,
+            text: err.message,
+          })
+        );
+    },
+    onRecover(uid) {
+      this.$store
+        .dispatch("restoreUser", uid)
+        .then(
+          this.$store.commit("setMessage", {
+            type: "success",
+            text: "Пользователь восстановлен",
+          })
+        )
+        .catch((err) =>
+          this.$store.commit("setMessage", {
+            type: "error",
+            code: err.code,
+            text: err.message,
+          })
+        );
     },
   },
 };

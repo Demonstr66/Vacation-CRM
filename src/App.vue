@@ -40,7 +40,7 @@ export default {
   },
   async mounted() {
     this.isLoading = true;
-    await this.$store.dispatch("getDataFromBase");
+    await this.$store.dispatch("onLoadHandeler");
     this.isLoading = false;
   },
 };

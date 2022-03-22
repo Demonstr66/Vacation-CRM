@@ -102,7 +102,7 @@ export default {
   methods: {
     onSubmit() {
       this.$store
-        .dispatch("addUserInfo", this.user)
+        .dispatch("updateUserInfo", this.user)
         .then(
           this.$store.commit("setMessage", {
             type: "success",

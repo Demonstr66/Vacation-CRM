@@ -13,9 +13,6 @@
 
 <script>
 export default {
-  mounted() {
-    this.autoRedirect();
-  },
   data: () => ({
     currTime: 0,
     timeout: 3000,
@@ -27,7 +24,18 @@ export default {
       return parseInt((this.currTime * 100) / this.timeout);
     },
   },
+  mounted() {
+    this.autoRedirect();
+    this.updateStatus()
+  },
   methods: {
+    updateStatus() {
+      const uid = this.$route.query.u || "";
+      this.$store.dispatch("updateUserInfo", {
+        status: "active",
+        uid,
+      });
+    },
     autoRedirect() {
       this.interval = setInterval(this.tick, 10);
 

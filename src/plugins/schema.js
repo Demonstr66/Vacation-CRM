@@ -7,7 +7,12 @@ export function defUser(...data) {
     fullName: '',
     post: '',
     tabId: '',
+    teams: [],
+    status: 'temp',
+    role: 'user',
+    archive: false
   }
+  //roles 'user' < 'leader' < 'admin' < 'owner'
 
   if (data) {
     data.map(d => {
@@ -15,7 +20,6 @@ export function defUser(...data) {
         if (d[item]) res[item] = d[item]
       }
     })
-
   }
 
   return res
@@ -41,11 +45,20 @@ export function defWorkspace(...data) {
   return res
 }
 
-export function defTeam() {
-  return {
+export function defTeam(...data) {
+  let res = {
     id: '',
-    name: ''
+    title: ''
   }
+  if (data) {
+    data.map(d => {
+      for (let item in res) {
+        if (d[item]) res[item] = d[item]
+      }
+    })
+  }
+  console.log(res)
+  return res
 }
 
 export function updateObject(obj1, obj2) {

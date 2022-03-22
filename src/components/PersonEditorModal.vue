@@ -3,7 +3,6 @@
     :title="title"
     :show="show"
     :submitDisable="!isValid"
-    
     @submit="onSubmit"
     @cancel="onCancel"
   >
@@ -126,30 +125,32 @@ export default {
       email: "",
       post: "",
       tabId: "",
+      role: "",
       teamLeader: [],
-      teams: []
+      teams: [],
     },
     domen: "@ipsos.com",
     rules: [(value) => !!value || "Заполните поле"],
   }),
   computed: {
-    ...mapState({ teams: "teams" }),
+    ...mapState({ teams: (state) => state.db.importInfo.teams }),
     isValid: function () {
       return this.person.fullName !== "";
     },
-    personTeams: function() {
-      return this.person.teams.map( t => ({id: t, status: 'active'}))
-    }
+    personTeams: function () {
+      return this.person.teams.map((t) => ({ id: t, status: "active" }));
+    },
   },
   beforeMount() {
-      let data = this.options
-      if (data.uid) this.person.uid = data.uid;
-      if (data.fullName) this.person.fullName = data.fullName;
-      if (data.email) this.person.email = data.email;
-      if (data.post) this.person.post = data.post;
-      if (data.tabId) this.person.tabId = data.tabId;
-      if (data.teams) this.person.teams = data.teams.map(t => t.id);
-      if (data.teamLeader) this.person.teamLeader = data.teamLeader;
+    let data = this.options;
+    if (data.uid) this.person.uid = data.uid;
+    if (data.fullName) this.person.fullName = data.fullName;
+    if (data.email) this.person.email = data.email;
+    if (data.post) this.person.post = data.post;
+    if (data.tabId) this.person.tabId = data.tabId;
+    if (data.role) this.person.role = data.role;
+    if (data.teams) this.person.teams = data.teams.map((t) => t.id);
+    if (data.teamLeader) this.person.teamLeader = data.teamLeader;
   },
   methods: {
     getTeamTitle(tId) {
@@ -167,15 +168,19 @@ export default {
       return this.person.teamLeader.indexOf(teamId) > -1;
     },
     async onSubmit() {
-      let func = this.person.uid == "" ? "addPersonsToBase" : "updatePerson";
+      let func = this.person.uid == "" ? "addPersonsToBase" : "updateUserInfo";
+      console.log(func)
+      let person = this.person;
+      if (person.email && person.email.indexOf("@") == -1)
+        person.email += this.domen;
 
-      let person = this.person
-      if (person.email && person.email.indexOf("@") == -1) person.email += this.domen;
-      person.teams = this.personTeams
+      if (person.teamLeader.length) person.role = "leader";
+
+      person.teams = this.personTeams;
       
       await this.$store
-        .dispatch(func, this.person)
-        .then(this.$store.dispatch("getDataFromBase"));
+        .dispatch(func, person)
+        .then(this.$store.dispatch("fetchPersons"));
 
       this.closeModal();
     },

@@ -15,7 +15,7 @@ export default {
   }),
   methods: {
     click() {
-      this.$store.dispatch("updateUser");
+      this.$store.dispatch("removeTeamToPerson");
     },
   },
 };
