@@ -10,7 +10,7 @@
       class="mx-3"
     >
       <template slot="prepend">
-        <v-icon>mdi-email</v-icon>
+        <v-icon color="blue-grey lighten-1">mdi-email</v-icon>
         <span class="error--text">*</span>
       </template>
     </v-text-field>
@@ -24,7 +24,7 @@
       class="mx-3"
     >
       <template slot="prepend">
-        <v-icon>mdi-form-textbox-password</v-icon>
+        <v-icon color="blue-grey lighten-1">mdi-form-textbox-password</v-icon>
         <span class="error--text">*</span>
       </template>
     </v-text-field>
@@ -37,7 +37,7 @@
       class="mx-3"
     >
       <template slot="prepend">
-        <v-icon>mdi-form-textbox</v-icon>
+        <v-icon color="blue-grey lighten-1">mdi-form-textbox</v-icon>
         <span style="opacity: 0">*</span>
       </template>
     </v-text-field>
@@ -68,7 +68,11 @@
         class="mx-3"
         prepend-icon="mdi-sitemap"
         dense
-      ></v-text-field>
+      >
+        <template slot="prepend">
+          <v-icon color="blue-grey lighten-1">mdi-sitemap</v-icon>
+        </template>
+      </v-text-field>
       <span class="my-2">ИЛИ</span>
       <v-btn
         :color="newWorkspace ? 'success' : 'grey'"
@@ -78,19 +82,20 @@
       >
         <v-icon class="mr-3">{{
           newWorkspace
-            ? "mdi-checkbox-marked-circle-outline"
-            : "mdi-checkbox-blank-circle-outline"
+            ? "mdi-check-bold"
+            : "mdi-arrow-right-thin-circle-outline"
         }}</v-icon>
         Создать новое
       </v-btn>
     </div>
+  
 
     <div class="d-flex flex-column align-stretch mx-3 mt-7">
-      <small
-        >Уже есть аккаунт? <router-link to="/login">Войти</router-link></small
+      <span class="align-self-center">
+        Уже есть аккаунт? <router-link to="/login">Войти</router-link></span
       >
       <v-btn
-        class="mt-2"
+        class="mt-4"
         type="submit"
         color="success"
         outlined
@@ -141,10 +146,13 @@ export default {
     onSubmit: async function () {
       this.loading = true;
       this.$store
-        .dispatch("registerHandler", { user: this.authData, workspace: {
-          id: this.authData.workspace,
-          isNew: this.newWorkspace
-        } })
+        .dispatch("registerHandler", {
+          user: this.authData,
+          workspace: {
+            id: this.authData.workspace,
+            isNew: this.newWorkspace,
+          },
+        })
         .then((res) => {
           this.$router.push({
             path: "/emailsending",

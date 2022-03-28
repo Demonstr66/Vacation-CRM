@@ -9,18 +9,16 @@
         hide-details="auto"
         v-model.trim="email"
         prepend-icon="mdi-account"
-      ></v-text-field>
-      <div class="mt-2 mx-3">
-        <small>На страницу <router-link to="/login">входа</router-link></small>
+      >
+        <template slot="prepend">
+          <v-icon color="blue-grey lighten-1">mdi-account</v-icon>
+        </template></v-text-field
+      >
+      <div class="mt-4 mx-3">
+        <span>На страницу <router-link to="/login">входа</router-link></span>
       </div>
-      <div class="d-flex flex-column align-stretch mx-3 mt-2">
-        <v-btn
-          class="mt-7"
-          type="submit"
-          color="success"
-          outlined
-          :disabled="!valid"
-        >
+      <div class="d-flex flex-column align-stretch mx-3 mt-4">
+        <v-btn type="submit" color="success" outlined :disabled="!valid">
           Восстановить
         </v-btn>
       </div>

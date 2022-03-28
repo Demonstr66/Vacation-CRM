@@ -51,7 +51,7 @@
     </v-row>
 
     <v-tabs-items v-model="tab">
-      <v-tab-item>
+      <v-tab-item transition="fade-transition">
         <v-row v-if="persons && persons.length">
           <v-col cols="10">
             <v-list max-height="80vh" class="overflow-y-auto">
@@ -122,20 +122,39 @@
                       <small v-else>Пока не в команде</small>
                     </v-col>
                     <v-divider vertical></v-divider>
-                    <v-col class="text-center mr-2" style="max-width: fit-content;" align-self="center">
-                      <v-btn icon v-if="person.status === 'active'">
-                        <v-icon color="success"> mdi-check-decagram </v-icon>
-                      </v-btn>
-
-                      <v-btn icon v-else>
-                        <v-icon color="primary"> mdi-account-plus </v-icon>
-                      </v-btn>
-                      <v-btn icon @click="onEdit(person.uid)">
-                        <v-icon color="primary"> mdi-account-edit </v-icon>
-                      </v-btn>
-                      <v-btn icon @click="onDeleteUser(person.uid)">
-                        <v-icon color="error"> mdi-close-thick </v-icon>
-                      </v-btn>
+                    <v-col
+                      class="text-center mr-2"
+                      style="max-width: fit-content"
+                      align-self="center"
+                    >
+                      <icon-btn-with-tip
+                        v-if="person.status === 'active'"
+                        icon="mdi-check-decagram"
+                        color="success"
+                      >
+                        Зарегистрирован
+                      </icon-btn-with-tip>
+                      <icon-btn-with-tip
+                        v-else
+                        icon="mdi-account-plus"
+                        color="primary"
+                      >
+                        Пригласить
+                      </icon-btn-with-tip>
+                      <icon-btn-with-tip
+                        icon="mdi-account-edit"
+                        color="primary"
+                        @click="onEdit(person.uid)"
+                      >
+                        Редактировать
+                      </icon-btn-with-tip>
+                      <icon-btn-with-tip
+                        icon="mdi-archive-arrow-down"
+                        color="error"
+                        @click="onDeleteUser(person.uid)"
+                      >
+                        Заархивировать
+                      </icon-btn-with-tip>
                     </v-col>
                   </v-row>
                   <v-divider></v-divider>
@@ -159,7 +178,7 @@
         </v-row>
         <span v-else> Не добавлено ни одного сотрудника </span>
       </v-tab-item>
-      <v-tab-item>
+      <v-tab-item transition="fade-transition">
         <v-row>
           <v-col>
             <v-list v-if="teams && teams.length">
@@ -183,7 +202,7 @@
           </v-col>
         </v-row>
       </v-tab-item>
-      <v-tab-item>
+      <v-tab-item transition="fade-transition">
         <v-card flat>
           <v-card-text>
             <v-list max-height="80vh" class="overflow-y-auto">
@@ -205,9 +224,20 @@
                     </v-col>
                     <v-divider vertical></v-divider>
                     <v-col cols="1">
-                      <v-btn icon @click="onRecover(person.uid)">
-                        <v-icon color="primary"> mdi-restore-alert </v-icon>
-                      </v-btn>
+                      <icon-btn-with-tip
+                        icon="mdi-restore-alert"
+                        color="primary"
+                        @click="onRecover(person.uid)"
+                      >
+                        Восстановаить
+                      </icon-btn-with-tip>
+                      <icon-btn-with-tip
+                        icon="mdi-close"
+                        color="error"
+                        @click="onRecover(person.uid)"
+                      >
+                        Удалить
+                      </icon-btn-with-tip>
                     </v-col>
                   </v-row>
                   <v-divider></v-divider>
@@ -254,6 +284,7 @@ import ImportModal from "../components/ImportModal.vue";
 import ExportModal from "../components/ExportModal.vue";
 import PersonEditorModal from "../components/PersonEditorModal.vue";
 import AlertModal from "../components/AlertModal.vue";
+import IconBtnWithTip from "../components/IconBtnWithTip.vue";
 
 import { mapState, mapGetters } from "vuex";
 
@@ -264,6 +295,7 @@ export default {
     ExportModal,
     PersonEditorModal,
     AlertModal,
+    IconBtnWithTip,
   },
   data: () => ({
     isDrag: false,

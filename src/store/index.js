@@ -3,6 +3,7 @@ import Vuex from 'vuex'
 import auth from './auth'
 import db from './db'
 import message from './message'
+import access from './access'
 import { getAuth } from "firebase/auth";
 
 Vue.use(Vuex)
@@ -52,6 +53,7 @@ export default new Vuex.Store({
   modules: {
     auth,
     message,
-    db
+    db,
+    access
   }
 })

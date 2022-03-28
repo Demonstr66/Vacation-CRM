@@ -8,7 +8,11 @@
       hide-details="auto"
       v-model.trim="authData.email"
       prepend-icon="mdi-account"
-    ></v-text-field>
+    >
+      <template slot="prepend">
+        <v-icon color="blue-grey lighten-1">mdi-account</v-icon>
+      </template>
+    </v-text-field>
     <v-text-field
       label="Пароль"
       name="password"
@@ -17,16 +21,30 @@
       hide-details="auto"
       v-model.trim="authData.password"
       type="password"
-      prepend-icon="mdi-form-textbox-password"
-    ></v-text-field>
+      prepend-icon="mdi-lock"
+    >
+      <template slot="prepend">
+        <v-icon color="blue-grey lighten-1">mdi-lock</v-icon>
+      </template></v-text-field
+    >
     <div class="d-flex flex-column align-stretch mx-3 mt-2">
-      <div class="mt-1 d-flex flex-row justify-end justify-md-space-between align-center flex-wrap">
-        <small class="mr-2">
-          Нет аккаунта?
-          <router-link to="/register">Зарегистрируйтесь</router-link> прямо
-          сейчас! </small
+      <div
+        class="
+          mt-1
+          d-flex
+          flex-row
+          justify-end justify-space-between
+          align-center
+          flex-wrap
+        "
+      >
+        <router-link to="/register"
+          class="text-decoration-none mt-1 justify-self-start ml-5">Регистрация</router-link>
+        <router-link
+          to="/resetpassword"
+          class="text-decoration-none mt-1 justify-self-end"
+          >Забыли пароль?</router-link
         >
-        <router-link to="/resetpassword" class="text-decoration-none mt-1 justify-self-end">Забыли пароль?</router-link>
       </div>
       <v-btn
         class="mt-7"
@@ -74,11 +92,14 @@ export default {
           });
         })
         .catch((err) => {
-          if (err.code == 'emeil not verify') {
-            this.$router.push({path: '/emailsending', query: {
-              u: err.u,
-              e: err.user.email
-            }})
+          if (err.code == "emeil not verify") {
+            this.$router.push({
+              path: "/emailsending",
+              query: {
+                u: err.u,
+                e: err.user.email,
+              },
+            });
           }
           this.$store.commit("setMessage", {
             type: "error",
