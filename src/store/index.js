@@ -1,7 +1,8 @@
 import Vue from 'vue'
 import Vuex from 'vuex'
 import auth from './auth'
-import db from './db'
+import user from './user'
+import workspace from './workspace'
 import message from './message'
 import access from './access'
 import { getAuth } from "firebase/auth";
@@ -11,49 +12,68 @@ Vue.use(Vuex)
 export default new Vuex.Store({
   state: {
     appName: 'Vacation CRM',
+    accessLevel: 0
   },
   getters: {
     getAppName: (s) => s.appName,
+    getAccessLevel: (s) => s.accessLevel,
   },
   mutations: {
+    setAccessLevel: (s, v) => s.accessLevel = v
   },
   actions: {
-    async registerHandler({ dispatch }, payload) {
-      let wid
+    async onBeforeLoadingHandler({ dispatch }) {
+      if (await dispatch('setAuthState')) await dispatch('user/getCurrentUserData')
+      else dispatch("signOut")
 
-      if (payload.workspace.isNew) wid = await dispatch('createWorkspace', payload.workspace)
-      else wid = payload.workspace.id
-
-      payload.user.role = payload.workspace.isNew ? 'owner' : 'user'
-
-      return dispatch('createUser', { user: payload.user, wid })
+      dispatch('setAccessLevel')
     },
     onLoadHandeler({ dispatch, commit }) {
       dispatch('onSignIn')
     },
+    authStateChanged({ dispatch }) {
+      dispatch('setAuthState').then(
+        dispatch('setAccessLevel')
+      )
+    },
     clearAllPersData({ commit }) {
-      commit('setUser', null)
       commit('setAuth', false)
-      commit('setWorkspace', null)
+      commit('setEmailVerified', false)
+      commit('setLogining', false)
 
-      commit('setPersons', [])
-      commit('setTeams', [])
+      commit('user/clear')
+      commit('workspace/clear')
     },
     async onSignIn({ dispatch }) {
       const auth = getAuth();
+    },
+    setAccessLevel({ commit, getters }) {
+      const isAuth = getters['isAuth']
+      const isEmailVerified = getters['isEmailVerified']
+      const isLogining = getters['isLogining']
 
-      if (auth.currentUser) {
-        await dispatch('fetchUserInfo')
-        await dispatch('fetchWorkspaceInfo', auth.currentUser.uid)
+      let accessLevel
+
+      switch (true) {
+        case (!isAuth): accessLevel = 0; break;
+        case (!isEmailVerified): accessLevel = 1; break;
+        case (isLogining): accessLevel = 2; break;
+        default: accessLevel = 0; break;
       }
 
-      await dispatch('fetchData')
+      commit('setAccessLevel', accessLevel)
+    },
+    logUser() {
+      const auth = getAuth();
+
+      console.log(auth.currentUser)
     }
   },
   modules: {
     auth,
     message,
-    db,
-    access
+    access,
+    user,
+    workspace
   }
 })

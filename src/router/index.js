@@ -26,7 +26,7 @@ const routes = [
       layout: 'MainLayout',
       title: 'Главная',
       protected: {
-        auth: true
+        accessLevel: [2]
       }
     }
   },
@@ -38,7 +38,7 @@ const routes = [
       layout: 'MainLayout',
       title: 'Мои отпуска',
       protected: {
-        auth: true
+        accessLevel: [2]
       }
     }
   },
@@ -50,7 +50,7 @@ const routes = [
       layout: 'MainLayout',
       title: 'Структура',
       protected: {
-        auth: true
+        accessLevel: [2]
       }
     }
   },
@@ -62,7 +62,7 @@ const routes = [
       layout: 'MainLayout',
       title: 'Настройки аккаунта',
       protected: {
-        auth: true
+        accessLevel: [2]
       }
     }
   },
@@ -74,7 +74,7 @@ const routes = [
       layout: 'EmptyLayout',
       title: 'Авторизация',
       protected: {
-        auth: false
+        accessLevel: [0, 1]
       }
     }
   },
@@ -86,7 +86,7 @@ const routes = [
       layout: 'EmptyLayout',
       title: 'Регистрация',
       protected: {
-        auth: false
+        accessLevel: [0, 1]
       }
     }
   },
@@ -98,7 +98,7 @@ const routes = [
       layout: 'EmptyLayout',
       title: 'Восстановление пароля',
       protected: {
-        auth: false
+        accessLevel: [0, 1]
       }
     }
   },
@@ -110,8 +110,7 @@ const routes = [
       layout: 'EmptyLayout',
       title: 'Емейл подтверждён',
       protected: {
-        query: true,
-        param: 'u'
+        accessLevel: [2]
       }
     }
   },
@@ -123,9 +122,7 @@ const routes = [
       layout: 'EmptyLayout',
       title: 'Запрос отправлен',
       protected: {
-        auth: false,
-        query: true,
-        param: 'u'
+        accessLevel: [1]
       }
     }
   }
@@ -137,31 +134,31 @@ const router = new VueRouter({
 })
 
 router.beforeEach((to, from, next) => {
-  const isAuth = store.getters.isAuth
+  console.group('beforeEach')
+  console.log(getAuth().currentUser || 'Not user')
+  console.log(`from: ${from.path}; to: ${to.path};`)
+  console.groupEnd()
+  const accessLevel = store.getters.getAccessLevel
 
   if (!to.meta.protected) {
     next()
   } else {
-    const p = to.meta.protected
-    let path = ''
+    const avalibleLevels = to.meta.protected.accessLevel
 
-    if (p.auth === true && !isAuth) path = 'Login'
-    if (p.auth === false && isAuth) path = 'Home'
-    if (p.query) {
-      if (!to.query[p.param]) path = isAuth ? 'Home' : 'Login'
-      else {
-        if (p.param == 'u') {
-          if (to.query[p.param] == getAuth().currentUser.uid) path = ''
-          else path = isAuth ? 'Home' : 'Login'
-        }
+    if (avalibleLevels.some(x => x == accessLevel)) {
+      next()
+    } else {
+      let name = ''
+      switch (accessLevel) {
+        case 0: name = 'Login'; break;
+        case 1: name = 'Login'; break;
+        case 2: name = 'Home'; break;
       }
+
+      if (to.name == name) next()
+      next({ name })
     }
-
-    if (!path) next()
-    else next({ name: path })
   }
-
-  // next()
 })
 
 export default router

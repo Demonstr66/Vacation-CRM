@@ -50,13 +50,15 @@ export default {
     },
     isMessage: function (val) {
       if (val) return;
-
-      setTimeout(
-        function () {
-          this.$store.commit("clearMessage");
-        }.bind(this),
-        500
-      );
+      
+      // this.$store.dispatch("clearMessage")
+      this.$store.commit("clearMessage")
+      // setTimeout(
+      //   function () {
+      //     this.$store.commit("clearMessage");
+      //   }.bind(this),
+      //   500
+      // );
     },
   },
 };

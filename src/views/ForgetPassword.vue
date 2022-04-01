@@ -45,14 +45,14 @@ export default {
       this.$store
         .dispatch("resetPassword", this.email)
         .then(() => {
-          this.$store.commit("setMessage", {
+          this.$store.dispatch("setMessage", {
             type: "success",
             text: "На указанный email отправлено письмо для восстановления",
           });
           this.$router.push("/login");
         })
         .catch((err) => {
-          this.$store.commit("setMessage", {
+          this.$store.dispatch("setMessage", {
             type: "error",
             code: err.code,
             text: err.message,

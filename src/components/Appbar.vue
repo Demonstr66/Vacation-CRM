@@ -61,13 +61,13 @@ export default {
         .dispatch("signOut")
         .then(() => {
           this.$router.push("/login");
-          this.$store.commit("setMessage", {
+          this.$store.dispatch("setMessage", {
             type: "warning",
             text: "Вы вышли из аккаунта",
           });
         })
         .catch((err) => {
-          this.$store.commit("setMessage", {
+          this.$store.dispatch("setMessage", {
             type: "error",
             code: err.code,
             text: err.message,

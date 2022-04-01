@@ -88,11 +88,10 @@
         Создать новое
       </v-btn>
     </div>
-  
 
     <div class="d-flex flex-column align-stretch mx-3 mt-7">
       <span class="align-self-center">
-        Уже есть аккаунт? <router-link to="/login">Войти</router-link></span
+        Уже есть аккаунт? <router-link to="/login" class="text-decoration-none">Войти</router-link></span
       >
       <v-btn
         class="mt-4"
@@ -141,13 +140,25 @@ export default {
 
       return res;
     },
+    displayName: function () {
+      return this.authData.fullName
+        .split(/\s+/)
+        .map((w, i) => (i ? w.substring(0, 1).toUpperCase() + "." : w))
+        .join(" ");
+    },
   },
   methods: {
     onSubmit: async function () {
       this.loading = true;
+      let user = {
+        ...this.authData,
+        displayName: this.displayName,
+        role: this.newWorkspace ? "owner" : "user",
+      };
+
       this.$store
-        .dispatch("registerHandler", {
-          user: this.authData,
+        .dispatch("onRegisterHandler", {
+          user,
           workspace: {
             id: this.authData.workspace,
             isNew: this.newWorkspace,
@@ -157,13 +168,13 @@ export default {
           this.$router.push({
             path: "/emailsending",
             query: {
-              u: this.$store.getters.getUser.uid,
-              e: this.$store.getters.getUser.email,
+              u: this.$store.getters['user/uid'],
+              e: this.$store.getters['user/email'],
             },
           });
         })
         .catch((err) => {
-          this.$store.commit("setMessage", {
+          this.$store.dispatch("setMessage", {
             type: "error",
             code: err.code,
             text: err.message,

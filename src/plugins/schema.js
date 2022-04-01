@@ -2,26 +2,24 @@ export function defUser(...data) {
   let res = {
     uid: '',
     email: '',
+    emailVerified: false,
     displayName: '',
-    emailVerified: '',
     fullName: '',
+    parent: '',
     post: '',
-    tabId: '',
-    teams: [],
-    status: 'temp',
+    tasks: [],
     role: 'user',
+    active: false,
     archive: false
   }
   //roles 'user' < 'leader' < 'admin' < 'owner'
 
+
   if (data) {
     data.map(d => {
-      for (let item in res) {
-        if (d[item]) res[item] = d[item]
-      }
+      res = updateObject(res, d)
     })
   }
-
   return res
 }
 
@@ -29,35 +27,46 @@ export function defWorkspace(...data) {
   let res = {
     id: '',
     name: '',
-    teams: [],
+    owner: '',
+    tasks: [],
     posts: [],
+    teams: []
   }
 
   if (data) {
     data.map(d => {
-      for (let item in res) {
-        if (d[item]) res[item] = d[item]
-      }
+      res = updateObject(res, d)
     })
+  }
+  return res
+}
 
+export function defTask(...data) {
+  let res = {
+    id: '',
+    title: ''
   }
 
+  if (data) {
+    data.map(d => {
+      res = updateObject(res, d)
+    })
+  }
   return res
 }
 
 export function defTeam(...data) {
   let res = {
     id: '',
-    title: ''
+    title: '',
+    leaderId: ''
   }
+
   if (data) {
     data.map(d => {
-      for (let item in res) {
-        if (d[item]) res[item] = d[item]
-      }
+      res = updateObject(res, d)
     })
   }
-  console.log(res)
   return res
 }
 

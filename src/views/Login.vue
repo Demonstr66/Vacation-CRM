@@ -38,8 +38,11 @@
           flex-wrap
         "
       >
-        <router-link to="/register"
-          class="text-decoration-none mt-1 justify-self-start ml-5">Регистрация</router-link>
+        <router-link
+          to="/register"
+          class="text-decoration-none mt-1 justify-self-start ml-5"
+          >Регистрация</router-link
+        >
         <router-link
           to="/resetpassword"
           class="text-decoration-none mt-1 justify-self-end"
@@ -52,6 +55,7 @@
         color="success"
         outlined
         :disabled="!valid"
+        :loading="loading"
       >
         Войти
       </v-btn>
@@ -63,6 +67,7 @@
 export default {
   data: () => ({
     valid: false,
+    loading: false,
     authData: {
       email: "",
       password: "",
@@ -72,7 +77,7 @@ export default {
       (value) => {
         const pattern =
           /^(([^<>()[\]\\.,;:\s@"]+(\.[^<>()[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
-        return pattern.test(value) || "Некорректный e-mail.";
+        return pattern.test(value) || "Некорректный email.";
       },
     ],
     passRules: [
@@ -80,32 +85,42 @@ export default {
       (value) => (value && value.length >= 6) || `Минимум 6 символов`,
     ],
   }),
+  mounted() {
+    if (this.$route.query.msg) {
+      this.$store.dispatch("setMessage", {
+        type: "success",
+        code: this.$route.query.msg,
+      });
+    }
+  },
   methods: {
     onSubmit: async function () {
+      this.loading = true;
       this.$store
-        .dispatch("signInByEmailAndPassword", this.authData)
+        .dispatch("onSignInHandler", this.authData)
         .then((res) => {
           this.$router.push("/");
-          this.$store.commit("setMessage", {
+          this.$store.dispatch("setMessage", {
             type: "success",
             text: "Вы успешно вошли",
           });
         })
         .catch((err) => {
-          if (err.code == "emeil not verify") {
+          if (err.code == "auth/email-not-verify") {
             this.$router.push({
               path: "/emailsending",
               query: {
-                u: err.u,
-                e: err.user.email,
+                e: err.email,
               },
             });
           }
-          this.$store.commit("setMessage", {
+          this.$store.dispatch("setMessage", {
             type: "error",
             code: err.code,
-            text: err.message,
           });
+        })
+        .finally(() => {
+          this.loading = false;
         });
     },
   },

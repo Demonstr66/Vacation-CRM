@@ -15,49 +15,67 @@ const BASE_URL = process.env.VUE_APP_API;
 
 export default {
   state: () => ({
-    user: null,
     isAuth: false,
+    isEmailVerified: false,
+    isLogining: false
   }),
   getters: {
-    getUser: (s) => s.user,
     isAuth: (s) => s.isAuth,
+    isEmailVerified: (s) => s.isEmailVerified,
+    isLogining: (s) => s.isLogining,
   },
   mutations: {
     setAuth: (s, v) => s.isAuth = v,
-    setUser: (s, v) => s.user = v,
+    setEmailVerified: (s, v) => s.isEmailVerified = v,
+    setLogining: (s, v) => s.isLogining = v,
   },
   actions: {
-    createUser({ commit, dispatch }, payload) {
-      const auth = getAuth();
+    onRegisterHandler({ dispatch }, { user, workspace }) {
       return new Promise(async (res, rej) => {
-        setPersistence(auth, browserLocalPersistence)
-          .then(() => {
-            createUserWithEmailAndPassword(auth, payload.user.email, payload.user.password)
-              .then((userCredential) => {
-                const data = userCredential.user;
-                const user = defUser(data, payload.user, { status: 'email sending' })
+        try {
 
-                dispatch('createUserInfo', user).catch(err => {
-                  rej(err)
-                })
+          const uid = await dispatch('user/create', { user, workspace })
+          if (workspace.isNew) await dispatch('workspace/create', workspace)
 
-                dispatch('addUserToWorkspace', { uid: user.uid, wid: payload.wid }).catch(err => {
-                  rej(err)
-                })
-
-                commit('setUser', user)
-
-                dispatch('verifyEmail')
-                  .then(() => res())
-                  .catch(err => {
-                    rej(err)
-                  })
-              })
-              .catch(e => rej(e))
-          })
-          .catch(e => rej(e))
+          await dispatch('user/db/bindToWorkspace', { uid, wid: workspace.id })
+          await dispatch('sendEmailVerify', user)
+          res()
+        } catch (err) {
+          rej(err)
+        }
       })
+    },
+    async onSignInHandler({ dispatch }, { email, password }) {
+      return new Promise(async (res, rej) => {
+        try {
+          const user = await dispatch('loginByEmailAndPassword', { email, password })
 
+          if (!user.emailVerified) {
+            dispatch('signOut')
+            rej({ code: 'auth/email-not-verify', email: user.email })
+          }
+          dispatch('user/fb/remember')
+          res()
+        } catch (err) {
+          rej(err)
+        }
+      })
+    },
+    async loginByEmailAndPassword({ }, { email, password }) {
+      return new Promise(async (res, rej) => {
+        try {
+          const auth = getAuth();
+          signInWithEmailAndPassword(auth, email, password)
+            .then(data => res(data.user))
+            .catch(err => rej(err))
+        } catch (err) {
+          rej(err)
+        }
+      })
+    },
+    sendEmailVerify({ }, { email }) {
+      const auth = getAuth();
+      return sendEmailVerification(auth.currentUser, { url: BASE_URL + '/login?msg=email_cofirm' })
     },
     signOut({ dispatch }) {
       const auth = getAuth();
@@ -70,55 +88,17 @@ export default {
           .catch(e => rej(e))
       })
     },
-    signInByEmailAndPassword({ dispatch, commit }, user) {
+    setAuthState({ commit, dispatch }) {
       const auth = getAuth();
+      const isAuth = !!auth.currentUser
+      const isEmailVerified = isAuth && auth.currentUser.emailVerified
+      const isLogining = isAuth && isEmailVerified
 
-      return new Promise(async (res, rej) => {
-        await setPersistence(auth, browserLocalPersistence)
-          .then(() => {
-            return signInWithEmailAndPassword(auth, user.email, user.password)
-              .then((userCredential) => {
-                const user = userCredential.user;
-
-                dispatch('onSignIn')
-
-                if (!user.emailVerified) {
-                  rej({ code: 'emeil not verify', message: 'Емейл не подтверждён', u: user.uid, user })
-
-                  return
-                }
-                console.log(user)
-                res()
-              })
-              .catch(e => rej(e))
-          })
-      })
-
-    },
-    verifyEmail() {
-      const auth = getAuth();
-      return new Promise((res, rej) => {
-        sendEmailVerification(auth.currentUser, { url: BASE_URL + '/emailverify?u=' + auth.currentUser.uid + '&e=' + auth.currentUser.email })
-          .then(() => {
-            res()
-          })
-          .catch(err => rej(err))
-      })
-    },
-    async checkAuth({ commit, dispatch }) {
-      const auth = getAuth();
-
-      const isAuth = auth.currentUser && auth.currentUser.emailVerified
       commit('setAuth', isAuth)
-    },
-    async fetchUserInfo({ commit, dispatch }) {
-      const auth = getAuth();
+      commit('setEmailVerified', isEmailVerified)
+      commit('setLogining', isLogining)
 
-      const info = await dispatch('getUserInfo', auth.currentUser.uid)
-      let userInfo = defUser(info)
-      const user = updateObject(userInfo, auth.currentUser)
-
-      commit('setUser', user)
+      return isLogining
     },
     resetPassword({ }, email) {
       const auth = getAuth();
@@ -131,9 +111,6 @@ export default {
             rej(err)
           });
       })
-    },
-    updateUser({ }, payload) {
-
     },
     addUserToArchive({ }, uid) {
       const db = getDatabase();

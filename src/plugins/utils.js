@@ -12,5 +12,7 @@ export const dictionary = {
   "auth/operation-not-allowed": "Операция не разрешена. Попробуйсте другой email",
   "auth/weak-password": "Используйте более надёжный пароль",
   "auth/user-disabled": "Ваш аккаунт заблокирован",
-  "auth/invalid-email": "Некорректный email"
+  "auth/invalid-email": "Некорректный email",
+  "auth/email-not-verify": "Email не подтверждён",
+  "email_cofirm": "Email подтверждён",
 }

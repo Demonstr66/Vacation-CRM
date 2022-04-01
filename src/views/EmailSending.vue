@@ -1,22 +1,23 @@
 <template>
   <div width="100%">
-    На Ваш email: {{ email }} было направлено письмо для подтверждения
+    На Ваш email: <b>{{ email }}</b> было направлено письмо для подтверждения
     регисрации.<br />
-    Пожалуйста, следуйте инструкциям в письме.
     <v-divider />
-    <small
-      >Если письмо не пришло, проверьте папку спам<br />Вы можете
-      <v-btn
-        x-small
-        :disabled="disabled"
-        text
-        @click.prevent="sendEmail"
-        color="accent"
-        >отправить</v-btn
-      >
-      письмо повторно
-      {{ progress }}
-    </small>
+    <div class="mt-3">Если письмо не пришло, проверьте папку спам</div>
+
+    <div class="d-flex flex-row justify-space-between">
+      <a @click.prevent="onGoBack" class="text-decoration-none">
+        На страницу входа
+      </a>
+      <div>
+        <span v-if="disabled">
+          {{ progress }}
+        </span>
+        <a v-else @click.prevent="sendEmail" color="accent">
+          отправить повторно
+        </a>
+      </div>
+    </div>
   </div>
 </template>
 
@@ -31,7 +32,7 @@ export default {
   }),
   computed: {
     email: function () {
-      return this.$route.query.e || "123";
+      return this.$route.query.e || "123@123.ru";
     },
     disabled() {
       return this.currTime < this.timeout;
@@ -44,7 +45,7 @@ export default {
 
       let time = moment(this.timeout - this.currTime).format("mm:ss");
 
-      return `через ${time}`;
+      return `${time}`;
     },
   },
   mounted() {
@@ -57,13 +58,13 @@ export default {
         .then(() => {
           this.currTime = 0;
           this.startTimer();
-          this.$store.commit("setMessage", {
+          this.$store.dispatch("setMessage", {
             type: "success",
             text: "Письмо отправлено",
           });
         })
         .catch((err) => {
-          this.$store.commit("setMessage", {
+          this.$store.dispatch("setMessage", {
             type: "error",
             code: err.code,
             text: err.message,
@@ -78,6 +79,20 @@ export default {
     },
     tick() {
       this.currTime += 1000;
+    },
+    onGoBack() {
+      this.$store
+        .dispatch("signOut")
+        .then(() => {
+          this.$router.push("/login");
+        })
+        .catch((err) => {
+          this.$store.dispatch("setMessage", {
+            type: "error",
+            code: err.code,
+            text: err.message,
+          });
+        });
     },
   },
 };

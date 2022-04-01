@@ -488,13 +488,13 @@ export default {
       this.$store
         .dispatch("deleteUser", uid)
         .then(
-          this.$store.commit("setMessage", {
+          this.$store.dispatch("setMessage", {
             type: "success",
             text: "Пользователь перемещён в архив",
           })
         )
         .catch((err) =>
-          this.$store.commit("setMessage", {
+          this.$store.dispatch("setMessage", {
             type: "error",
             code: err.code,
             text: err.message,
@@ -505,13 +505,13 @@ export default {
       this.$store
         .dispatch("restoreUser", uid)
         .then(
-          this.$store.commit("setMessage", {
+          this.$store.dispatch("setMessage", {
             type: "success",
             text: "Пользователь восстановлен",
           })
         )
         .catch((err) =>
-          this.$store.commit("setMessage", {
+          this.$store.dispatch("setMessage", {
             type: "error",
             code: err.code,
             text: err.message,

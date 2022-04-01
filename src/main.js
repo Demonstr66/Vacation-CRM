@@ -17,21 +17,30 @@ Vue.use(require('vue-moment'), {
 
 Vue.config.productionTip = false
 
+// Vue.config.errorHandler = function(err, vm, info) {
+//   console.log(`Error: ${err.toString()}\nInfo: ${info}`);
+// }
+
 const fapp = initializeApp(firebaseConfig);
 getDatabase(fapp)
 
+
 let app = false
 
-getAuth().onAuthStateChanged(async() => {
-  await store.dispatch('checkAuth')
-
-  if (!app) {
-    app = true
-    new Vue({
-      router,
-      store,
-      vuetify,
-      render: h => h(App)
-    }).$mount('#app')
+getAuth().onAuthStateChanged(async (data) => {
+  if (app) {
+    store.dispatch('authStateChanged', data)
+    return
   }
+
+  console.log('create app')
+  app = true
+  await store.dispatch('onBeforeLoadingHandler')
+  new Vue({
+    router,
+    store,
+    vuetify,
+    render: h => h(App)
+  }).$mount('#app')
+
 })
