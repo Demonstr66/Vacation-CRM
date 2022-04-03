@@ -38,7 +38,7 @@ export default {
         : "Страница";
     },
   },
-  async mounted() {
+  async created() {
     this.isLoading = true;
     await this.$store.dispatch("onLoadHandeler");
     this.isLoading = false;

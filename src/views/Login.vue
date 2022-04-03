@@ -106,6 +106,7 @@ export default {
           });
         })
         .catch((err) => {
+          console.log(err)
           if (err.code == "auth/email-not-verify") {
             this.$router.push({
               path: "/emailsending",

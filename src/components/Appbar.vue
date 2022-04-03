@@ -66,6 +66,9 @@ export default {
             text: "Вы вышли из аккаунта",
           });
         })
+        .then(()=>{
+          this.$store.dispatch("clearAllPersData")
+        })
         .catch((err) => {
           this.$store.dispatch("setMessage", {
             type: "error",

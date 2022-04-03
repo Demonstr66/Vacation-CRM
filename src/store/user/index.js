@@ -23,21 +23,20 @@ export default {
       return new Promise(async (res, rej) => {
         try {
           const auth = getAuth();
-          const user = await dispatch('db/read', auth.currentUser.uid)
+          const user = await dispatch('db/read', auth.currentUser)
           commit('set', user)
           // dispatch('db/subscribe', auth.currentUser.uid)
           res()
         } catch (err) {
-          console.error(err)
           rej(err)
         }
       })
     },
-    create({ dispatch, commit }, { user }) {
+    create({ dispatch, commit }, { user, workspace }) {
       return new Promise(async (res, rej) => {
         try {
           const uid = await dispatch('fb/create', user)
-          const newUser = defUser(user, { uid })
+          const newUser = defUser(user, { uid, workspace: workspace.id })
 
           await Promise.all([
             dispatch('fb/updateUserProfile', newUser),
@@ -53,7 +52,8 @@ export default {
         }
       })
     },
-    update({ dispatch }, user) {
+    update({ dispatch, getters }, data) {
+      const user = defUser(getters.get, data)
       return dispatch('db/update', user)
     }
 

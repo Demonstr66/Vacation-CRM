@@ -23,8 +23,14 @@ export default new Vuex.Store({
   },
   actions: {
     async onBeforeLoadingHandler({ dispatch }) {
-      if (await dispatch('setAuthState')) await dispatch('user/getCurrentUserData')
-      else dispatch("signOut")
+      try {
+        if (await dispatch('setAuthState')) {
+          await dispatch('user/getCurrentUserData')
+          await dispatch('workspace/getAllData')
+        }
+      } catch (e) {
+        dispatch("signOut")
+      }
 
       dispatch('setAccessLevel')
     },

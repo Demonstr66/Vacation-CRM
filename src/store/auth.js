@@ -37,7 +37,7 @@ export default {
           const uid = await dispatch('user/create', { user, workspace })
           if (workspace.isNew) await dispatch('workspace/create', workspace)
 
-          await dispatch('user/db/bindToWorkspace', { uid, wid: workspace.id })
+          // await dispatch('user/db/bindToWorkspace', { uid, wid: workspace.id })
           await dispatch('sendEmailVerify', user)
           res()
         } catch (err) {
@@ -54,6 +54,13 @@ export default {
             dispatch('signOut')
             rej({ code: 'auth/email-not-verify', email: user.email })
           }
+
+          dispatch('user/getCurrentUserData').then((r) => {
+            dispatch('user/db/setAsActive')
+            dispatch('workspace/getAllData')
+          }
+          )
+
           dispatch('user/fb/remember')
           res()
         } catch (err) {
@@ -82,7 +89,6 @@ export default {
       return new Promise((res, rej) => {
         signOut(auth)
           .then(() => {
-            dispatch('clearAllPersData')
             res()
           })
           .catch(e => rej(e))

@@ -21,7 +21,7 @@ export default {
           const db = getDatabase();
           const user = defUser(data)
 
-          await set(ref(db, 'users/' + data.uid), user)
+          await set(ref(db, `users/${user.workspace}/${user.uid}`), user)
 
           res()
         } catch (e) {
@@ -29,12 +29,11 @@ export default {
         }
       })
     },
-    read({ }, uid) {
+    read({ }, { uid, photoURL }) {
       return new Promise((res, rej) => {
         try {
           const dbRef = ref(getDatabase());
-
-          get(child(dbRef, `users/${uid}`)).then((snapshot) => {
+          get(child(dbRef, `users/${photoURL}/${uid}`)).then((snapshot) => {
             if (snapshot.exists()) {
               res(snapshot.val());
             } else {
@@ -46,18 +45,28 @@ export default {
         }
       })
     },
-    update({ }, data) {
+    update({ }, user) {
       return new Promise(async (res, rej) => {
         try {
           const db = getDatabase();
-          const user = defUser(data)
 
-          await set(ref(db, 'users/' + data.uid), user)
+          await set(ref(db, `users/${user.workspace}/${user.uid}`), user)
         } catch (err) { rej(err) }
       })
     },
     delete({ }, data) {
 
+    },
+    setAsActive({ rootGetters, dispatch }) {
+      console.log('setAsActive')
+      // return Promise.resolve()
+      const user = rootGetters['user/get']
+      console.log(user)
+      if (user.active) return Promise.resolve()
+      user.active = true
+      user.emailVerified = true
+
+      return dispatch('update', user)
     },
     bindToWorkspace({ }, { uid, wid }) {
       return new Promise(async (res, rej) => {
@@ -71,7 +80,7 @@ export default {
         }
       })
     },
-    subscribe({commit}, uid) {
+    subscribe({ commit }, uid) {
       const db = getDatabase();
       const userRef = ref(db, 'users/' + uid);
 
@@ -80,7 +89,7 @@ export default {
         commit('user/set', user, { root: true })
       });
     },
-    unsubscribe({}, uid) {
+    unsubscribe({ }, uid) {
       const db = getDatabase();
       const userRef = ref(db, 'users/' + uid);
       off(userRef)

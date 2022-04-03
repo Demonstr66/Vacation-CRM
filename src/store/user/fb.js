@@ -30,13 +30,14 @@ export default {
       const auth = getAuth();
       return setPersistence(auth, browserLocalPersistence)
     },
-    updateUserProfile({ }, { emailVerified, disabled, displayName }) {
+    updateUserProfile({ }, { emailVerified, disabled, displayName,photoURL, workspace }) {
       const auth = getAuth();
 
       return updateProfile(auth.currentUser, {
         emailVerified,
         displayName,
         disabled,
+        photoURL: workspace || photoURL
       })
     },
     delete({ }, data) {

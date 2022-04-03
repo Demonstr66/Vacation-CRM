@@ -6,100 +6,31 @@
     @submit="onSubmit"
     @cancel="onCancel"
   >
-    <v-form class="mt-4">
-      <v-row>
-        <v-col cols="6">
-          <v-text-field label="ФИО" :rules="rules" v-model="person.fullName">
-            <span slot="prepend" class="error--text mx-2">*</span>
-          </v-text-field>
-        </v-col>
-        <v-col cols="6">
-          <v-text-field
-            label="Email"
-            hide-details="auto"
-            v-model="person.email"
-          >
-            <span
-              class="accent--text"
-              label
-              slot="append"
-              v-if="person.email.indexOf('@') == -1"
-              >{{ domen }}</span
-            >
-          </v-text-field>
-        </v-col>
-      </v-row>
-      <v-row class="align-end">
-        <v-col cols="6">
-          <v-text-field
-            label="Табельный номер"
-            hide-details="auto"
-            prepend-icon="mdi-numeric"
-          >
-          </v-text-field>
-        </v-col>
-
-        <v-col cols="6">
-          <v-text-field label="Должность" hide-details="auto"> </v-text-field>
-        </v-col>
-      </v-row>
-      <v-row>
-        <v-col>
-          <v-autocomplete
-            label="Команда"
-            prepend-icon="mdi-account-group"
-            small-chips
-            clearable
-            deletable-chips
-            dense
-            multiple
-            :items="teams"
-            v-model="person.teams"
-            item-text="title"
-            item-value="id"
-          >
-            <template v-slot:selection="data">
-              <v-chip
-                v-bind="data.attrs"
-                :input-value="data.selected"
-                close
-                label
-                link
-                small
-                class="ma-1"
-                :color="isLeaderOfTeam(data.item.id) ? 'success' : ''"
-                @click.stop="onClickTeamLeader(data.item.id)"
-                @click:close="remove(data.item.id)"
-              >
-                {{ data.item.title }}
-              </v-chip>
-            </template>
-            <template v-slot:item="data">
-              <v-list-item-content>
-                <v-list-item-title v-text="data.item.title"></v-list-item-title>
-              </v-list-item-content>
-            </template>
-          </v-autocomplete>
-          <v-spacer></v-spacer>
-        </v-col>
-      </v-row>
-      <span v-show="person.teamLeader.length">
-        Тимлидер команд:
-        <span
-          v-for="(team, id) in person.teamLeader"
-          :key="id"
-          class="mr-2 accent--text"
-        >
-          {{ getTeamTitle(team) }};
-        </span>
-      </span>
+    <v-form class="mt-4" v-if="show">
+      <pers-user-info notitle noaction :data="user.fullName" @change="onChange">
+      </pers-user-info>
+      <account-user-info
+        notitle
+        noaction
+        :data="user"
+        :cols="2"
+        :disabled="disabled"
+        @change="onChange"
+      >
+      </account-user-info>
     </v-form>
   </BaseModal>
 </template>
 
 <script>
 import BaseModal from "../components/BaseModal.vue";
+import persUserInfo from "../components/user/info/personal.vue";
+import accountUserInfo from "../components/user/info/account.vue";
+
+import { defUser } from "../plugins/schema.js";
 import { mapState } from "vuex";
+
+const short = require("short-uuid");
 
 export default {
   props: {
@@ -117,72 +48,58 @@ export default {
   },
   components: {
     BaseModal,
+    persUserInfo,
+    accountUserInfo,
   },
   data: () => ({
-    person: {
-      uid: "",
-      fullName: "",
-      email: "",
-      post: "",
-      tabId: "",
-      role: "",
-      teamLeader: [],
-      teams: [],
-    },
     domen: "@ipsos.com",
     rules: [(value) => !!value || "Заполните поле"],
+    user: null,
+    isChanged: false,
+    disabled: { email: false },
+    isNewUser: false
   }),
-  computed: {
-    ...mapState({ teams: (state) => state.db.importInfo.teams }),
-    isValid: function () {
-      return this.person.fullName !== "";
-    },
-    personTeams: function () {
-      return this.person.teams.map((t) => ({ id: t, status: "active" }));
-    },
+  created() {
+    this.user = defUser();
   },
-  beforeMount() {
-    let data = this.options;
-    if (data.uid) this.person.uid = data.uid;
-    if (data.fullName) this.person.fullName = data.fullName;
-    if (data.email) this.person.email = data.email;
-    if (data.post) this.person.post = data.post;
-    if (data.tabId) this.person.tabId = data.tabId;
-    if (data.role) this.person.role = data.role;
-    if (data.teams) this.person.teams = data.teams.map((t) => t.id);
-    if (data.teamLeader) this.person.teamLeader = data.teamLeader;
+  computed: {
+    ...mapState({ teams: (state) => state.workspace.workspace.teams || [] }),
+    isValid() {
+      return this.isChanged;
+    },
   },
   methods: {
-    getTeamTitle(tId) {
-      return this.teams.find((t) => t.id == tId).title;
-    },
-    onClickTeamLeader(teamId) {
-      if (this.person.teamLeader.indexOf(teamId) == -1)
-        this.person.teamLeader.push(teamId);
-      else
-        this.person.teamLeader = this.person.teamLeader.filter(
-          (t) => t != teamId
-        );
-    },
-    isLeaderOfTeam(teamId) {
-      return this.person.teamLeader.indexOf(teamId) > -1;
-    },
     async onSubmit() {
-      let func = this.person.uid == "" ? "addPersonsToBase" : "updateUserInfo";
-      console.log(func)
-      let person = this.person;
-      if (person.email && person.email.indexOf("@") == -1)
-        person.email += this.domen;
-
-      if (person.teamLeader.length) person.role = "leader";
-
-      person.teams = this.personTeams;
-      
-      await this.$store
-        .dispatch(func, person)
-        .then(this.$store.dispatch("fetchPersons"));
-
-      this.closeModal();
+      let saveMethod = this.isNewUser ? "user/db/create" : "user/update";
+      let workspace = this.$store.getters["workspace/id"];
+      this.save(saveMethod, workspace);
+    },
+    save(saveMethod, workspace) {
+      this.$store
+        .dispatch(saveMethod, {
+          uid: this.isNewUser ? short().new() : this.user.uid,
+          workspace,
+          fullName: this.user.fullName,
+          email: this.user.email,
+          post: this.user.post,
+          team: this.user.team,
+          task: this.user.task,
+        })
+        .then(
+          this.$store.dispatch("setMessage", {
+            type: "success",
+            text: this.isNewUser ? "Пользователь добавлен" : "Данные сохранены",
+          })
+        )
+        .then((this.isChanged = false))
+        .then(this.closeModal())
+        .catch((err) => {
+          this.$store.dispatch("setMessage", {
+            type: "error",
+            code: err.code,
+            text: err.message,
+          });
+        });
     },
     onCancel() {
       this.closeModal();
@@ -190,9 +107,22 @@ export default {
     closeModal() {
       this.$emit("close");
     },
-    remove(id) {
-      this.person.teams = this.person.teams.filter((t) => t != id);
-      this.person.teamLeader = this.person.teamLeader.filter((t) => t != id);
+    onChange(val) {
+      console.log(val);
+      this.isChanged = true;
+      this.user = defUser(this.user, { ...val });
+    },
+  },
+  watch: {
+    show(val) {
+      if (!val || this.options.user == undefined) {
+        this.user = defUser();
+        this.isNewUser = true
+      } else {
+        this.user = this.options.user;
+        this.disabled = { email: true };
+        this.isNewUser = false
+      }
     },
   },
 };

@@ -6,18 +6,17 @@
     />
     <Appbar @click="onExpandClick" :expand="expandNavigation" />
     <v-main>
-      <v-container class="mx-16 mt-8">
+      <div class="mt-8 px-7 mx-0">
         <span class="text-h3 ml-1 mb-1">{{ title }}</span>
         <v-sheet
           color="white"
           elevation="2"
-          width="90%"
           class="px-3 py-3"
           min-height="100px"
         >
           <router-view></router-view>
         </v-sheet>
-      </v-container>
+      </div>
     </v-main>
   </div>
 </template>

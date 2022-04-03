@@ -6,8 +6,10 @@ export function defUser(...data) {
     displayName: '',
     fullName: '',
     parent: '',
-    post: '',
-    tasks: [],
+    post: null,
+    task: [],
+    team: [],
+    workspace: '',
     role: 'user',
     active: false,
     archive: false
@@ -42,6 +44,19 @@ export function defWorkspace(...data) {
 }
 
 export function defTask(...data) {
+  let res = {
+    id: '',
+    title: ''
+  }
+
+  if (data) {
+    data.map(d => {
+      res = updateObject(res, d)
+    })
+  }
+  return res
+}
+export function defPost(...data) {
   let res = {
     id: '',
     title: ''

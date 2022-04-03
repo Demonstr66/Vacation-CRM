@@ -1,8 +1,8 @@
 <template>
   <div>
     <span> Welcome! </span>
-    <v-btn @click="click">open</v-btn>
-    <v-btn @click="click2">close</v-btn>
+    <v-btn @click="click">Test()</v-btn>
+    <v-btn @click="click2">console user</v-btn>
     <br />
   </div>
 </template>
@@ -22,10 +22,7 @@ export default {
   }),
   methods: {
     async click() {
-      this.$store.dispatch("setMessage", {
-        type: "success",
-        code: 'Hi' + Date.now(),
-      });
+      this.$store.dispatch("workspace/db/test");
     },
     click2() {
       this.$store.dispatch("logUser");

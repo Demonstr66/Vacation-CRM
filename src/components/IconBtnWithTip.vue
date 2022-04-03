@@ -1,7 +1,7 @@
 <template>
   <v-tooltip :bottom="bottom">
     <template v-slot:activator="{ on, attrs }">
-      <v-btn icon v-bind="attrs" v-on="on" @click="onClick">
+      <v-btn icon v-bind="attrs" v-on="on" @click="onClick" :class="btnClass">
         <v-icon :color="color"> {{ icon }} </v-icon>
       </v-btn>
     </template>
@@ -19,6 +19,10 @@ export default {
     },
     icon: String,
     color: String,
+    btnClass: {
+      type: String,
+      default: "",
+    },
   },
   methods: {
     onClick() {
