@@ -1,6 +1,6 @@
 <template>
   <v-card flat>
-    <v-form @submit.prevent="onSubmit">
+    <v-form @submit.prevent="onSubmit" ref="persUserForm">
       <v-card-title v-if="!notitle">Личные данные</v-card-title>
       <v-card-text>
         <v-text-field
@@ -8,7 +8,7 @@
           label="ФИО"
           v-model="fullName"
           :disabled="disabled"
-          @change="changed"
+          @change.once="changed"
           :append-icon="disabled ? 'mdi-lock' : ''"
         >
           <template slot="prepend">
@@ -28,10 +28,11 @@
 </template>
 
 <script>
+import { defUser } from "../../../plugins/schema";
 export default {
   props: {
     data: {
-      type: [Object, String],
+      type: [Object],
       default: "",
     },
     disabled: {
@@ -51,27 +52,51 @@ export default {
     isChanged: false,
     fullName: "",
   }),
-  mounted() {
-    if (typeof this.data !== "string") this.fullName = this.data.fullName || "";
-    else this.fullName = this.data;
+  created() {
+    this.update();
   },
   methods: {
     onSubmit() {
       if (this.disabled || this.noaction) return;
 
-      this.$store
-        .dispatch("user/update", { fullName: this.fullName })
-        .then(
-          this.$store.dispatch("setMessage", {
-            type: "success",
-            text: "Данные сохранены",
-          })
-        )
-        .then((this.isChanged = false));
+      this.saveData("user/update", this.user)
+        .then(this.successMsg())
+        .then((this.isChanged = false))
+        .catch((err) => this.successMsg(err));
+    },
+    saveData(saveMethod, user) {
+      return this.$store.dispatch(saveMethod, {
+        uid: user.uid,
+        fullName: user.fullName,
+        workspace: user.workspace,
+      });
+    },
+    successMsg() {
+      this.$store.dispatch("setMessage", {
+        type: "success",
+        text: "Данные сохранены",
+      });
+    },
+    errMsg(err) {
+      this.$store.dispatch("setMessage", {
+        type: "error",
+        text: err.message,
+        code: err.code,
+      });
     },
     changed() {
       this.isChanged = true;
       this.$emit("change", { fullName: this.fullName });
+    },
+    reset() {
+      this.$refs.persUserForm.reset();
+      this.user = defUser();
+    },
+    update() {
+      this.fullName = this.data.fullName || "";
+    },
+    getData() {
+      return { fullName: this.fullName };
     },
   },
 };

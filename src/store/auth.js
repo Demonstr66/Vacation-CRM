@@ -22,12 +22,12 @@ export default {
   getters: {
     isAuth: (s) => s.isAuth,
     isEmailVerified: (s) => s.isEmailVerified,
-    isLogining: (s) => s.isLogining,
+    isLogging: (s) => s.isLogining,
   },
   mutations: {
     setAuth: (s, v) => s.isAuth = v,
     setEmailVerified: (s, v) => s.isEmailVerified = v,
-    setLogining: (s, v) => s.isLogining = v,
+    setLogging: (s, v) => s.isLogining = v,
   },
   actions: {
     onRegisterHandler({ dispatch }, { user, workspace }) {
@@ -102,7 +102,7 @@ export default {
 
       commit('setAuth', isAuth)
       commit('setEmailVerified', isEmailVerified)
-      commit('setLogining', isLogining)
+      commit('setLogging', isLogining)
 
       return isLogining
     },

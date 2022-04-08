@@ -1,16 +1,5 @@
 import { getDatabase, ref, set, child, get, onValue, off } from "firebase/database";
 import { defUser } from "../../plugins/schema";
-import {
-  getAuth,
-  createUserWithEmailAndPassword,
-  setPersistence,
-  signInWithEmailAndPassword,
-  browserLocalPersistence,
-  signOut,
-  sendEmailVerification,
-  sendPasswordResetEmail,
-  updateProfile
-} from "firebase/auth";
 
 export default {
   namespaced: true,
@@ -58,10 +47,8 @@ export default {
 
     },
     setAsActive({ rootGetters, dispatch }) {
-      console.log('setAsActive')
-      // return Promise.resolve()
       const user = rootGetters['user/get']
-      console.log(user)
+      
       if (user.active) return Promise.resolve()
       user.active = true
       user.emailVerified = true
@@ -80,19 +67,5 @@ export default {
         }
       })
     },
-    subscribe({ commit }, uid) {
-      const db = getDatabase();
-      const userRef = ref(db, 'users/' + uid);
-
-      onValue(userRef, (data) => {
-        const user = data.val();
-        commit('user/set', user, { root: true })
-      });
-    },
-    unsubscribe({ }, uid) {
-      const db = getDatabase();
-      const userRef = ref(db, 'users/' + uid);
-      off(userRef)
-    }
   }
 }

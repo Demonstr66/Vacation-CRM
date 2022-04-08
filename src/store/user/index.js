@@ -52,8 +52,11 @@ export default {
         }
       })
     },
-    update({ dispatch, getters }, data) {
-      const user = defUser(getters.get, data)
+    update({ dispatch, rootGetters }, data) {
+      const user = defUser(
+        rootGetters['workspace/getUserById'](data.uid),
+        data
+      )
       return dispatch('db/update', user)
     }
 

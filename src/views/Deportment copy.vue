@@ -282,8 +282,8 @@
 import layout from "../layouts/Main.vue";
 import ImportModal from "../components/ImportModal.vue";
 import ExportModal from "../components/ExportModal.vue";
-import PersonEditorModal from "../components/PersonEditorModal.vue";
-import AlertModal from "../components/AlertModal.vue";
+import PersonEditorModal from "../components/Modals/PersonEditorModal.vue";
+import AlertModal from "../components/Modals/Alert.vue";
 import IconBtnWithTip from "../components/IconBtnWithTip.vue";
 
 import { mapState, mapGetters } from "vuex";

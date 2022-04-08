@@ -1,8 +1,10 @@
 <template>
-  <v-app-bar app dense flat clipped-left>
+  <v-app-bar app dense flat clipped-left absolute>
     <v-app-bar-nav-icon @click="onNavIconClick"></v-app-bar-nav-icon>
 
-    <v-app-bar-title>{{ appName }}</v-app-bar-title>
+    <!-- <v-app-bar-title v-if="$vuetify.breakpoint.smAndUp">{{ appName }}</v-app-bar-title> -->
+    <!-- <v-app-bar-title v-else>{{ title }}</v-app-bar-title> -->
+    <v-app-bar-title >{{ $vuetify.breakpoint.name }}</v-app-bar-title>
 
     <v-spacer></v-spacer>
     <v-menu offset-y>
@@ -34,6 +36,7 @@ export default {
       type: Boolean,
       required: true,
     },
+    title: String,
   },
   data: () => ({
     user: {
@@ -66,8 +69,8 @@ export default {
             text: "Вы вышли из аккаунта",
           });
         })
-        .then(()=>{
-          this.$store.dispatch("clearAllPersData")
+        .then(() => {
+          this.$store.dispatch("clearAllPersData");
         })
         .catch((err) => {
           this.$store.dispatch("setMessage", {
@@ -78,8 +81,8 @@ export default {
         });
     },
     onAccount() {
-      this.$router.push('/account')
-    }
+      this.$router.push("/account");
+    },
   },
 };
 </script>

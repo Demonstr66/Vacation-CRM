@@ -1,6 +1,6 @@
 <template>
   <v-card flat>
-    <v-form @submit.prevent="onSubmit">
+    <v-form @submit.prevent="onSubmit" ref="accUserForm">
       <v-card-title v-if="!notitle">Информация</v-card-title>
       <v-card-text>
         <v-row>
@@ -11,15 +11,17 @@
               v-model="user.email"
               :disabled="disEmail"
               :append-icon="disEmail ? 'mdi-lock' : ''"
-              @change="changed"
+              @change.once="changed"
             >
               <template slot="prepend">
                 <v-icon color="blue-grey lighten-1">mdi-email</v-icon>
               </template>
+              <template v-if="!!domen && needDomen" slot="append">
+                {{domen}}
+              </template>
             </v-text-field>
           </v-col>
           <v-col :cols="12 / cols">
-
             <v-autocomplete
               label="Должность"
               name="post"
@@ -30,7 +32,7 @@
               hide-selected
               single-line
               v-model="user.post"
-              @change="changed"
+              @change.once="changed"
               :disabled="disPost"
               item-text="title"
               item-value="id"
@@ -58,7 +60,7 @@
               placeholder="Не в команде"
               :items="teams"
               v-model="user.team"
-              @change="changed"
+              @change.once="changed"
               :disabled="disTeams"
               clearable
               item-text="title"
@@ -94,8 +96,8 @@
               clearable
               placeholder="Задач нет"
               :items="tasks"
-              v-model="user.task"
-              @change="changed"
+              v-model="user.tasks"
+              @change.once="changed"
               :disabled="disTasks"
               item-text="title"
               item-value="id"
@@ -163,6 +165,10 @@ export default {
       type: Number,
       default: 1,
     },
+    domen: {
+      type: String,
+      default: '',
+    },
     res: Object,
   },
   data: () => ({
@@ -170,7 +176,7 @@ export default {
     user: defUser(),
   }),
   created() {
-    this.user = defUser(this.data);
+    this.update();
   },
   computed: {
     ...mapState({
@@ -206,33 +212,60 @@ export default {
         ? this.disabled
         : this.disEmail && this.disPost && this.disTeams && this.disTasks;
     },
+    needDomen() {
+      return this.user.email.indexOf('@') == -1
+    }
   },
   methods: {
     onSubmit() {
       if (this.disSubmit || this.noaction) return;
 
-      this.saveData();
+      this.saveData("user/update", this.user)
+        .then(this.successMsg())
+        .then((this.isChanged = false))
+        .catch((err) => this.successMsg(err));
     },
-    saveData() {
-      this.$store
-        .dispatch("user/update", {
-          email: this.email,
-          post: this.post,
-          team: this.team,
-          task: this.task,
-        })
-        .then(
-          this.$store.dispatch("setMessage", {
-            type: "success",
-            text: "Данные сохранены",
-          })
-        )
-        .then((this.isChanged = false));
+    saveData(saveMethod, user) {
+      return this.$store.dispatch(saveMethod, {
+        uid: user.uid,
+        email: user.email,
+        post: user.post,
+        team: user.team,
+        tasks: user.tasks,
+        workspace: user.workspace,
+      });
+    },
+    successMsg() {
+      this.$store.dispatch("setMessage", {
+        type: "success",
+        text: "Данные сохранены",
+      });
+    },
+    errMsg(err) {
+      this.$store.dispatch("setMessage", {
+        type: "error",
+        text: err.message,
+        code: err.code,
+      });
     },
     changed() {
       this.isChanged = true;
       this.$emit("change", this.user);
     },
+    reset() {
+      console.log("reset");
+      this.$refs.accUserForm.reset();
+      this.user = defUser();
+    },
+    update() {
+      this.user = defUser(this.data);
+    },
+    getData() {
+      let user = this.user
+      if (this.needDomen) user.email += this.domen
+
+      return user
+    }
   },
 };
 </script>

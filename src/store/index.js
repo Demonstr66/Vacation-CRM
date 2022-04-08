@@ -27,6 +27,7 @@ export default new Vuex.Store({
         if (await dispatch('setAuthState')) {
           await dispatch('user/getCurrentUserData')
           await dispatch('workspace/getAllData')
+          dispatch('user/db/setAsActive')
         }
       } catch (e) {
         dispatch("signOut")
@@ -34,7 +35,7 @@ export default new Vuex.Store({
 
       dispatch('setAccessLevel')
     },
-    onLoadHandeler({ dispatch, commit }) {
+    onLoadHandler({ dispatch, commit }) {
       dispatch('onSignIn')
     },
     authStateChanged({ dispatch }) {
@@ -45,7 +46,7 @@ export default new Vuex.Store({
     clearAllPersData({ commit }) {
       commit('setAuth', false)
       commit('setEmailVerified', false)
-      commit('setLogining', false)
+      commit('setLogging', false)
 
       commit('user/clear')
       commit('workspace/clear')
@@ -56,22 +57,22 @@ export default new Vuex.Store({
     setAccessLevel({ commit, getters }) {
       const isAuth = getters['isAuth']
       const isEmailVerified = getters['isEmailVerified']
-      const isLogining = getters['isLogining']
+      const isLogging = getters['isLogging']
 
       let accessLevel
 
       switch (true) {
         case (!isAuth): accessLevel = 0; break;
         case (!isEmailVerified): accessLevel = 1; break;
-        case (isLogining): accessLevel = 2; break;
+        case (isLogging): accessLevel = 2; break;
         default: accessLevel = 0; break;
       }
 
       commit('setAccessLevel', accessLevel)
     },
-    logUser() {
+    logUser({dispatch}) {
       const auth = getAuth();
-
+      dispatch('test')
       console.log(auth.currentUser)
     }
   },

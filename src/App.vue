@@ -4,9 +4,6 @@
       <router-view></router-view>
     </component>
     <Message />
-    <v-overlay :value="isLoading" color="accent" opacity=".4" z-index="1000">
-      <v-progress-circular indeterminate size="64"></v-progress-circular>
-    </v-overlay>
   </v-app>
 </template>
 
@@ -40,7 +37,7 @@ export default {
   },
   async created() {
     this.isLoading = true;
-    await this.$store.dispatch("onLoadHandeler");
+    await this.$store.dispatch("onLoadHandler");
     this.isLoading = false;
   },
 };

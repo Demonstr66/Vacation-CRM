@@ -12,8 +12,10 @@
 
 <script>
 import { mapState, mapGetters } from "vuex";
+import { teams } from "../mixins/computedData";
 
 export default {
+  mixins: [teams],
   data: () => ({
     snackbar: false,
     start: null,
@@ -22,7 +24,8 @@ export default {
   }),
   methods: {
     async click() {
-      this.$store.dispatch("workspace/db/test");
+      // this.$store.dispatch("workspace/db/test");
+      console.log(this.teams)
     },
     click2() {
       this.$store.dispatch("logUser");

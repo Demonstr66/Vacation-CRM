@@ -49,7 +49,7 @@
 
 <script>
 import layout from "../layouts/Main.vue";
-import AddVacationModal from "../components/AddVacationModal.vue";
+import AddVacationModal from "../components/Modals/AddVacation.vue";
 import { dateDiff } from "../plugins/utils.js";
 
 export default {

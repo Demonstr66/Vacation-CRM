@@ -1,7 +1,17 @@
 <template>
   <v-tooltip :bottom="bottom">
     <template v-slot:activator="{ on, attrs }">
-      <v-btn icon v-bind="attrs" v-on="on" @click="onClick" :class="btnClass">
+      <v-btn
+        :disabled="disable"
+        :fab="fab"
+        :icon="!fab"
+        :color="fab ? 'white' : ''"
+        v-bind="attrs"
+        v-on="on"
+        :small="fab"
+        @click="onClick($event)"
+        :class="btnClass"
+      >
         <v-icon :color="color"> {{ icon }} </v-icon>
       </v-btn>
     </template>
@@ -17,16 +27,24 @@ export default {
       type: Boolean,
       default: true,
     },
+    disable: {
+      type: Boolean,
+      default: false,
+    },
     icon: String,
     color: String,
     btnClass: {
       type: String,
       default: "",
     },
+    fab: {
+      type: Boolean,
+      default: false,
+    },
   },
   methods: {
-    onClick() {
-      this.$emit("click");
+    onClick(e) {
+      this.$emit("click", e);
     },
   },
 };

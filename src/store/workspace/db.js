@@ -1,4 +1,11 @@
-import { getDatabase, ref, set, get, child } from "firebase/database";
+import { mdiVideoMinusOutline } from "@mdi/js";
+import {
+  getDatabase, ref, set, child, get, onValue,
+  off,
+  push,
+  update,
+  remove
+} from "firebase/database";
 import { defWorkspace, defTeam, defTask, defPost } from "../../plugins/schema";
 
 export default {
@@ -40,24 +47,187 @@ export default {
     delete({ }, data) {
 
     },
-    test({ rootGetters }) {
+    subscribe({ commit }, { path, setter }) {
+      const db = getDatabase();
+      const dataRef = ref(db, path);
+
+      onValue(dataRef, (data) => {
+        const res = data.val();
+
+        commit(setter, res, { root: true })
+      });
+    },
+    unsubscribe({ }, path) {
+      const db = getDatabase();
+      const wsRef = ref(db, path);
+      off(wsRef)
+    },
+    addTeam({ dispatch }, data) {
+      return dispatch('addItem', { data, path: 'teams' })
+    },
+    addTask({ dispatch }, data) {
+      return dispatch('addItem', { data, path: 'tasks' })
+    },
+    addPost({ dispatch }, data) {
+      return dispatch('addItem', { data, path: 'posts' })
+    },
+    removeTeam({ dispatch }, id) {
+      return Promise.all([
+        dispatch('removeItemFromAllUsers', { path: 'team', type: 'team', id }),
+        dispatch('removeItem', { id, path: 'teams' })
+      ])
+    },
+    removeTask({ dispatch }, id) {
+      return Promise.all([
+        dispatch('removeTaskFromAllUsers', id),
+        dispatch('removeItem', { id, path: 'tasks' })
+      ])
+    },
+    removePost({ dispatch }, id) {
+      return Promise.all([
+        dispatch('removeItemFromAllUsers', { path: 'post', type: 'post', id }),
+        dispatch('removeItem', { id, path: 'posts' })
+      ])
+    },
+    addItem({ rootGetters }, { data, path }) {
       return new Promise(async (res, rej) => {
         try {
           const db = getDatabase();
           const wid = rootGetters['workspace/get'].id
-          const teams = [1, 2, 3].map(id => defTeam({ id, title: 'Team ' + id }))
-          const tasks = [1, 2, 3].map(id => defTask({ id, title: 'Task ' + id }))
-          const posts = ['Тимлидер', 'Старший специалист по обработке данных', 'Специалист по обработке данных'].map((title, index) => defPost({ id: index, title }))
 
-          await set(ref(db, 'workspaces/' + wid + '/teams'), teams)
-          await set(ref(db, 'workspaces/' + wid + '/tasks'), tasks)
-          await set(ref(db, 'workspaces/' + wid + '/posts'), posts)
+          const wsRef = ref(db, 'workspaces/' + wid)
+          const key = data.id || push(child(wsRef, path)).key;
 
+          data.id = key
+
+          const updates = {};
+          updates[`/${path}/` + key] = data;
+
+          await update(wsRef, updates);
           res()
         } catch (e) {
           rej(e)
         }
       })
-    }
+    },
+    removeItem({ rootGetters }, { id, path }) {
+      return new Promise(async (res, rej) => {
+        try {
+          console.log('removeItem', id, path)
+          const db = getDatabase();
+          const wid = rootGetters['workspace/get'].id
+
+          const itemRef = ref(db, 'workspaces/' + wid + `/${path}/` + id)
+          remove(itemRef)
+          res()
+        } catch (e) {
+          rej(e)
+        }
+      })
+    },
+    addTaskToUser({ rootGetters }, { uid, taskId }) {
+      return new Promise(async (res, rej) => {
+        try {
+          const db = getDatabase();
+          const wid = rootGetters['workspace/get'].id
+          const users = rootGetters['workspace/users']
+
+          const user = rootGetters['workspace/getUserById'](uid)
+          let tasks = user.tasks || []
+
+          const usersRef = ref(db, 'users/' + wid + '/' + uid)
+
+          if (tasks.some(x => x == taskId)) return rej({ message: 'Задача уже назначена пользователю', code: '' })
+
+          tasks.push(taskId)
+
+          const updates = {};
+          updates[`/tasks`] = tasks;
+
+          await update(usersRef, updates);
+          res()
+        } catch (e) {
+          rej(e)
+        }
+      })
+    },
+    removeTaskFromUser({ rootGetters }, { uid, taskId }) {
+      return new Promise(async (res, rej) => {
+        try {
+          const db = getDatabase();
+          const wid = rootGetters['workspace/get'].id
+          const users = rootGetters['workspace/users']
+
+          const user = rootGetters['workspace/getUserById'](uid)
+          let tasks = user.tasks || []
+
+          const usersRef = ref(db, 'users/' + wid + '/' + uid)
+
+          if (!tasks.some(x => x == taskId)) return res()
+
+          tasks = tasks.filter(x => x != taskId)
+
+          const updates = {};
+          updates[`/tasks`] = tasks;
+
+          await update(usersRef, updates);
+          res()
+        } catch (e) {
+          rej(e)
+        }
+      })
+    },
+    removeTaskFromAllUsers({ rootGetters }, id) {
+      return new Promise(async (res, rej) => {
+        try {
+          const db = getDatabase();
+          const wid = rootGetters['workspace/get'].id
+          const usersRef = ref(db, 'users/' + wid)
+
+          let users = rootGetters['workspace/users']
+          const updates = {};
+
+          users = Object.values(users).map(user => {
+            if (!user.tasks) return
+            if (!user.tasks.some(id)) return
+
+            const tasks = user.tasks.filter(t => t != id)
+            updates[`/${user.uid}/tasks`] = tasks;
+          })
+
+          await update(usersRef, updates);
+
+          res()
+        } catch (err) {
+          rej(err)
+        }
+      })
+    },
+    removeItemFromAllUsers({ rootGetters }, { path, type, id }) {
+      return new Promise(async (res, rej) => {
+        try {
+          const db = getDatabase();
+          const wid = rootGetters['workspace/get'].id
+          const usersRef = ref(db, 'users/' + wid)
+
+          let users = rootGetters['workspace/users']
+          const updates = {};
+
+          users = Object.values(users).map(user => {
+            if (!user[type]) return
+
+            if (user[type] != id) return
+
+            updates[`/${user.uid}/${path}`] = null;
+          })
+          console.log(updates)
+          await update(usersRef, updates);
+
+          res()
+        } catch (err) {
+          rej(err)
+        }
+      })
+    },
   }
 }

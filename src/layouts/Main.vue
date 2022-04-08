@@ -4,14 +4,14 @@
       :expand="expandNavigation"
       @close="expandNavigation = false"
     />
-    <Appbar @click="onExpandClick" :expand="expandNavigation" />
+    <Appbar @click="onExpandClick" :expand="expandNavigation" :title="title"/>
     <v-main>
-      <div class="mt-8 px-7 mx-0">
-        <span class="text-h3 ml-1 mb-1">{{ title }}</span>
+      <div class="mt-4 mt-md-8 px-0 px-md-8">
+        <span v-if="$vuetify.breakpoint.smAndUp" class="text-h4 ml-1 mb-1">{{ title }}</span>
         <v-sheet
           color="white"
-          elevation="2"
-          class="px-3 py-3"
+          :elevation="$vuetify.breakpoint.mdAndUp ? 2 : 0"
+          class="pa-1 pa-md-3"
           min-height="100px"
         >
           <router-view></router-view>

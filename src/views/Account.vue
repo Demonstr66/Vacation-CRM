@@ -4,10 +4,7 @@
       <pers-user-info :data="user"></pers-user-info>
     </v-col>
     <v-col>
-      <account-user-info
-        :data="user"
-        disabled
-      ></account-user-info>
+      <account-user-info :data="user" disabled></account-user-info>
     </v-col>
   </v-row>
 </template>
@@ -25,14 +22,7 @@ export default {
   },
   data: () => ({
     items: [],
-    tasks: [
-      { id: 1, label: "task1" },
-      { id: 2, label: "task2" },
-      { id: 3, label: "task3" },
-    ],
-    userTasks: [1, 2],
-    team: 1,
-    isChanged: false,
+    isChanged: false
   }),
   mounted() {
     this.$store.dispatch("user/getCurrentUserData");
@@ -52,7 +42,14 @@ export default {
             text: "Данные сохранены",
           })
         )
-        .then((this.isChanged = false));
+        .then((this.isChanged = false))
+        .catch((err) =>
+          this.$store.dispatch("setMessage", {
+            type: "error",
+            text: err.message,
+            code: err.code,
+          })
+        );
     },
   },
 };

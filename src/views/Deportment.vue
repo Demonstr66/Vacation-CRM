@@ -1,15 +1,20 @@
 <template>
   <div>
-    <v-row>
-      <v-col cols="9">
-        <v-tabs v-model="tab">
+    <v-row class="ma-0 pa-0 mb-3">
+      <v-col cols="12" sm="9" class="mx-0 px-0">
+        <v-tabs v-model="activeTab" fixed-tabs>
           <v-tab>Сотрудники</v-tab>
-          <v-tab>Команды</v-tab>
+          <v-tab>Структура</v-tab>
           <v-tab>Архив</v-tab>
         </v-tabs>
       </v-col>
-      <v-col cols="3" class="justify-self-end text-center">
+      <v-col
+        v-if="$vuetify.breakpoint.smAndUp"
+        cols="auto"
+        class="justify-self-end text-center mx-0 px-0"
+      >
         <icon-btn-with-tip
+          v-if="$vuetify.breakpoint.smAndUp"
           icon="mdi-account-plus"
           color="primary"
           @click="addBtnOnClick"
@@ -17,6 +22,7 @@
           Создать пользователя
         </icon-btn-with-tip>
         <icon-btn-with-tip
+          v-if="$vuetify.breakpoint.smAndUp"
           icon="mdi-tray-arrow-down"
           color="primary"
           @click="onImport"
@@ -24,6 +30,7 @@
           Импортирт пользователей
         </icon-btn-with-tip>
         <icon-btn-with-tip
+          v-if="$vuetify.breakpoint.smAndUp"
           icon="mdi-tray-arrow-up"
           color="primary"
           @click="onExport"
@@ -32,15 +39,17 @@
         </icon-btn-with-tip>
       </v-col>
     </v-row>
-
-    <v-tabs-items v-model="tab">
-      <v-tab-item transition="fade-transition">
+    <v-tabs-items v-model="activeTab">
+      <v-tab-item>
         <users-tab @editUser="showEditor"></users-tab>
       </v-tab-item>
-      <v-tab-item transition="fade-transition"> </v-tab-item>
-      <v-tab-item transition="fade-transition"> </v-tab-item>
+      <v-tab-item>
+        <composition></composition>
+      </v-tab-item>
+      <v-tab-item>
+        <archive></archive>
+      </v-tab-item>
     </v-tabs-items>
-
     <PersonEditorModal
       :show="editor.show"
       :options="editor.options"
@@ -52,18 +61,23 @@
 <script>
 import UsersTab from "../components/Deportment/users.vue";
 import IconBtnWithTip from "../components/IconBtnWithTip.vue";
-import PersonEditorModal from "../components/PersonEditorModal.vue";
+import PersonEditorModal from "../components/Modals/PersonEditorModal.vue";
+import composition from "../components/Deportment/compose.vue";
+import Archive from "../components/Deportment/archive.vue";
 
 import { mapState, mapGetters } from "vuex";
 
 export default {
+  name: "Deportment",
   components: {
     UsersTab,
     IconBtnWithTip,
     PersonEditorModal,
+    composition,
+    Archive,
   },
   data: () => ({
-    tab: null,
+    activeTab: "",
     editor: {
       show: false,
       options: {},

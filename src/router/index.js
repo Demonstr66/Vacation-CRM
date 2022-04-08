@@ -48,7 +48,7 @@ const routes = [
     component: Deportment,
     meta: {
       layout: 'MainLayout',
-      title: 'Структура',
+      title: 'Управление',
       protected: {
         accessLevel: [2]
       }
