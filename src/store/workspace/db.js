@@ -113,7 +113,7 @@ export default {
     removeItem({ rootGetters }, { id, path }) {
       return new Promise(async (res, rej) => {
         try {
-          console.log('removeItem', id, path)
+          console.log('removeItem',path,  id)
           const db = getDatabase();
           const wid = rootGetters['workspace/get'].id
 
@@ -180,6 +180,7 @@ export default {
     removeTaskFromAllUsers({ rootGetters }, id) {
       return new Promise(async (res, rej) => {
         try {
+          console.log('removeTaskFromAllUsers')
           const db = getDatabase();
           const wid = rootGetters['workspace/get'].id
           const usersRef = ref(db, 'users/' + wid)
@@ -189,12 +190,12 @@ export default {
 
           users = Object.values(users).map(user => {
             if (!user.tasks) return
-            if (!user.tasks.some(id)) return
+            if (!user.tasks.some(task => task == id)) return
 
             const tasks = user.tasks.filter(t => t != id)
             updates[`/${user.uid}/tasks`] = tasks;
           })
-
+          console.log(updates)
           await update(usersRef, updates);
 
           res()
@@ -220,7 +221,7 @@ export default {
 
             updates[`/${user.uid}/${path}`] = null;
           })
-          console.log(updates)
+
           await update(usersRef, updates);
 
           res()

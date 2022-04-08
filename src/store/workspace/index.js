@@ -13,7 +13,9 @@ export default {
         id: (s) => s.workspace ? s.workspace.id : null,
         users: (s) => s.users,
         getUserById: (s) => (uid) => s.users ? s.users[uid] : null,
-        teams: (s) => s.workspace ? s.workspace.teams ? s.workspace.teams : [] : []
+        teams: (s) => s.workspace ? s.workspace.teams ? s.workspace.teams : [] : [],
+        tasks: (s) => s.workspace ? s.workspace.tasks ? s.workspace.tasks : [] : [],
+        posts: (s) => s.workspace ? s.workspace.posts ? s.workspace.posts : [] : [],
     },
     mutations: {
         set: (s, v) => {
@@ -83,22 +85,38 @@ export default {
             const user = defUser(data)
             return dispatch('db/updateUser', user)
         },
-        addTeam({dispatch, getters}, data) {
-            if (!!!data.id && getters.teams.some(team => team.title == data.title)) {
-                return new Promise((res, rej) => rej(new Error('Команда с таким названием уже соществует!')))
-            }
+        async addTeam({dispatch}, data) {
+            if (!await dispatch('isUnique', {
+                type: 'teams',
+                data
+            })) return Promise.reject(new Error('Команда с таким названием уже' +
+                ' существует'))
 
-            console.log('i`m here')
             const team = defTeam(data)
             return dispatch('db/addTeam', team)
         },
-        addTask({dispatch}, data) {
+        async addTask({dispatch}, data) {
+            if (!await dispatch('isUnique', {
+                type: 'tasks',
+                data
+            })) return Promise.reject(new Error('Задача с таким названием уже' +
+                ' существует'))
+
             const task = defTask(data)
             return dispatch('db/addTask', task)
         },
-        addPost({dispatch}, data) {
+        async addPost({dispatch}, data) {
+            if (!await dispatch('isUnique', {
+                type: 'posts',
+                data
+            })) return Promise.reject(new Error('Должность с таким названием уже' +
+                ' существует'))
+
             const post = defPost(data)
             return dispatch('db/addPost', post)
+        },
+        isUnique({getters}, {type, data}) {
+            return !!data.id || !getters[type].some(item => item.title == data.title)
         }
     },
     modules: {
