@@ -24,8 +24,7 @@ export default {
   }),
   methods: {
     async click() {
-      // this.$store.dispatch("workspace/db/test");
-      console.log(this.teams)
+      this.$store.dispatch("testSendResponse");
     },
     click2() {
       this.$store.dispatch("logUser");

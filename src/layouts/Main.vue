@@ -6,7 +6,7 @@
     />
     <Appbar @click="onExpandClick" :expand="expandNavigation" :title="title"/>
     <v-main>
-      <div class="mt-4 mt-md-8 px-0 px-md-8">
+      <div class="mt-0 mt-md-8 px-0 px-md-8">
         <span v-if="$vuetify.breakpoint.smAndUp" class="text-h4 ml-1 mb-1">{{ title }}</span>
         <v-sheet
           color="white"

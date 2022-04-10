@@ -35,13 +35,13 @@ import BaseModal from "./Base.vue";
 import persUserInfo from "../user/info/personal.vue";
 import accountUserInfo from "../user/info/account.vue";
 
-import { defUser } from "../../plugins/schema.js";
+import { defUser } from "@/plugins/schema.js";
 
-import { teams, domen } from "../../mixins/computedData";
-import { saveUserData } from "../../mixins/workspaceHelper";
+import { teams, domen } from "@/mixins/computedData";
+import { userData } from "@/mixins/workspaceHelper";
 
 export default {
-  mixins: [saveUserData, teams, domen],
+  mixins: [userData, teams, domen],
   props: {
     show: {
       type: Boolean,
@@ -76,6 +76,10 @@ export default {
   },
   methods: {
     async onSubmit() {
+      let val1 = this.$refs.pers.validate()
+      let val2 =this.$refs.account.validate()
+      if (!val1 || !val2) return
+
       let user = defUser(
         this.user,
         this.$refs.account.getData(),
@@ -93,7 +97,6 @@ export default {
       this.$emit("close");
     },
     onChange(val) {
-      console.log("change");
       this.isChanged = true;
       // this.user = defUser(this.user, { ...val });
     },

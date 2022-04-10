@@ -84,7 +84,7 @@
 </template>
 
 <script>
-import Widjet from "../widjet.vue";
+import Widjet from "./BaseWidget.vue";
 import IconBtnWithTip from "../IconBtnWithTip.vue";
 import Alert from "../Modals/Alert.vue";
 

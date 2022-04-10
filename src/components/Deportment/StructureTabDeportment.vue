@@ -13,9 +13,9 @@
 </template>
 
 <script>
-import Tasks from "./tasks.vue";
-import Teams from "./teams.vue";
-import Posts from "./posts.vue";
+import Tasks from "./TheTasksWidget.vue";
+import Teams from "./TheTeamsWidget.vue";
+import Posts from "./ThePostsWidget.vue";
 
 export default {
   components: {Teams, Tasks, Posts},

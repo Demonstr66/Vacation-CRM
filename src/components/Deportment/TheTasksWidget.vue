@@ -21,7 +21,7 @@
 import {defTask} from "@/plugins/schema";
 import {tasks} from "@/mixins/computedData";
 import {taskMethods} from "../../mixins/workspaceHelper";
-import ListWithAdd from "./listWithAdd.vue";
+import ListWithAdd from "./BaseListWidget.vue";
 
 export default {
   mixins: [tasks, taskMethods],

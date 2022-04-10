@@ -9,6 +9,7 @@
               name="email"
               label="Email"
               v-model="user.email"
+              :rules="[blankCheck]"
               :disabled="disEmail"
               :append-icon="disEmail ? 'mdi-lock' : ''"
               @change.once="changed"
@@ -142,8 +143,10 @@
 <script>
 import { mapState, mapGetters } from "vuex";
 import { defUser } from "../../../plugins/schema";
+import {inputRules} from "@/mixins/inputRules";
 
 export default {
+  mixins:[inputRules],
   props: {
     data: {
       type: Object,
@@ -265,6 +268,9 @@ export default {
       if (this.needDomen) user.email += this.domen
 
       return user
+    },
+    validate() {
+      return this.$refs.accUserForm.validate()
     }
   },
 };

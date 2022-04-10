@@ -8,6 +8,7 @@
           label="ФИО"
           v-model="fullName"
           :disabled="disabled"
+          :rules="[blankCheck]"
           @change.once="changed"
           :append-icon="disabled ? 'mdi-lock' : ''"
         >
@@ -29,7 +30,9 @@
 
 <script>
 import { defUser } from "../../../plugins/schema";
+import {inputRules} from "@/mixins/inputRules";
 export default {
+  mixins:[inputRules],
   props: {
     data: {
       type: [Object],
@@ -98,6 +101,9 @@ export default {
     getData() {
       return { fullName: this.fullName };
     },
+    validate() {
+      return this.$refs.persUserForm.validate()
+    }
   },
 };
 </script>

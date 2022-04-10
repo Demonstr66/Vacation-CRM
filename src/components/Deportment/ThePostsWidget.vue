@@ -22,7 +22,7 @@
 import {defPost} from "../../plugins/schema";
 import {posts} from "../../mixins/computedData";
 import {postMethods} from "../../mixins/workspaceHelper";
-import ListWithAdd from "./listWithAdd.vue";
+import ListWithAdd from "./BaseListWidget.vue";
 
 export default {
   mixins: [posts, postMethods],

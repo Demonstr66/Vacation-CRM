@@ -21,7 +21,7 @@
 import {defTeam} from "@/plugins/schema";
 import {teams} from '@/mixins/computedData';
 import {teamMethods} from '@/mixins/workspaceHelper';
-import ListWithAdd from "@/components/Deportment/listWithAdd";
+import ListWithAdd from "@/components/Deportment/BaseListWidget";
 
 export default {
   mixins: [teams, teamMethods],

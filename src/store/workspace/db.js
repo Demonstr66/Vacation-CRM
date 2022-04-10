@@ -230,5 +230,41 @@ export default {
         }
       })
     },
+
+    disableUserAccount({}, uid) {
+      console.log('disable account: ' + uid)
+    },
+    enableUserAccount({}, uid) {
+      console.log('enable account: ' + uid)
+    },
+    archivingUser({rootGetters}, uid) {
+      return new Promise(async (res, rej) => {
+        try {
+          const db = getDatabase();
+          const wid = rootGetters['workspace/get'].id
+          const user = rootGetters['getUserById']
+
+          await set(ref(db, `archive/${wid}/${uid}`), true)
+
+          res()
+        } catch (e) {
+          rej(e)
+        }
+      })
+    },
+    restoreUser({rootGetters}, uid) {
+      return new Promise(async (res, rej) => {
+        try {
+          const db = getDatabase();
+          const wid = rootGetters['workspace/get'].id
+
+          await set(ref(db, `users/${wid}/${uid}/archive`), true)
+
+          res()
+        } catch (e) {
+          rej(e)
+        }
+      })
+    }
   }
 }

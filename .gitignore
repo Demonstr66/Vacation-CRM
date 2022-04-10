@@ -2,6 +2,7 @@
 node_modules
 /dist
 secure.js
+config.js
 
 # local env files
 .env.local

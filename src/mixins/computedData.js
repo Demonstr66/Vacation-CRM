@@ -22,6 +22,13 @@ export const users = {
     ...mapGetters("workspace", ['users']),
   }
 }
+
+export const archive = {
+  computed: {
+    ...mapGetters("workspace", ['archive']),
+  }
+}
+
 export const domen = {
   computed: {
     ...mapState({

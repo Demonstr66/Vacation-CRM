@@ -6,12 +6,14 @@ export default {
     namespaced: true,
     state: () => ({
         workspace: null,
-        users: {}
+        users: {},
+        archive: {}
     }),
     getters: {
         get: (s) => s.workspace,
         id: (s) => s.workspace ? s.workspace.id : null,
         users: (s) => s.users,
+        archive: (s) => s.archive,
         getUserById: (s) => (uid) => s.users ? s.users[uid] : null,
         teams: (s) => s.workspace ? s.workspace.teams ? s.workspace.teams : [] : [],
         tasks: (s) => s.workspace ? s.workspace.tasks ? s.workspace.tasks : [] : [],
@@ -29,7 +31,14 @@ export default {
         clear: (s) => s.workspace = null,
 
         setUsers: (s, v) => {
-            s.users = v
+            let users = {}, archive = {}
+            for(let id in v) {
+                if (v[id].archive) archive[id] = v[id]
+                else users[id] = v[id]
+            }
+
+            s.users = users
+            s.archive = archive
         },
         clearUsers: (s) => s.users = []
     },
@@ -117,6 +126,25 @@ export default {
         },
         isUnique({getters}, {type, data}) {
             return !!data.id || !getters[type].some(item => item.title == data.title)
+        },
+        archivingUser({getters,dispatch}, uid) {
+            const user = getters.getUserById(uid)
+            if (user.archive) return Promise.reject(new Error('Пользователь уже в архиве'))
+
+            if (user.active) dispatch('db/disableUserAccount', uid)
+
+            dispatch('db/archivingUser', uid)
+        },
+        restoreUser({}, uid) {
+            const user = getters.getUserById(uid)
+            if (!user.archive) return Promise.reject(new Error('Недопустимое действие'))
+
+            if (user.active) dispatch('db/enableUserAccount', uid)
+
+            dispatch('db/restoreUser', uid)
+        },
+        deleteUser({}, uid) {
+
         }
     },
     modules: {

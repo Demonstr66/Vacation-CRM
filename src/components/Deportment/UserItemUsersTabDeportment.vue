@@ -1,24 +1,20 @@
 <template>
   <v-list-item
       :class="{ dropable: draggingEl.is }"
-      @drop="onDrop"
-      @dragover="onDrugOver"
+      :data-user="user.uid"
       @dragenter="onDrugEnter"
       @dragleave="onDrugLeave"
-      :data-user="user.uid"
+      @dragover="onDrugOver"
+      @drop="onDrop"
   >
     <v-list-item-content>
       <v-row justify="space-between" no-gutters>
-        <v-col cols="10" md="9" lg="10">
+        <v-col cols="10" lg="10" md="9">
           <v-row no-gutters>
             <v-col cols="12" sm="9">
               <v-list-item-title class="subtitle-1">
                 {{ user.fullName }}
                 <v-chip
-                    outlined
-                    label
-                    x-small
-                    class="ml-2"
                     :color="
                     user.role != 'admin'
                       ? user.role != 'owner'
@@ -28,15 +24,20 @@
                         : 'success'
                       : ''
                     "
+                    class="ml-2"
+                    label
+                    outlined
+                    x-small
                 >
                   {{ user.role }}
                 </v-chip>
               </v-list-item-title>
-              <v-list-item-subtitle class="mt-1" :title="postTitle(user.post)">
+              <v-list-item-subtitle :title="postTitle(user.post)" class="mt-1">
+                <div style="overflow: hidden; white-space: initial;text-overflow: ellipsis">
                 <span class="font-weight-bold">
                   Должность:
                 </span>
-                <span class="font-weight-regular">{{ postTitle(user.post) }}</span>
+                  <span class="font-weight-regular">{{ postTitle(user.post) }}</span></div>
               </v-list-item-subtitle>
               <v-list-item-subtitle class="mt-1">
                 <span class="font-weight-bold">
@@ -45,9 +46,9 @@
                 <span class="font-weight-regular">{{ teamTitle(user.team) }}</span>
               </v-list-item-subtitle>
               <v-list-item-subtitle
+                  :href="'mailto:' + user.email"
                   class="mt-1"
                   tag="a"
-                  :href="'mailto:' + user.email"
               >
                 {{ user.email }}
               </v-list-item-subtitle>
@@ -58,10 +59,6 @@
                 <v-chip
                     v-for="(task, index) in tempTask(user.uid)"
                     :key="index"
-                    class="mb-1 mr-1"
-                    close
-                    label
-                    small
                     :color="
                       task.status != 'repeat'
                         ? task.status != 'new'
@@ -69,6 +66,10 @@
                           : 'info'
                         : 'success'
                     "
+                    class="mb-1 mr-1"
+                    close
+                    label
+                    small
                     @click:close="onDeleteTask(task.id)"
                 >
                   <v-list-item-subtitle>{{ taskTitle(task.id) }}</v-list-item-subtitle>
@@ -80,15 +81,15 @@
         </v-col>
         <v-spacer></v-spacer>
         <v-divider
-            vertical
             v-if="$vuetify.breakpoint.mdAndUp"
+            vertical
         ></v-divider>
-        <v-col cols="auto" align-self="center">
+        <v-col align-self="center" cols="auto">
           <v-menu
-              top
-              offset-y
-              content-class="nosheet"
               v-if="$vuetify.breakpoint.smAndDown"
+              content-class="nosheet"
+              offset-y
+              top
           >
             <template v-slot:activator="{ on, attrs }">
               <v-btn icon v-bind="attrs" v-on="on">
@@ -96,19 +97,19 @@
               </v-btn>
             </template>
             <main-tools
-                :vertical="true"
-                :fab="true"
                 :active="user.active"
+                :fab="true"
+                :vertical="true"
+                @delete="onDeleteUser(user.uid)"
                 @edit="onEdit(user.uid)"
-                @delete="onDeleteUser"
             ></main-tools>
           </v-menu>
 
           <main-tools
               v-else
               :active="user.active"
+              @delete="onDeleteUser(user.uid)"
               @edit="onEdit(user.uid)"
-              @delete="onDeleteUser"
           ></main-tools>
         </v-col>
       </v-row>
@@ -118,7 +119,7 @@
 </template>
 <script>
 import MainTools from "../user/tools/main.vue"
-import {tasks, teams, posts} from "@/mixins/computedData";
+import {posts, tasks, teams} from "@/mixins/computedData";
 
 export default {
   name: 'user-item',

@@ -1,7 +1,7 @@
 <template>
   <div>
     <v-row class="ma-0 pa-0 mb-3">
-      <v-col cols="12" sm="9" class="mx-0 px-0">
+      <v-col cols="12" sm="9" class="mx-0 pa-0">
         <v-tabs v-model="activeTab" fixed-tabs>
           <v-tab>Сотрудники</v-tab>
           <v-tab>Структура</v-tab>
@@ -59,13 +59,11 @@
 </template>
 
 <script>
-import UsersTab from "../components/Deportment/users.vue";
+import UsersTab from "@/components/Deportment/UsersTabDeportment.vue";
 import IconBtnWithTip from "../components/IconBtnWithTip.vue";
 import PersonEditorModal from "../components/Modals/PersonEditorModal.vue";
-import composition from "../components/Deportment/compose.vue";
-import Archive from "../components/Deportment/archive.vue";
-
-import { mapState, mapGetters } from "vuex";
+import composition from "../components/Deportment/StructureTabDeportment.vue";
+import Archive from "../components/Deportment/ArchiveTabDeportment.vue";
 
 export default {
   name: "Deportment",

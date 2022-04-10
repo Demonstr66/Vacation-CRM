@@ -11,6 +11,8 @@ import {
 } from "firebase/auth";
 import { getDatabase, ref, set, child, get, push, update, onValue, remove } from "firebase/database";
 import { defUser, updateObject } from "../plugins/schema";
+
+const axios = require('axios');
 const BASE_URL = process.env.VUE_APP_API;
 
 export default {
@@ -37,8 +39,14 @@ export default {
           const uid = await dispatch('user/create', { user, workspace })
           if (workspace.isNew) await dispatch('workspace/create', workspace)
 
-          // await dispatch('user/db/bindToWorkspace', { uid, wid: workspace.id })
           await dispatch('sendEmailVerify', user)
+          axios.get('https://crm.tgtransfer.ru/user/set/permission/base',
+              {
+                params: {
+                  u: uid
+                }
+              })
+
           res()
         } catch (err) {
           rej(err)
