@@ -1,7 +1,7 @@
 <template>
   <div>
     <v-row v-if="users">
-      <v-col class="py-0 pt-3" cols="12">
+      <v-col class="py-0 pt-2" cols="12">
         <div class="float-start">
           <icon-btn-with-tip
               :icon="filterIcon"
@@ -22,8 +22,8 @@
             </template>
             <v-list dense>
               <v-list-item v-for="(sortItem, id) in sortItems"
-                           :key="id" link
-                           class="justify-space-between"
+                           :key="id" class="justify-space-between"
+                           link
                            @click="selectedSortItem = sortItem">
                 <v-list-item-title>{{ sortItem.title }}
                 </v-list-item-title>
@@ -75,10 +75,16 @@
         <v-list :dense="$vuetify.breakpoint.mdAndDown">
           <v-data-iterator
               :custom-filter="userFilter"
+              :footer-props="{
+                'items-per-page-all-text' : 'Все',
+                'items-per-page-text': 'На странице',
+              }"
               :items="Object.values(users)"
               :search="JSON.stringify({selectedTeam, selectedTask, selectedPost})"
-              :sort-desc="selectedSortItem.desc"
               :sort-by="selectedSortItem.id"
+              :sort-desc="selectedSortItem.desc"
+              no-results-text="Пользователей не найдено"
+              @update:options="onDataIteratorUpdateOptions"
           >
             <template v-slot:header>
             </template>
@@ -116,15 +122,14 @@
         @cancel="closeModal"
         @submit="onSubmitDeleteUser(deleatingUser)"
     >
-      Пользователь будет перемещён в архив.<br>
-      Все его данные будут сохранены. Продолжить?
+      Пользователь будет перемещён в архив. Все его данные будут сохранены.<br>Продолжить?
     </AlertModal>
   </div>
 </template>
 
 <script>
 import {posts, tasks, teams, users} from "@/mixins/computedData";
-import UserItem from "@/components/Deportment/UserItemUsersTabDeportment";
+import UserItem from "@/components/Deportment/UsersTabUserItem";
 import IconBtnWithTip from "@/components/IconBtnWithTip";
 import AlertModal from "@/components/Modals/Alert"
 import {userData} from "@/mixins/workspaceHelper";
@@ -163,8 +168,9 @@ export default {
     deleatingUser: null,
     userEditor: {
       show: false,
-      options: {},
+      options: {}
     },
+    dataIterator: {}
   }),
   computed: {
     filterIcon() {
@@ -174,6 +180,9 @@ export default {
     }
   },
   methods: {
+    onDataIteratorUpdateOptions(val) {
+      this.dataIterator = val
+    },
     onDragStart(id) {
       this.draggingEl.is = true;
       this.draggingEl.item = id;

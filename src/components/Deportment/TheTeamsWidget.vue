@@ -5,6 +5,14 @@
       @save="onSave"
       @delete="onDelete"
   >
+    <template v-slot:subtitle="{item}">
+      <v-list-item-subtitle>
+        Лидер: {{item.leaderId ? getUserNameById(item.leaderId) : 'Не назначен'}}
+      </v-list-item-subtitle>
+      <v-list-item-subtitle v-if="item.tempLeaderId">
+        ИО лидера: {{item.tempLeaderId ? getUserNameById(item.tempLeaderId) : 'Не назначен'}}
+      </v-list-item-subtitle>
+    </template>
     <template v-slot:alert="{item}">
       <span>
       Команда
@@ -22,9 +30,10 @@ import {defTeam} from "@/plugins/schema";
 import {teams} from '@/mixins/computedData';
 import {teamMethods} from '@/mixins/workspaceHelper';
 import ListWithAdd from "@/components/Deportment/BaseListWidget";
+import {getUserNameById} from "@/mixins/dataHelper";
 
 export default {
-  mixins: [teams, teamMethods],
+  mixins: [teams, teamMethods, getUserNameById],
   components: {
     ListWithAdd
   },

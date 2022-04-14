@@ -40,12 +40,12 @@ export default {
           if (workspace.isNew) await dispatch('workspace/create', workspace)
 
           await dispatch('sendEmailVerify', user)
-          axios.get('https://crm.tgtransfer.ru/user/set/permission/base',
-              {
-                params: {
-                  u: uid
-                }
-              })
+          // axios.get('https://crm.tgtransfer.ru/user/set/permission/base',
+          //     {
+          //       params: {
+          //         u: uid
+          //       }
+          //     })
 
           res()
         } catch (err) {
@@ -88,9 +88,10 @@ export default {
         }
       })
     },
-    sendEmailVerify({ }, { email }) {
+    sendEmailVerify() {
       const auth = getAuth();
-      return sendEmailVerification(auth.currentUser, { url: BASE_URL + '/login?msg=email_cofirm' })
+
+      return sendEmailVerification(auth.currentUser, { url: BASE_URL + '/login?msg=email_confirm' })
     },
     signOut({ dispatch }) {
       const auth = getAuth();

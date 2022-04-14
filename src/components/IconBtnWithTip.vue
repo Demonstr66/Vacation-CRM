@@ -8,7 +8,7 @@
         :color="fab ? 'white' : ''"
         v-bind="attrs"
         v-on="on"
-        :small="fab"
+        :small="fab || small"
         @click="onClick($event)"
         :class="btnClass"
       >
@@ -41,6 +41,10 @@ export default {
       type: Boolean,
       default: false,
     },
+    small: {
+      type: Boolean,
+      default: false
+    }
   },
   methods: {
     onClick(e) {

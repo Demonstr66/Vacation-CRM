@@ -40,6 +40,7 @@ export default {
           const db = getDatabase();
 
           await set(ref(db, `users/${user.workspace}/${user.uid}`), user)
+          res()
         } catch (err) { rej(err) }
       })
     },

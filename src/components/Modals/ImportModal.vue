@@ -1,44 +1,140 @@
 <template>
   <BaseModal
-    :title="title"
-    :show="show"
-    :submitDisable="!isUploadSuccessful"
-    @reset="reset"
-    @submit="onSubmit"
-    @cancel="onCancel"
+      :show="show"
+      :submitDisable="!isUploadSuccessful || !!!importingUsers.length"
+      :title="title"
+      @cancel="onCancel"
+      @reset="reset"
+      @submit="onSubmit"
   >
-    <v-file-input
-      placeholder="Excel или CSV файл"
-      label="Файл Excel"
-      :loading="isLoading"
-      v-model="file"
-      @change="onChange"
-      @click:clear="reset"
-    ></v-file-input>
-    <div v-if="isUploadSuccessful">
+    <v-card-text>
       <v-row>
-        <v-col>
-          Найденные поля:
-          <ul>
-            <li v-for="(fild, id) in fields" :key="id">
-              {{ fild.label }}
-            </li>
-          </ul>
+        <v-col cols="12" md="6">
+          Поддерживаются файлы Excel и CSV.<br>
+          В первой строке выбранного фала, должны быть заголовки полей.<br/>
         </v-col>
-        <v-col> Количество записей: {{ items.length }} </v-col>
+        <v-col :class="{'text-center': $vuetify.breakpoint.mdAndUp}">
+          Доступные поля
+          <v-row class="text-left">
+            <v-col v-if="requiredFields.length" cols="12" sm="6">
+              <span class="error--text float-start">Обязательные:</span>
+              <ul class="d-inline-block">
+                <li v-for="(field, idx) in requiredFields" :key="idx">
+              <span class="font-weight-bold">
+                {{ field.model }}:
+              </span>
+                  {{ field.title }}
+                </li>
+              </ul>
+            </v-col>
+            <v-col v-if="optionalFields.length" cols="12" sm="6">
+              <span class="primary--text float-start">Опционально:</span>
+              <ul class="d-inline-block">
+                <li v-for="(field, idx) in optionalFields" :key="idx">
+              <span class="font-weight-bold">
+                {{ field.model }}:
+              </span>
+                  {{ field.title }}
+                </li>
+              </ul>
+            </v-col>
+          </v-row>
+        </v-col>
       </v-row>
-    </div>
-    <div v-else-if="isFileUploading" class="error--text">
-      Ошибка: не найдено подходящих полей
-    </div>
+      <v-file-input
+          v-model="file"
+          :error="isUploadError"
+          :error-messages="uploadError"
+          :loading="isLoading"
+          accept=".xlsx,.xls,.csv"
+          class="mt-2"
+          placeholder="Файл Excel ( .xlsx, .xls, .csv )"
+          type="file"
+          @change="onChange"
+          @click:clear="reset"
+      ></v-file-input>
+      <div v-if="isUploadSuccessful" class="mt-2">
+        <div v-if="importingUsers.length == 0">
+          <span>Не найдено новых записей. Поля:</span>
+          <span v-for="(col, idx) in uniqFields" class="font-weight-bold">
+            {{ col.title }};
+          </span>
+          <span> должны быть уникальными.</span>
+        </div>
+        <div v-else>
+          <span class="font-weight-bold">Количество записей:</span> {{ importingUsers.length }}
+          <v-row align="center" justify="space-between">
+            <v-col class="pb-0 mb-0 font-weight-bold" cols="12" md="auto">Найденные поля:</v-col>
+            <v-col class="pb-0 mb-0" cols="12" md="7">
+              <v-select
+                  v-model="allFieldsModel"
+                  :items="fields"
+                  dense
+                  disabled
+                  item-text="title"
+                  item-value="model"
+                  multiple
+              >
+              </v-select>
+            </v-col>
+          </v-row>
+          <v-row v-if="!!newItems.teams.length" align="center" justify="space-between">
+            <v-col class="pb-0 mb-0" cols="12" md="auto">
+            <span class="font-weight-bold">
+              Найденные команды:
+            </span>
+              <br><small>Выберите те, которые хотет добавить</small>
+            </v-col>
+            <v-col class="pb-0 mb-0" cols="12" md="7">
+              <v-select
+                  v-model="newItems.selectedTeams"
+                  :items="newItems.teams"
+                  chips
+                  deletable-chips
+                  item-text="title"
+                  item-value="id"
+                  multiple
+                  small-chips
+              ></v-select>
+            </v-col>
+          </v-row>
+          <v-row v-if="!!newItems.posts.length" align="center" justify="space-between">
+            <v-col class="pb-0 mb-0" cols="12" md="auto">
+            <span class="font-weight-bold">
+              Найденные должности:
+            </span>
+              <br><small>Выберите те, которые хотет добавить</small>
+            </v-col>
+            <v-col class="pb-0 mb-0" cols="12" md="7">
+              <v-select
+                  v-model="newItems.selectedPosts"
+                  :items="newItems.posts"
+                  chips
+                  deletable-chips
+                  item-text="title"
+                  item-value="id"
+                  multiple
+                  small-chips
+              ></v-select>
+            </v-col>
+          </v-row>
+        </div>
+      </div>
+      <div v-else-if="isFileUploading" class="ml-8 error--text">
+        Ошибка: не найдено подходящих полей
+      </div>
+    </v-card-text>
   </BaseModal>
 </template>
 
 <script>
 import BaseModal from "./Base.vue";
-import * as XLSX from "xlsx/xlsx.mjs";
+import {excelToArray, parseArrayData} from "@/plugins/utils";
+import {importHelper} from "@/mixins/importHelper";
+import {users} from "@/mixins/computedData"
 
 export default {
+  mixins: [importHelper, users],
   components: {
     BaseModal,
   },
@@ -47,7 +143,7 @@ export default {
       type: Boolean,
       required: true,
     },
-    availibleFields: {
+    availableFields: {
       type: Array,
       required: true,
     },
@@ -63,92 +159,91 @@ export default {
   data: () => ({
     isFileUploading: false,
     isUploadSuccessful: false,
+    isUploadError: false,
+    uploadError: '',
     isLoading: false,
     file: null,
     fields: [],
-    items: [],
+    importingUsers: [],
   }),
+  computed: {
+    allFieldsModel() {
+      return this.fields.map(f => f.model)
+    },
+    requiredFields() {
+      return this.availableFields.filter(x => !!x.required)
+    },
+    uniqFields() {
+      return this.availableFields.filter(x => !!x.uniq)
+    },
+    optionalFields() {
+      return this.availableFields.filter(x => !!!x.required)
+    },
+  },
   methods: {
     onChange(file) {
       if (!file) return;
 
       this.isLoading = true;
-      this.readFileToJSON(file);
+
+      excelToArray(file)
+          .then(data => parseArrayData(data, this.availableFields, Object.values(this.users)))
+          .then((data) => {
+            this.fields = Object.values(data.cols)
+            return Promise.resolve(data)
+          })
+          .then(({items: users, cols}) => this.mixParseTeamsInArray(users, cols))
+          .then(({users, cols}) => this.mixParsePostsInArray(users, cols))
+          .then(({users}) => {
+            this.importingUsers = users
+            this.isUploadSuccessful = true
+          })
+          .catch(err => {
+            console.error(err)
+            this.isUploadError = true
+            this.uploadError = err.message
+          })
+          .finally(() => {
+            this.isLoading = false
+          })
     },
-    readFileToJSON(file) {
-      const reader = new FileReader();
+    saveData(users, newItems) {
+      const teams = newItems.teams.filter(team =>
+          newItems.selectedTeams.some(st => st == team.id))
 
-      reader.onload = (e) => {
-        const bstr = e.target.result;
-        const wb = XLSX.read(bstr, { type: "binary" });
-        const wsname = wb.SheetNames[0];
-        const ws = wb.Sheets[wsname];
-        const data = XLSX.utils.sheet_to_json(ws, { header: 1 });
-        this.uploadSuccess(data);
-      };
+      const unUsedTeams = newItems.teams.filter(team =>
+          !newItems.selectedTeams.some(st => st == team.id))
 
-      reader.readAsBinaryString(file);
+      const posts = newItems.posts.filter(post =>
+          newItems.selectedPosts.some(sp => sp == post.id))
+      const unUsedPosts = newItems.posts.filter(post =>
+          !newItems.selectedPosts.some(sp => sp == post.id))
+
+      users = users.map(user => {
+        if (user.team && unUsedTeams.find(ut => ut.id == user.team)) user.team = null
+        if (user.post && unUsedPosts.find(up => up.id == user.post)) user.post = null
+
+        return user
+      })
+
+      this.mixSaveAllImportData({users, teams, posts})
     },
-    uploadSuccess(data) {
-      this.isFileUploading = true;
-      let cols = data.shift();
-      let colToFieldId = {};
-
-      cols.map((c, index) => {
-        const fieldId = this.availibleFields.findIndex(
-          (af) => af.model.toLowerCase() === c.toLowerCase()
-        );
-
-        if (fieldId < 0) return;
-
-        const field = this.availibleFields[fieldId];
-
-        colToFieldId[index] = fieldId;
-
-        this.fields.push({ label: field.label });
-      });
-
-      data.map((row) => {
-        if (!row.length) return;
-        let item = {};
-
-        for (let cID in colToFieldId) {
-          let fID = colToFieldId[cID];
-
-          item[this.availibleFields[fID].model] = row[cID];
-        }
-
-        this.items.push(item);
-      });
-
-      this.isLoading = false;
-      this.isUploadSuccessful = !!this.fields.length;
-    },
-    saveData(data) {
-      let func = "",
-        callback = "";
-      switch (this.dataType) {
-        case "persons":
-          func = "addPersonsToBase";
-          callback = "fetchPersons";
-          break;
-        case "teams":
-          func = "addTeamsToBase";
-          callback = "fetchTeams";
-          break;
-      }
-
-      this.$store.dispatch(func, data); //.then(this.$store.dispatch(callback));
+    clearError() {
+      this.isUploadError = false
+      this.uploadError = ''
     },
     reset() {
       this.isFileUploading = false;
       this.isUploadSuccessful = false;
       this.fields = [];
-      this.items = [];
+      this.importingUsers = [];
       this.file = null;
+      this.clearError()
     },
     onSubmit() {
-      this.saveData(this.items);
+      if (!this.importingUsers.length) return
+
+      this.saveData(this.importingUsers, this.newItems);
       this.closeModal();
     },
     onCancel() {

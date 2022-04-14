@@ -32,6 +32,7 @@
       icon="mdi-delete"
       color="error"
       :fab="fab"
+      :disable="deleteDisable"
       @click="$emit('delete')"
     >
       Удалить
@@ -60,6 +61,12 @@ export default {
       type: Boolean,
       default: false,
     },
+    disable: {}
   },
+  computed: {
+    deleteDisable() {
+      return this.disable ? !!this.disable.delete : false
+    }
+  }
 };
 </script>

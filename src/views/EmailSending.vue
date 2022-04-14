@@ -54,7 +54,7 @@ export default {
   methods: {
     sendEmail() {
       this.$store
-        .dispatch("verifyEmail")
+        .dispatch("sendEmailVerify")
         .then(() => {
           this.currTime = 0;
           this.startTimer();

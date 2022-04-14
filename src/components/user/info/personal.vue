@@ -1,25 +1,26 @@
 <template>
   <v-card flat>
-    <v-form @submit.prevent="onSubmit" ref="persUserForm">
+    <v-form ref="persUserForm" @submit.prevent="onSubmit">
       <v-card-title v-if="!notitle">Личные данные</v-card-title>
       <v-card-text>
         <v-text-field
-          name="fullName"
-          label="ФИО"
-          v-model="fullName"
-          :disabled="disabled"
-          :rules="[blankCheck]"
-          @change.once="changed"
-          :append-icon="disabled ? 'mdi-lock' : ''"
+            v-model="user.fullName"
+            :append-icon="disabled ? 'mdi-lock' : ''"
+            :disabled="disabled"
+            :rules="[blankCheck]"
+            label="ФИО"
+            name="fullName"
+            @change.once="changed"
         >
-          <template slot="prepend">
+          <template v-slot:prepend>
             <v-icon color="blue-grey lighten-1">mdi-account</v-icon>
-          </template></v-text-field
+          </template>
+        </v-text-field
         >
       </v-card-text>
       <v-card-actions v-if="!noaction && !disabled">
         <v-spacer></v-spacer>
-        <v-btn type="submit" color="success" text :disabled="!isChanged">
+        <v-btn :disabled="!isChanged" color="success" text type="submit">
           Сохранить
         </v-btn>
         <v-spacer></v-spacer>
@@ -29,10 +30,12 @@
 </template>
 
 <script>
-import { defUser } from "../../../plugins/schema";
+import {defUser} from "@/plugins/schema";
 import {inputRules} from "@/mixins/inputRules";
+import {userData} from "@/mixins/workspaceHelper";
+
 export default {
-  mixins:[inputRules],
+  mixins: [inputRules, userData],
   props: {
     data: {
       type: [Object],
@@ -53,7 +56,7 @@ export default {
   },
   data: () => ({
     isChanged: false,
-    fullName: "",
+    user: defUser(),
   }),
   created() {
     this.update();
@@ -62,44 +65,21 @@ export default {
     onSubmit() {
       if (this.disabled || this.noaction) return;
 
-      this.saveData("user/update", this.user)
-        .then(this.successMsg())
-        .then((this.isChanged = false))
-        .catch((err) => this.successMsg(err));
-    },
-    saveData(saveMethod, user) {
-      return this.$store.dispatch(saveMethod, {
-        uid: user.uid,
-        fullName: user.fullName,
-        workspace: user.workspace,
-      });
-    },
-    successMsg() {
-      this.$store.dispatch("setMessage", {
-        type: "success",
-        text: "Данные сохранены",
-      });
-    },
-    errMsg(err) {
-      this.$store.dispatch("setMessage", {
-        type: "error",
-        text: err.message,
-        code: err.code,
-      });
+      this.mixSaveUserDataToDb(false, this.user)
     },
     changed() {
       this.isChanged = true;
-      this.$emit("change", { fullName: this.fullName });
+      this.$emit("change");
     },
     reset() {
       this.$refs.persUserForm.reset();
       this.user = defUser();
     },
     update() {
-      this.fullName = this.data.fullName || "";
+      this.user = defUser(this.data);
     },
     getData() {
-      return { fullName: this.fullName };
+      return {fullName: this.user.fullName};
     },
     validate() {
       return this.$refs.persUserForm.validate()

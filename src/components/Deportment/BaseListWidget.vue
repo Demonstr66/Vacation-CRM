@@ -1,15 +1,15 @@
 <template>
   <widjet :title="title">
-    <v-toolbar flat dense v-if="$vuetify.breakpoint.smAndUp">
+    <v-toolbar v-if="$vuetify.breakpoint.smAndUp" dense flat>
       <v-spacer>
       </v-spacer>
-      <icon-btn-with-tip icon="mdi-import" color="primary">
+      <icon-btn-with-tip color="primary" icon="mdi-import">
         Импорт
       </icon-btn-with-tip>
-      <icon-btn-with-tip icon="mdi-export" color="primary">
+      <icon-btn-with-tip color="primary" icon="mdi-export">
         Экспорт
       </icon-btn-with-tip>
-      <icon-btn-with-tip icon="mdi-help-circle-outline" color="primary">
+      <icon-btn-with-tip color="primary" icon="mdi-help-circle-outline">
         Инфо
       </icon-btn-with-tip>
     </v-toolbar>
@@ -17,13 +17,14 @@
       <v-list-item
           v-for="(item, id) in items"
           :key="id"
-          class="pa-0 borderbtm"
           :class="{ editing: item.id == newItem.id }"
+          class="pa-0 borderbtm"
       >
         <v-list-item-content>
           <v-list-item-title v-text="item.title"></v-list-item-title>
+          <slot name="subtitle" :item="item">
+          </slot>
         </v-list-item-content>
-
         <v-list-item-action class="d-flex flex-row">
           <icon-btn-with-tip
               color="primary"
@@ -46,38 +47,38 @@
       {{ noDataText }}
     </span>
     <v-form
-        @submit.prevent="onSubmitForm"
-        v-model="valid"
         ref="addItem"
+        v-model="valid"
         class="mt-4"
+        @submit.prevent="onSubmitForm"
     >
       <v-text-field
           ref="inputTitle"
-          solo
-          placeholder="Добавить новый элемент"
           v-model="newItem.title"
           :error="error"
-          hint="Введите название"
           :error-messages="error ? 'Заполните поле' : ''"
+          hint="Введите название"
+          placeholder="Добавить новый элемент"
+          solo
           @blur="error = false"
       >
         <template slot="append">
-          <v-btn v-if="!!newItem.id" icon @click="onStopEditing" color="error">
+          <v-btn v-if="!!newItem.id" color="error" icon @click="onStopEditing">
             <v-icon>mdi-pencil-off</v-icon>
           </v-btn>
-          <v-btn icon type="submit" color="primary">
+          <v-btn color="primary" icon type="submit">
             <v-icon>mdi-send</v-icon>
           </v-btn>
         </template>
       </v-text-field>
     </v-form>
     <Alert
+        :data="deletingItem ? deletingItem.id : null"
         :show="isAlertShow"
         @cancel="onCancelAlert"
         @submit="onSubmitAlert"
-        :data="deletingItem ? deletingItem.id : null"
     >
-      <slot name="alert" :item="deletingItem">
+      <slot :item="deletingItem" name="alert">
       </slot>
     </Alert>
   </widjet>

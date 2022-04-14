@@ -9,7 +9,7 @@
       v-model.trim="authData.email"
       prepend-icon="mdi-account"
     >
-      <template slot="prepend">
+      <template v-slot:prepend>
         <v-icon color="blue-grey lighten-1">mdi-account</v-icon>
       </template>
     </v-text-field>
@@ -23,7 +23,7 @@
       type="password"
       prepend-icon="mdi-lock"
     >
-      <template slot="prepend">
+      <template v-slot:prepend>
         <v-icon color="blue-grey lighten-1">mdi-lock</v-icon>
       </template></v-text-field
     >

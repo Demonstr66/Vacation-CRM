@@ -1,8 +1,8 @@
 <template>
   <div>
     <span> Welcome! </span>
-    <v-btn @click="click">Test()</v-btn>
-    <v-btn @click="click2">console user</v-btn>
+    <v-btn @click="Test1">Test1</v-btn>
+    <v-btn @click="Test2">logUser</v-btn>
     <br />
   </div>
 </template>
@@ -23,10 +23,17 @@ export default {
     duration: null,
   }),
   methods: {
-    async click() {
-      this.$store.dispatch("testSendResponse");
+    async Test1() {
+      this.$store.dispatch("workspace/storage/generate", {
+        fullName: 'Филиппов Дмитрий Олегович',
+        post: 'Старший спец',
+        date: 'сегодня',
+        vstart: 'завтра',
+        vend: 'послезавтра',
+        vdays: '2',
+      });
     },
-    click2() {
+    Test2() {
       this.$store.dispatch("logUser");
     },
   },

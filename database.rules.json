@@ -1,20 +1,27 @@
+//{
+//  "rules": {
+//    "users": {
+//      "$wid": {
+//        "$uid": {
+//          ".read": "auth.token.workspace.contains($wid)",
+//          ".write": "auth.token.workspace.contains($wid) && (auth.token.admin === true || auth.uid.contains($uid))"
+//        },
+//        ".read": "auth.token.workspace.contains($wid)",
+//        ".write": "auth.token.workspace.contains($wid) && auth.token.admin === true"
+//      }
+//    },
+//    "workspaces": {
+//      "$wid": {
+//        ".read": "auth.token.workspace.contains($wid)",
+//        ".write": "auth.token.workspace.contains($wid) && auth.token.admin === true"
+//      }
+//    }
+//  }
+//}
+
 {
   "rules": {
-    "users": {
-      "$wid": {
-        "$uid": {
-          ".read": "auth.token.workspace.contains($wid)",
-          ".write": "auth.token.workspace.contains($wid) && (auth.token.admin === true || auth.uid.contains($uid))"
-        },
-        ".read": "auth.token.workspace.contains($wid)",
-        ".write": "auth.token.workspace.contains($wid) && auth.token.admin === true"
-      }
-    },
-    "workspaces": {
-      "$wid": {
-        ".read": "auth.token.workspace.contains($wid)",
-        ".write": "auth.token.workspace.contains($wid) && auth.token.admin === true"
-      }
-    }
+    ".read": "auth.uid != ''",
+    ".write": "auth.uid != ''"
   }
 }

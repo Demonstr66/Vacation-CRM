@@ -1,4 +1,3 @@
-import { mdiVideoMinusOutline } from "@mdi/js";
 import {
   getDatabase, ref, set, child, get, onValue,
   off,
@@ -41,8 +40,22 @@ export default {
         }
       })
     },
-    update({ }, data) {
+    update({rootGetters }, data) {
+      return new Promise(async (res, rej) => {
+        try {
+          const db = getDatabase();
+          const w = rootGetters['workspace/get']
+          console.log(w)
+          console.log(data)
+          const workspace = defWorkspace(w, data)
 
+          await set(ref(db, 'workspaces/' + data.id), workspace)
+
+          res()
+        } catch (e) {
+          rej(e)
+        }
+      })
     },
     delete({ }, data) {
 
@@ -240,11 +253,12 @@ export default {
     archivingUser({rootGetters}, uid) {
       return new Promise(async (res, rej) => {
         try {
+          console.log('archivingUser')
           const db = getDatabase();
           const wid = rootGetters['workspace/get'].id
           const user = rootGetters['getUserById']
 
-          await set(ref(db, `archive/${wid}/${uid}`), true)
+          await set(ref(db, `users/${wid}/${uid}/archive`), true)
 
           res()
         } catch (e) {
@@ -255,11 +269,26 @@ export default {
     restoreUser({rootGetters}, uid) {
       return new Promise(async (res, rej) => {
         try {
+          console.log('workspace/db/restoreUser')
           const db = getDatabase();
           const wid = rootGetters['workspace/get'].id
 
-          await set(ref(db, `users/${wid}/${uid}/archive`), true)
+          await set(ref(db, `users/${wid}/${uid}/archive`), false)
 
+          res()
+        } catch (e) {
+          rej(e)
+        }
+      })
+    },
+    deleteUser({rootGetters}, uid) {
+      return new Promise(async (res, rej) => {
+        try {
+          const db = getDatabase();
+          const wid = rootGetters['workspace/get'].id
+
+          const userRef = ref(db, `users/${wid}/${uid}/`)
+          remove(userRef)
           res()
         } catch (e) {
           rej(e)

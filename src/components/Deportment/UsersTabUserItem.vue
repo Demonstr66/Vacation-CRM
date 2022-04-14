@@ -2,6 +2,7 @@
   <v-list-item
       :class="{ dropable: draggingEl.is }"
       :data-user="user.uid"
+      class="user-list-item"
       @dragenter="onDrugEnter"
       @dragleave="onDrugLeave"
       @dragover="onDrugOver"
@@ -14,6 +15,7 @@
             <v-col cols="12" sm="9">
               <v-list-item-title class="subtitle-1">
                 {{ user.fullName }}
+                <span v-if="user.uid == currentUID">(Вы)</span>
                 <v-chip
                     :color="
                     user.role != 'admin'
@@ -53,9 +55,9 @@
                 {{ user.email }}
               </v-list-item-subtitle>
             </v-col>
-            <v-col cols="12" sm="3">
+            <v-col align-self="center" cols="12" sm="3">
               <div v-if="tempTask(user.uid).length !== 0"
-                   class="d-flex flex-wrap justify-start justify-md-end mt-2 mt-md-0">
+                   class="d-flex flex-wrap mt-2 mt-md-0 justify-start justify-md-end">
                 <v-chip
                     v-for="(task, index) in tempTask(user.uid)"
                     :key="index"
@@ -75,7 +77,9 @@
                   <v-list-item-subtitle>{{ taskTitle(task.id) }}</v-list-item-subtitle>
                 </v-chip>
               </div>
-              <small v-else>Задач нет</small>
+              <div v-else class="text-left text-md-right">
+                <small>Задач нет</small>
+              </div>
             </v-col>
           </v-row>
         </v-col>
@@ -108,6 +112,7 @@
           <main-tools
               v-else
               :active="user.active"
+              :disable="{'delete': user.uid == currentUID}"
               @delete="onDeleteUser(user.uid)"
               @edit="onEdit(user.uid)"
           ></main-tools>
@@ -119,11 +124,11 @@
 </template>
 <script>
 import MainTools from "../user/tools/main.vue"
-import {posts, tasks, teams} from "@/mixins/computedData";
+import {currentUID, posts, tasks, teams} from "@/mixins/computedData";
 
 export default {
   name: 'user-item',
-  mixins: [teams, tasks, posts],
+  mixins: [teams, tasks, posts, currentUID],
   components: {MainTools},
   props: {
     user: {},
@@ -252,6 +257,15 @@ export default {
   }
   to {
     background-position: 16px 0, 0 100%, 0 0, 100% 16px;
+  }
+}
+
+.user-list-item {
+  background-color: rgb(25, 118, 210, 0);
+  transition: background-color 0.5s ease-in-out;
+
+  &:hover {
+    background-color: rgb(25, 118, 210, 0.12);
   }
 }
 </style>

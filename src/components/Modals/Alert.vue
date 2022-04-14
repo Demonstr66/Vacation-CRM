@@ -1,5 +1,5 @@
 <template>
-  <v-dialog v-model="isShow" persistent max-width="290">
+  <v-dialog v-model="isShow" persistent max-width="400" @keyup.esc="onCancel">
     <v-card>
       <v-card-title>Внимание</v-card-title>
       <v-card-text>
@@ -7,8 +7,9 @@
       </v-card-text>
       <v-card-actions>
         <v-spacer></v-spacer>
-        <v-btn color="red darken-1" text @click="onCancel"> Отмена </v-btn>
-        <v-btn color="green darken-1" text @click="onSubmit"> ОК </v-btn>
+          <v-btn color="red darken-1" text @click="onCancel"> Отмена </v-btn>
+          <v-btn color="green darken-1" text @click="onSubmit" > ОК
+          </v-btn>
       </v-card-actions>
     </v-card>
   </v-dialog>

@@ -23,39 +23,29 @@
             </v-text-field>
           </v-col>
           <v-col :cols="12 / cols">
-            <v-autocomplete
+            <v-select
               label="Должность"
               name="post"
               :append-icon="disPost ? 'mdi-lock' : ''"
               clearable
               placeholder="Должность не указана"
               :items="posts"
+              item-text="title"
+              item-value="id"
               hide-selected
-              single-line
               v-model="user.post"
               @change.once="changed"
               :disabled="disPost"
-              item-text="title"
-              item-value="id"
             >
-              <template slot="prepend">
+              <template v-slot:prepend>
                 <v-icon color="blue-grey lighten-1"
                   >mdi-file-account-outline</v-icon
                 >
               </template>
-              <template v-slot:selection="data">
-                {{ data.item.title }}
-              </template>
-              <template v-slot:item="data">
-                <v-list-item-content>
-                  <v-list-item-title v-text="data.item.title">
-                  </v-list-item-title>
-                </v-list-item-content>
-              </template>
-            </v-autocomplete>
+            </v-select>
           </v-col>
           <v-col :cols="12 / cols">
-            <v-autocomplete
+            <v-select
               label="Команда"
               :append-icon="disTeams ? 'mdi-lock' : ''"
               placeholder="Не в команде"
@@ -67,30 +57,13 @@
               item-text="title"
               item-value="id"
             >
-              <template slot="prepend">
+              <template v-slot:prepend>
                 <v-icon color="blue-grey lighten-1">mdi-account-group</v-icon>
               </template>
-              <template v-slot:selection="data">
-                <v-chip
-                  v-bind="data.attrs"
-                  :input-value="data.selected"
-                  outlined
-                  small
-                  label
-                >
-                  {{ data.item.title }}
-                </v-chip>
-              </template>
-              <template v-slot:item="data">
-                <v-list-item-content>
-                  <v-list-item-title v-text="data.item.title">
-                  </v-list-item-title>
-                </v-list-item-content>
-              </template>
-            </v-autocomplete>
+            </v-select>
           </v-col>
           <v-col :cols="12 / cols">
-            <v-autocomplete
+            <v-select
               label="Задачи"
               :append-icon="disTasks ? 'mdi-lock' : ''"
               multiple
@@ -103,29 +76,13 @@
               item-text="title"
               item-value="id"
             >
-              <template slot="prepend">
+              <template v-slot:prepend>
                 <v-icon color="blue-grey lighten-1"
                   >mdi-format-list-bulleted-square</v-icon
                 >
               </template>
-              <template v-slot:selection="data">
-                <v-chip
-                  v-bind="data.attrs"
-                  :input-value="data.selected"
-                  outlined
-                  small
-                  label
-                >
-                  {{ data.item.title }}
-                </v-chip>
-              </template>
-              <template v-slot:item="data">
-                <v-list-item-content>
-                  <v-list-item-title v-text="data.item.title">
-                  </v-list-item-title>
-                </v-list-item-content>
-              </template>
-            </v-autocomplete>
+
+            </v-select>
           </v-col>
         </v-row>
       </v-card-text>
@@ -141,12 +98,13 @@
 </template>
 
 <script>
-import { mapState, mapGetters } from "vuex";
-import { defUser } from "../../../plugins/schema";
+import { defUser } from "@/plugins/schema";
 import {inputRules} from "@/mixins/inputRules";
+import {posts, tasks, teams} from "@/mixins/computedData";
+import {userData} from "@/mixins/workspaceHelper";
 
 export default {
-  mixins:[inputRules],
+  mixins:[inputRules, teams, tasks, posts, userData],
   props: {
     data: {
       type: Object,
@@ -182,33 +140,17 @@ export default {
     this.update();
   },
   computed: {
-    ...mapState({
-      teams: (state) =>
-        state.workspace.workspace ? state.workspace.workspace.teams : [],
-      tasks: (state) =>
-        state.workspace.workspace ? state.workspace.workspace.tasks : [],
-      posts: (state) =>
-        state.workspace.workspace ? state.workspace.workspace.posts : [],
-    }),
     disEmail() {
-      return typeof this.disabled == "boolean"
-        ? this.disabled
-        : this.disabled.email || false;
+      return this.isDisableItem('email')
     },
     disPost() {
-      return typeof this.disabled == "boolean"
-        ? this.disabled
-        : this.disabled.post || false;
+      return this.isDisableItem('post')
     },
     disTeams() {
-      return typeof this.disabled == "boolean"
-        ? this.disabled
-        : this.disabled.teams || false;
+      return this.isDisableItem('team')
     },
     disTasks() {
-      return typeof this.disabled == "boolean"
-        ? this.disabled
-        : this.disabled.tasks || false;
+      return this.isDisableItem('tasks')
     },
     disSubmit() {
       return typeof this.disabled == "boolean"
@@ -220,43 +162,21 @@ export default {
     }
   },
   methods: {
+    isDisableItem(item) {
+      return typeof this.disabled == "boolean"
+          ? this.disabled
+          : this.disabled[item] || false;
+    },
     onSubmit() {
       if (this.disSubmit || this.noaction) return;
 
-      this.saveData("user/update", this.user)
-        .then(this.successMsg())
-        .then((this.isChanged = false))
-        .catch((err) => this.successMsg(err));
-    },
-    saveData(saveMethod, user) {
-      return this.$store.dispatch(saveMethod, {
-        uid: user.uid,
-        email: user.email,
-        post: user.post,
-        team: user.team,
-        tasks: user.tasks,
-        workspace: user.workspace,
-      });
-    },
-    successMsg() {
-      this.$store.dispatch("setMessage", {
-        type: "success",
-        text: "Данные сохранены",
-      });
-    },
-    errMsg(err) {
-      this.$store.dispatch("setMessage", {
-        type: "error",
-        text: err.message,
-        code: err.code,
-      });
+      this.mixSaveUserDataToDb(false, this.user)
     },
     changed() {
       this.isChanged = true;
-      this.$emit("change", this.user);
+      this.$emit("change");
     },
     reset() {
-      console.log("reset");
       this.$refs.accUserForm.reset();
       this.user = defUser();
     },

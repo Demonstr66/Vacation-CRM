@@ -1,106 +1,133 @@
+import {messageHelper} from "@/mixins/messageHelper";
+
 const short = require("short-uuid");
 import {defUser} from "../plugins/schema.js";
+import {dataMethods} from "@/mixins/dataHelper";
 
-const dataMethods = {
-    methods: {
-        mixSaveData({saveMethod, isNew, data}) {
-            return this.$store.dispatch(saveMethod, data)
-                .then(res => this.mixSuccess(isNew
-                    ? "Данные сохранены"
-                    : "Данные обновлены"))
-                .catch((err) => this.mixError(err));
-        },
-        mixDeleteData({delMethod, id, msg = "Данные удалены"}) {
-            return this.$store.dispatch(delMethod, id)
-                .then(res => this.mixSuccess(msg))
-                .catch((err) => this.mixError(err));
-        },
-        mixSuccess(msg) {
-            console.log('msg suc')
-            this.$store.dispatch("setMessage", {
-                type: "success",
-                text: msg,
-            });
-        },
-        mixError(err) {
-            console.log('msg err')
-            this.$store.dispatch("setMessage", {
-                type: "error",
-                text: err.message,
-                code: err.code,
-            });
-        }
-    }
-}
 
 const taskMethods = {
-    mixins: [dataMethods],
-    methods: {
-        mixSaveTask(isNew, data) {
-            let saveMethod = "workspace/addTask";
+  mixins: [dataMethods],
+  methods: {
+    mixSaveTask(isNew, data) {
+      let saveMethod = "workspace/addTask";
 
-            return this.mixSaveData({saveMethod, data, isNew})
-        },
-        mixDeleteTask(id) {
-            let delMethod = "workspace/db/removeTask";
+      return this.mixSaveData({saveMethod, data, isNew})
+    },
+    mixDeleteTask(id) {
+      let delMethod = "workspace/db/removeTask";
 
-            return this.mixDeleteData({delMethod, id})
-        }
+      return this.mixDeleteData({delMethod, id})
     }
+  }
 }
 
 const teamMethods = {
-    mixins: [dataMethods],
-    methods: {
-        mixSaveTeam(isNew, data) {
-            let saveMethod = "workspace/addTeam";
+  mixins: [dataMethods],
+  methods: {
+    mixSaveTeam(isNew, data) {
+      let saveMethod = "workspace/addTeam";
 
-            return this.mixSaveData({saveMethod, data, isNew})
-        },
-        mixDeleteTeam(id) {
-            let delMethod = "workspace/db/removeTeam";
+      return this.mixSaveData({saveMethod, data, isNew})
+    },
+    mixDeleteTeam(id) {
+      let delMethod = "workspace/db/removeTeam";
 
-            return this.mixDeleteData({delMethod, id})
-        }
+      return this.mixDeleteData({delMethod, id})
     }
+  }
 }
 
 const postMethods = {
-    mixins: [dataMethods],
-    methods: {
-        mixSavePost(isNew, data) {
-            let saveMethod = "workspace/addPost";
+  mixins: [dataMethods],
+  methods: {
+    mixSavePost(isNew, data) {
+      let saveMethod = "workspace/addPost";
 
-            return this.mixSaveData({saveMethod, data, isNew})
-        },
-        mixDeletePost(id) {
-            let delMethod = "workspace/db/removePost";
+      return this.mixSaveData({saveMethod, data, isNew})
+    },
+    mixDeletePost(id) {
+      let delMethod = "workspace/db/removePost";
 
-            return this.mixDeleteData({delMethod, id})
-        }
+      return this.mixDeleteData({delMethod, id})
     }
+  }
 }
 
 const userData = {
-    mixins: [dataMethods],
-    methods: {
-        mixSaveUserDataToDb(isNew, user) {
-            let saveMethod = isNew ? "user/db/create" : "user/update";
-            let workspace = this.$store.getters["workspace/id"];
-            let uid = isNew ? short().new() : user.uid;
-            let data = defUser(user, {uid, workspace});
+  mixins: [dataMethods],
+  methods: {
+    mixSaveUserDataToDb(isNew, user) {
+      let saveMethod = isNew ? "user/db/create" : "user/update";
+      let workspace = this.$store.getters["workspace/id"];
+      let uid = isNew ? short().new() : user.uid;
+      let data = defUser(user, {uid, workspace});
 
-            return this.mixSaveData({saveMethod, data, isNew})
-        },
-        mixMoveUserToArchive(uid) {
-          return this.mixDeleteData({
-            delMethod: 'workspace/archivingUser',
-            id: uid,
-            msg: "Пользователь перемещён в архив"
-          })
-        }
+      return this.mixSaveData({saveMethod, data, isNew})
+    },
+    mixMoveUserToArchive(uid) {
+      return this.mixDeleteData({
+        delMethod: 'workspace/archivingUser',
+        id: uid,
+        msg: "Пользователь перемещён в архив"
+      })
+    },
+    mixRestoreUserFromArchive(uid) {
+      console.log('mixRestoreUserFromArchive')
+      return this.mixDeleteData({
+        delMethod: 'workspace/restoreUser',
+        id: uid,
+        msg: "Пользователь восстановлен"
+      })
+    },
+    mixDeleteUser(uid) {
+      return this.mixDeleteData({
+        delMethod: 'workspace/deleteUser',
+        id: uid,
+        msg: "Пользователь удалён"
+      })
+    },
+    mixSetTeamLeader({uid, teamId}) {
+      return this.mixSaveData({
+        saveMethod: 'workspace/setTeamLeader',
+        isNew: false,
+        data: {uid, teamId}
+      })
+    },
+    mixSetTeamTempLeader({uid, data}) {
+      data.map(teamId => {
+        this.mixSaveData({
+          saveMethod: 'workspace/setTempTeamLeader',
+          isNew: false,
+          data: {uid, teamId}
+        })
+      })
     }
+  }
 }
 
-export {userData, taskMethods, teamMethods, postMethods}
+const workspaceMethods = {
+  mixins: [dataMethods, messageHelper],
+  methods: {
+    mixSaveWorkspace(isNew, data) {
+      const saveMethod = isNew ? '' : "workspace/update";
+
+      return this.mixSaveData({saveMethod, data, isNew})
+    },
+    mixUploadFile(file) {
+      return this.mixSaveData({saveMethod: 'workspace/upload', isNew: true, data: file})
+        .then(() => this.$store.dispatch('workspace/storage/getAll'))
+    },
+    mixDownloadFile(file) {
+      return this.$store.dispatch('workspace/storage/download', file)
+        .catch(err => {this.mixError(err)})
+    },
+    mixDeleteFile(file) {
+      return this.mixDeleteData({delMethod: 'workspace/storage/delete', id: file.fullPath, msg: 'Файл' +
+          ' удалён'})
+        .then(() => this.$store.dispatch('workspace/storage/getAll'))
+    }
+  }
+}
+
+export {userData, taskMethods, teamMethods, postMethods, workspaceMethods}
 

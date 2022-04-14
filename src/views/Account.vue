@@ -1,10 +1,13 @@
 <template>
-  <v-row>
-    <v-col>
+  <v-row class="pa-0 ma-0">
+    <v-col cols="12" md="6" class="pa-0 ma-0">
       <pers-user-info :data="user"></pers-user-info>
     </v-col>
-    <v-col>
+    <v-col cols="12" md="6" class="pa-0 ma-0">
       <account-user-info :data="user" disabled></account-user-info>
+    </v-col>
+    <v-col cols="12" md="6" class="pa-0 ma-0">
+      <info></info>
     </v-col>
   </v-row>
 </template>
@@ -13,17 +16,15 @@
 import persUserInfo from "../components/user/info/personal.vue";
 import accountUserInfo from "../components/user/info/account.vue";
 
-import { mapState, mapGetters } from "vuex";
+import {mapState} from "vuex";
+import Info from "@/components/workspace/info";
 
 export default {
   components: {
+    Info,
     persUserInfo,
     accountUserInfo,
   },
-  data: () => ({
-    items: [],
-    isChanged: false
-  }),
   mounted() {
     this.$store.dispatch("user/getCurrentUserData");
   },
@@ -31,26 +32,6 @@ export default {
     ...mapState({
       user: (state) => state.user.user,
     }),
-  },
-  methods: {
-    onSubmit() {
-      this.$store
-        .dispatch("user/update", this.user)
-        .then(
-          this.$store.dispatch("setMessage", {
-            type: "success",
-            text: "Данные сохранены",
-          })
-        )
-        .then((this.isChanged = false))
-        .catch((err) =>
-          this.$store.dispatch("setMessage", {
-            type: "error",
-            text: err.message,
-            code: err.code,
-          })
-        );
-    },
   },
 };
 </script>

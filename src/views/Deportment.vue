@@ -1,6 +1,6 @@
 <template>
   <div>
-    <v-row class="ma-0 pa-0 mb-3">
+    <v-row class="ma-0 pa-0 mb-3" justify="space-between">
       <v-col cols="12" sm="9" class="mx-0 pa-0">
         <v-tabs v-model="activeTab" fixed-tabs>
           <v-tab>Сотрудники</v-tab>
@@ -44,10 +44,10 @@
         <users-tab @editUser="showEditor"></users-tab>
       </v-tab-item>
       <v-tab-item>
-        <composition></composition>
+        <structure-tab></structure-tab>
       </v-tab-item>
       <v-tab-item>
-        <archive></archive>
+        <archive-tab></archive-tab>
       </v-tab-item>
     </v-tabs-items>
     <PersonEditorModal
@@ -55,24 +55,34 @@
       :options="editor.options"
       @close="editor.show = false"
     />
+    <ImportModal
+        :show="importer.show"
+        :available-fields="usersFields"
+        data-type="persons"
+        @close="importModalClose"
+    >
+
+    </ImportModal>
   </div>
 </template>
 
 <script>
-import UsersTab from "@/components/Deportment/UsersTabDeportment.vue";
-import IconBtnWithTip from "../components/IconBtnWithTip.vue";
-import PersonEditorModal from "../components/Modals/PersonEditorModal.vue";
-import composition from "../components/Deportment/StructureTabDeportment.vue";
-import Archive from "../components/Deportment/ArchiveTabDeportment.vue";
+import UsersTab from "@/components/Deportment/UsersTab.vue";
+import IconBtnWithTip from "@/components/IconBtnWithTip.vue";
+import PersonEditorModal from "@/components/Modals/PersonEditorModal.vue";
+import StructureTab from "@/components/Deportment/StructureTab.vue";
+import ArchiveTab from "@/components/Deportment/ArchiveTab.vue";
+import ImportModal from "@/components/Modals/ImportModal";
 
 export default {
   name: "Deportment",
   components: {
+    ImportModal,
     UsersTab,
     IconBtnWithTip,
     PersonEditorModal,
-    composition,
-    Archive,
+    StructureTab,
+    ArchiveTab,
   },
   data: () => ({
     activeTab: "",
@@ -80,14 +90,25 @@ export default {
       show: false,
       options: {},
     },
+    importer: {
+      show: false,
+    },
+    usersFields: [
+      { title: "E-mail", model: "email", required: true, uniq: true },
+      { title: "ФИО", model: "fullName" },
+      { title: "Должность", model: "post" },
+      { title: "Команда", model: "team" },
+    ],
   }),
   methods: {
+    importModalClose() {
+      this.importer.show = false
+    },
     addBtnOnClick() {
       this.showEditor();
     },
     onImport() {
-      console.log("onImport");
-      // this.showImportModal = true;
+      this.importer.show = true;
     },
     onExport() {
       console.log("onExport");
