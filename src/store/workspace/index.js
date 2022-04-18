@@ -28,9 +28,9 @@ export default {
   },
   mutations: {
     set: (s, v) => {
-      if (v.teams) s.teams = Object.values(v.teams)
-      if (v.tasks) s.tasks = Object.values(v.tasks)
-      if (v.posts) s.posts = Object.values(v.posts)
+      s.teams = v.teams ? Object.values(v.teams) : []
+      s.tasks = v.tasks ? Object.values(v.tasks) : []
+      s.posts = v.posts ? Object.values(v.posts) : []
 
       s.workspace = v
     },

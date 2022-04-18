@@ -107,13 +107,13 @@ export default {
       const auth = getAuth();
       const isAuth = !!auth.currentUser
       const isEmailVerified = isAuth && auth.currentUser.emailVerified
-      const isLogining = isAuth && isEmailVerified
+      const isLogging = isAuth && isEmailVerified
 
       commit('setAuth', isAuth)
       commit('setEmailVerified', isEmailVerified)
-      commit('setLogging', isLogining)
+      commit('setLogging', isLogging)
 
-      return isLogining
+      return isLogging
     },
     resetPassword({ }, email) {
       const auth = getAuth();

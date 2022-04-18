@@ -57,7 +57,7 @@ export function excelToArray(file) {
 export function parseArrayData(data, fields, existArray) {
   return new Promise((res, rej) => {
     try {
-      console.log('exstArr: ', existArray)
+
       let findingHeaders = data.shift().map(x => normalize('' + x))
       let cols = {}
 
@@ -95,11 +95,10 @@ export function parseArrayData(data, fields, existArray) {
         if (arrOfColValues.length !== setOfColValues.size) throw new Error(`Поле "${col.title}" должно быть уникальным!`)
 
         const arrOfExistColValues = existArray.map(item => item[col.model])
-        console.log('arrOfExistColValues', arrOfExistColValues)
+
         if (!arrOfExistColValues.length) continue
-        console.log('preFilter')
+
         items = items.filter(item => arrOfExistColValues.indexOf(item[col.model]) == -1)
-        console.log('afterFilter', items)
       }
 
 

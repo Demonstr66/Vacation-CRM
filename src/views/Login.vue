@@ -1,12 +1,13 @@
 <template>
   <v-form v-model="valid" @submit.prevent="onSubmit">
     <v-text-field
+      v-model.trim="authData.email"
+      :rules="loginRules"
+      autocomplete="username"
+      class="mx-3"
+      hide-details="auto"
       label="Email"
       name="email"
-      class="mx-3"
-      :rules="loginRules"
-      hide-details="auto"
-      v-model.trim="authData.email"
       prepend-icon="mdi-account"
     >
       <template v-slot:prepend>
@@ -14,18 +15,20 @@
       </template>
     </v-text-field>
     <v-text-field
+      v-model.trim="authData.password"
+      :rules="passRules"
+      autocomplete="current-password"
+      class="mx-3"
+      hide-details="auto"
       label="Пароль"
       name="password"
-      class="mx-3"
-      :rules="passRules"
-      hide-details="auto"
-      v-model.trim="authData.password"
-      type="password"
       prepend-icon="mdi-lock"
+      type="password"
     >
       <template v-slot:prepend>
         <v-icon color="blue-grey lighten-1">mdi-lock</v-icon>
-      </template></v-text-field
+      </template>
+    </v-text-field
     >
     <div class="d-flex flex-column align-stretch mx-3 mt-2">
       <div
@@ -39,23 +42,25 @@
         "
       >
         <router-link
-          to="/register"
           class="text-decoration-none mt-1 justify-self-start ml-5"
-          >Регистрация</router-link
+          to="/register"
+        >Регистрация
+        </router-link
         >
         <router-link
-          to="/resetpassword"
           class="text-decoration-none mt-1 justify-self-end"
-          >Забыли пароль?</router-link
+          to="/resetpassword"
+        >Забыли пароль?
+        </router-link
         >
       </div>
       <v-btn
-        class="mt-7"
-        type="submit"
-        color="success"
-        outlined
         :disabled="!valid"
         :loading="loading"
+        class="mt-7"
+        color="success"
+        outlined
+        type="submit"
       >
         Войти
       </v-btn>

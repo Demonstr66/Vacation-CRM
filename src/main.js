@@ -26,26 +26,10 @@ Vue.use(VCalendar, {
 
 Vue.config.productionTip = false
 
+new Vue({
+  router,
+  store,
+  vuetify,
+  render: h => h(App)
+}).$mount('#app')
 
-
-
-
-let app = false
-
-getAuth().onAuthStateChanged(async (data) => {
-  if (app) {
-    store.dispatch('authStateChanged', data)
-    return
-  }
-
-  console.log('create app')
-  app = true
-  await store.dispatch('onBeforeLoadingHandler')
-  new Vue({
-    router,
-    store,
-    vuetify,
-    render: h => h(App)
-  }).$mount('#app')
-
-})

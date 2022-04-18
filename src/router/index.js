@@ -11,8 +11,7 @@ import EmailVerifed from '@/views/EmailVerifed'
 import EmailSending from '@/views/EmailSending'
 import Schedule from '@/views/Shedule'
 import store from '@/store'
-import { getAuth } from "firebase/auth";
-
+import {getAuth} from "firebase/auth";
 
 
 Vue.use(VueRouter)
@@ -146,30 +145,39 @@ const router = new VueRouter({
   routes
 })
 
-router.beforeEach((to, from, next) => {
+router.beforeEach(async (to, from, next) => {
+  const ready = store.getters.isReady
+  if (!ready) await store.dispatch('beforeLoading')
+  const accessLevel = store.getters.getAccessLevel
+
   console.group('beforeEach')
   console.log(getAuth().currentUser || 'Not user')
   console.log(`from: ${from.path}; to: ${to.path};`)
   console.groupEnd()
-  const accessLevel = store.getters.getAccessLevel
 
   if (!to.meta.protected) {
     next()
   } else {
-    const avalibleLevels = to.meta.protected.accessLevel
+    const availableLevels = to.meta.protected.accessLevel
 
-    if (avalibleLevels.some(x => x == accessLevel)) {
+    if (availableLevels.some(x => x == accessLevel)) {
       next()
     } else {
       let name = ''
       switch (accessLevel) {
-        case 0: name = 'Login'; break;
-        case 1: name = 'Login'; break;
-        case 2: name = 'Home'; break;
+        case 0:
+          name = 'Login';
+          break;
+        case 1:
+          name = 'Login';
+          break;
+        case 2:
+          name = 'Home';
+          break;
       }
 
       if (to.name == name) next()
-      next({ name })
+      next({name})
     }
   }
 })

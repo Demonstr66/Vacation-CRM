@@ -45,8 +45,7 @@ export default {
         try {
           const db = getDatabase();
           const w = rootGetters['workspace/get']
-          console.log(w)
-          console.log(data)
+
           const workspace = defWorkspace(w, data)
 
           await set(ref(db, 'workspaces/' + data.id), workspace)
@@ -269,7 +268,6 @@ export default {
     restoreUser({rootGetters}, uid) {
       return new Promise(async (res, rej) => {
         try {
-          console.log('workspace/DB/restoreUser')
           const db = getDatabase();
           const wid = rootGetters['workspace/get'].id
 

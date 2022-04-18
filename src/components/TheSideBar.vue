@@ -2,24 +2,24 @@
   <v-navigation-drawer
     v-model="isExpand"
     :mini-variant="!isExpand"
-    :permanent="!isMobile"
+    :permanent="!$vuetify.breakpoint.mobile"
     app
     clipped
   >
-    <v-list dense nav>
+    <v-list v-if="!loading" dense nav>
       <v-list-item
-      to="/"
-      link
-    >
-      <v-list-item-icon>
-        <v-icon>
-          mdi-home
-        </v-icon>
-      </v-list-item-icon>
-      <v-list-item-title>
-        На главную
-      </v-list-item-title>
-    </v-list-item>
+        link
+        to="/"
+      >
+        <v-list-item-icon>
+          <v-icon>
+            mdi-home
+          </v-icon>
+        </v-list-item-icon>
+        <v-list-item-title>
+          На главную
+        </v-list-item-title>
+      </v-list-item>
       <v-divider></v-divider>
       <v-list-item
         v-for="(link, idx) in links"
@@ -37,6 +37,16 @@
         </v-list-item-title>
       </v-list-item>
     </v-list>
+    <v-list v-else dense nav>
+      <v-skeleton-loader type="list-item">
+      </v-skeleton-loader>
+      <v-divider></v-divider>
+      <v-skeleton-loader
+        v-for="(link, idx) in links"
+        :key="idx"
+        type="list-item"
+      />
+    </v-list>
   </v-navigation-drawer>
 </template>
 
@@ -48,26 +58,18 @@ export default {
       type: Boolean,
       required: true,
     },
+    loading: {
+      type: Boolean,
+      default: false
+    }
   },
   data: () => ({
-    isMobile: false,
     links: [
       {path: 'Schedule', icon: 'mdi-folder', title: 'Графики отпусков'},
       {path: 'Vacations', icon: 'mdi-star', title: 'Мои отпуска'},
       {path: 'Deportment', icon: 'mdi-account-group', title: 'Команда'},
     ]
   }),
-
-  beforeDestroy() {
-    if (typeof window === "undefined") return;
-
-    window.removeEventListener("resize", this.onResize, {passive: true});
-  },
-  mounted() {
-    this.onResize();
-
-    window.addEventListener("resize", this.onResize, {passive: true});
-  },
   computed: {
     isExpand: {
       get: function () {
@@ -76,11 +78,6 @@ export default {
       set: function (val) {
         if (!val) this.$emit("close");
       },
-    },
-  },
-  methods: {
-    onResize() {
-      this.isMobile = window.innerWidth < 1264;
     },
   },
 };

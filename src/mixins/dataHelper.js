@@ -38,16 +38,22 @@ export const dataMethods = {
         .then(() => this.mixSuccess(msg))
         .catch((err) => this.mixError(err));
     },
-    asyncCallback({method, data}) {
+    asyncCallback({callback, data}) {
       return new Promise(async (res, rej) => {
         try {
-          await method(data)
+          await callback(data)
           res()
         } catch (e) {
           rej(e)
         }
       })
-    }
+    },
+
+    promiseMessages({promise, msg}) {
+      return promise
+        .then(() => this.mixSuccess(msg))
+        .catch((err) => this.mixError(err));
+    },
   }
 }
 

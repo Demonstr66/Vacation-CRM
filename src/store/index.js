@@ -8,6 +8,7 @@ import access from './access'
 import schedules from './schedules'
 import DB from './DB'
 import {getAuth} from "firebase/auth";
+import router from '@/router'
 
 const axios = require('axios');
 
@@ -16,37 +17,49 @@ Vue.use(Vuex)
 export default new Vuex.Store({
   state: {
     appName: 'Vacation CRM',
-    accessLevel: 0
+    accessLevel: 0,
+    ready: false,
+    wid: null
   },
   getters: {
+    isReady: (s) => s.ready,
     getAppName: (s) => s.appName,
     getAccessLevel: (s) => s.accessLevel,
+    getWID: (s) => s.wid
   },
   mutations: {
-    setAccessLevel: (s, v) => s.accessLevel = v
+    setAccessLevel: (s, v) => s.accessLevel = v,
+    setReady: (s, v) => s.ready = v,
+    setWID: (s, v) => s.wid = v
   },
   actions: {
-    async onBeforeLoadingHandler({dispatch}) {
-      try {
-        if (await dispatch('setAuthState')) {
-          await dispatch('user/getCurrentUserData')
-          await dispatch('workspace/getAllData')
-          dispatch('user/db/setAsActive')
-        }
-      } catch (e) {
-        console.error(e)
-        dispatch("signOut")
-      }
+    async beforeLoading({commit, dispatch}) {
+      return new Promise((res, rej) => {
+        try {
+          getAuth().onAuthStateChanged(async (user) => {
+            commit('setReady', true)
+            dispatch('authStateChanged')
 
-      dispatch('setAccessLevel')
-    },
-    onLoadHandler({dispatch, commit}) {
-      dispatch('onSignIn')
+            if (user) {
+              commit('setWID', user.photoURL)
+              await dispatch('user/getCurrentUserData')
+              await dispatch('workspace/getAllData')
+              dispatch('user/db/setAsActive')
+            }
+
+            res()
+          })
+        } catch (e) {
+          console.log(e)
+          dispatch('signOut').then(() => {
+            router.push({name: 'Login'})
+          })
+        }
+      })
     },
     authStateChanged({dispatch}) {
-      dispatch('setAuthState').then(
-        dispatch('setAccessLevel')
-      )
+      dispatch('setAuthState')
+      dispatch('setAccessLevel')
     },
     clearAllPersData({commit}) {
       commit('setAuth', false)
@@ -55,9 +68,6 @@ export default new Vuex.Store({
 
       commit('user/clear')
       commit('workspace/clear')
-    },
-    async onSignIn({dispatch}) {
-      const auth = getAuth();
     },
     setAccessLevel({commit, getters}) {
       const isAuth = getters['isAuth']

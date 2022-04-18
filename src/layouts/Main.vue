@@ -34,7 +34,7 @@ export default {
     title: String,
   },
   data: () => ({
-    expandNavigation: true,
+    expandNavigation: false,
   }),
   methods: {
     onExpandClick() {

@@ -14,7 +14,7 @@ const taskMethods = {
       return this.mixSaveData({saveMethod, data, isNew})
     },
     mixDeleteTask(id) {
-      let delMethod = "workspace/DB/removeTask";
+      let delMethod = "workspace/db/removeTask";
 
       return this.mixDeleteData({delMethod, id})
     }
@@ -30,7 +30,7 @@ const teamMethods = {
       return this.mixSaveData({saveMethod, data, isNew})
     },
     mixDeleteTeam(id) {
-      let delMethod = "workspace/DB/removeTeam";
+      let delMethod = "workspace/db/removeTeam";
 
       return this.mixDeleteData({delMethod, id})
     }
@@ -46,7 +46,7 @@ const postMethods = {
       return this.mixSaveData({saveMethod, data, isNew})
     },
     mixDeletePost(id) {
-      let delMethod = "workspace/DB/removePost";
+      let delMethod = "workspace/db/removePost";
 
       return this.mixDeleteData({delMethod, id})
     }
@@ -57,7 +57,7 @@ const userData = {
   mixins: [dataMethods],
   methods: {
     mixSaveUserDataToDb(isNew, user) {
-      let saveMethod = isNew ? "user/DB/create" : "user/update";
+      let saveMethod = isNew ? "user/db/create" : "user/update";
       let workspace = this.$store.getters["workspace/id"];
       let uid = isNew ? short().new() : user.uid;
       let data = defUser(user, {uid, workspace});

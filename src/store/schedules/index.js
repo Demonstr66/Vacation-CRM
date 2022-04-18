@@ -5,16 +5,19 @@ import shortUUID from "short-uuid";
 export default {
   namespaced: true,
   state: () => ({
-    schedules: null
+    schedules: null,
+    ready: false
   }),
   getters: {
-    get: (s) => s.schedules || []
+    get: (s) => s.schedules || [],
+    isReady: (s) => s.ready
   },
   mutations: {
     set: (s, v) => {
-      console.log('123', v)
-      s.schedules = Array.isArray(v) ? v : Object.values(v)
-    }
+      if (!s.ready) s.ready = true
+      s.schedules = v
+    },
+    setReady: (s, v) => s.ready = v,
   },
   actions: {
     get({}) {
@@ -34,7 +37,7 @@ export default {
     },
     delete({rootGetters, dispatch}, id) {
       const wid = rootGetters['workspace/get'].id
-      if (!id || !wid) return Promise.reject( new Error('Что-то пошло не так'))
+      if (!id || !wid) return Promise.reject(new Error('Что-то пошло не так'))
 
       const path = `schedules/${wid}`
       const key = id

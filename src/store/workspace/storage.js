@@ -98,7 +98,6 @@ export default {
 
           listAll(listRef)
             .then((data) => {
-              console.log(data.items)
               commit('setFile', data.items[0])
               res()
             })
