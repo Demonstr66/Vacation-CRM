@@ -26,10 +26,10 @@ export default {
     async Test1() {
       this.$store.dispatch("workspace/storage/generate", {
         fullName: 'Филиппов Дмитрий Олегович',
-        post: 'Старший спец',
-        date: 'сегодня',
-        vstart: 'завтра',
-        vend: 'послезавтра',
+        post: 'Старший специалист по программированию и обработке данных',
+        date: '"04" апреля 2022г.',
+        vstart: '"05" апреля 2022г.',
+        vend: '"06" апреля 2022u.',
         vdays: '2',
       });
     },

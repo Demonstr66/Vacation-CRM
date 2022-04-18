@@ -1,18 +1,18 @@
 <template>
-  <v-tooltip :bottom="bottom">
+  <v-tooltip :bottom="bottom" :color="tooltipcolor ? tooltipcolor : ''" transition="fade-transition">
     <template v-slot:activator="{ on, attrs }">
       <v-btn
-        :disabled="disable"
-        :fab="fab"
-        :icon="!fab"
-        :color="fab ? 'white' : ''"
-        v-bind="attrs"
-        v-on="on"
-        :small="fab || small"
-        @click="onClick($event)"
-        :class="btnClass"
+          :class="btnClass"
+          :color="fab ? 'white' : ''"
+          :disabled="disable"
+          :fab="fab"
+          :icon="!fab"
+          :small="fab || small"
+          v-bind="attrs"
+          @click="onClick($event)"
+          v-on="on"
       >
-        <v-icon :color="color"> {{ icon }} </v-icon>
+        <v-icon :color="color"> {{ icon }}</v-icon>
       </v-btn>
     </template>
     <span><slot></slot></span>
@@ -33,6 +33,7 @@ export default {
     },
     icon: String,
     color: String,
+    tooltipcolor: String,
     btnClass: {
       type: String,
       default: "",

@@ -44,6 +44,25 @@ export function defWorkspace(...data) {
   return res
 }
 
+export function defSchedule(...data) {
+  let res = {
+    id: '',
+    name: '',
+    startDate: '',
+    endDate: '',
+    year: '',
+    isTemp: true,
+    isActive: false
+  }
+
+  if (data) {
+    data.map(d => {
+      res = updateObject(res, d)
+    })
+  }
+  return res
+}
+
 export function defTask(...data) {
   let res = {
     id: '',
@@ -57,6 +76,7 @@ export function defTask(...data) {
   }
   return res
 }
+
 export function defPost(...data) {
   let res = {
     id: '',
@@ -92,6 +112,6 @@ export function updateObject(obj1, obj2) {
   for (let item in obj1) {
     obj[item] = obj1[item]
     if (obj2[item] !== undefined) obj[item] = obj2[item]
- }
+  }
   return obj
 }

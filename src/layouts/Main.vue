@@ -22,7 +22,7 @@
 </template>
 
 <script>
-import SideNavigation from "../components/SideNavigation.vue";
+import SideNavigation from "../components/TheSideBar.vue";
 import Appbar from "../components/Appbar.vue";
 
 export default {

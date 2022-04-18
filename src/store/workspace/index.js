@@ -64,7 +64,7 @@ export default {
       return new Promise(async (res, rej) => {
         try {
           const auth = getAuth();
-          // const ws = await dispatch('db/read', auth.currentUser.photoURL)
+          // const ws = await dispatch('DB/read', auth.currentUser.photoURL)
           // commit('set', ws)
           dispatch('db/subscribe', {
             path: 'workspaces/' + auth.currentUser.photoURL,
@@ -106,13 +106,31 @@ export default {
         }
       })
     },
+    getSchedules({dispatch}) {
+      return new Promise(async (res, rej) => {
+        try {
+          const auth = getAuth();
+
+          dispatch('schedules/subscribe', {
+            wid: auth.currentUser.photoURL
+          }, {
+            root: true
+          })
+
+          res()
+        } catch (e) {
+          rej(e)
+        }
+      })
+    },
     getAllData({dispatch, commit}) {
       return new Promise(async (res, rej) => {
         try {
           Promise.all([
             dispatch('getInfo'),
             dispatch('getUsers'),
-            dispatch('getFiles')
+            dispatch('getFiles'),
+            dispatch('getSchedules')
           ]).then(res()).catch(e => {
             rej(e)
           })

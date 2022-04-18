@@ -269,7 +269,7 @@ export default {
     restoreUser({rootGetters}, uid) {
       return new Promise(async (res, rej) => {
         try {
-          console.log('workspace/db/restoreUser')
+          console.log('workspace/DB/restoreUser')
           const db = getDatabase();
           const wid = rootGetters['workspace/get'].id
 

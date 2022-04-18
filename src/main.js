@@ -7,6 +7,10 @@ import { initializeApp } from "firebase/app";
 import { getAuth } from "firebase/auth";
 import { getDatabase } from "firebase/database";
 import { firebaseConfig } from './plugins/secure'
+import VCalendar from 'v-calendar';
+
+const fapp = initializeApp(firebaseConfig);
+getDatabase(fapp)
 
 const moment = require('moment')
 require('moment/locale/ru')
@@ -15,14 +19,15 @@ Vue.use(require('vue-moment'), {
   moment
 })
 
+
+Vue.use(VCalendar, {
+  componentPrefix: 'vc'
+});
+
 Vue.config.productionTip = false
 
-// Vue.config.errorHandler = function(err, vm, info) {
-//   console.log(`Error: ${err.toString()}\nInfo: ${info}`);
-// }
 
-const fapp = initializeApp(firebaseConfig);
-getDatabase(fapp)
+
 
 
 let app = false

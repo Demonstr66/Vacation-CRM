@@ -94,6 +94,7 @@ export default {
       const now = this.$moment();
       const currDate = this.$moment(date);
 
+
       return currDate >= now;
     },
     reset() {

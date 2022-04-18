@@ -5,9 +5,9 @@ export const workspace = {
         ...mapGetters("workspace", {workspace: 'get'}),
     }
 }
-export const file = {
+export const existTempFile = {
     computed: {
-        ...mapGetters("workspace/storage", ['file']),
+        ...mapGetters("workspace/storage", {existTempFile: 'file'}),
     }
 }
 export const teams = {
@@ -18,6 +18,11 @@ export const teams = {
 export const tasks = {
     computed: {
         ...mapGetters("workspace", ['tasks']),
+    }
+}
+export const schedules = {
+    computed: {
+        ...mapGetters("schedules", {schedules: 'get'}),
     }
 }
 

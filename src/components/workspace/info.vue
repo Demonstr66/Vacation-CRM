@@ -5,7 +5,7 @@
       <v-card-text>
         <v-row v-if="!!workspace">
           <v-col :cols="12 / cols">
-            <div class="d-flex align-center">
+            <div class="d-flex align-top">
               <v-text-field
                   v-model.trim="workspace.id"
                   dense
@@ -23,9 +23,23 @@
                 Код может понадобитьсья при регистрации,<br>
                 чтобы присоедениться к Вашему пространству
               </icon-btn-with-tip>
-              <icon-btn-with-tip icon="mdi-content-copy">
-                Копировать
-              </icon-btn-with-tip>
+              <v-fab-transition>
+                <icon-btn-with-tip
+                    v-if="!copiedSuccessful"
+                    icon="mdi-content-copy"
+                    @click="copyToClipboard(workspace.id)"
+                >
+                  Копировать
+                </icon-btn-with-tip>
+                <icon-btn-with-tip
+                    v-if="copiedSuccessful"
+                    color="success"
+                    icon="mdi-check-all"
+                    tooltipcolor="success"
+                >
+                  Успешно
+                </icon-btn-with-tip>
+              </v-fab-transition>
             </div>
           </v-col>
           <v-col :cols="12 / cols">
@@ -58,92 +72,6 @@
               </template>
             </v-text-field>
           </v-col>
-          <v-col :cols="12 / cols">
-            <v-file-input
-                v-model="templateFile"
-                :color="!!file ? 'warning' : ''"
-                :messages="!!file ? 'Существующий файл будет заменён' : ''"
-                accept=".docx"
-                class="mt-2"
-                placeholder="Шаблон файла для отпуска"
-                single-line
-                type="file"
-            >
-
-            </v-file-input>
-            <v-expand-transition>
-              <div v-if="!!templateFile">
-                <v-btn block color="success" text @click="uploadFile">
-                  Загрузить
-                </v-btn>
-              </div>
-            </v-expand-transition>
-          </v-col>
-          <v-col :cols="12 / cols">
-            <v-sheet class="pa-3 text-left" elevation="0" outlined rounded>
-              <v-skeleton-loader v-if="isLoading" max-height="120px" max-width="96px"
-                                 type="image">
-
-              </v-skeleton-loader>
-              <v-fade-transition v-else-if="!!file">
-                <div class="d-flex justify-space-between">
-                  <v-sheet elevation="0">
-                    <v-card class="d-flex" elevation="0" flat>
-                      <v-img aspect-ratio="1" src="@/assets/docx.png" width="100px">
-                        <v-fade-transition>
-                          <v-overlay v-if="isDeleting || isDownloading"
-                                     :color="isDownloading ? 'success' : 'error'"
-                                     :value="true"
-                                     absolute
-                          >
-                            <v-progress-circular
-                                indeterminate
-                                size="48"
-                            ></v-progress-circular>
-                          </v-overlay>
-                        </v-fade-transition>
-                      </v-img>
-                      <div class="d-flex flex-column">
-                        <icon-btn-with-tip btnClass="float-end" color="error"
-                                           icon="mdi-close"
-                                           small
-                                           @click="deleteFile(file)">
-                          Удалить
-                        </icon-btn-with-tip>
-                        <icon-btn-with-tip btnClass="float-end" color="primary" icon="mdi-download"
-                                           small
-                                           @click="downloadFile(file)">
-                          Скачать
-                        </icon-btn-with-tip>
-                      </div>
-                    </v-card>
-                    <span>{{ file.name }}</span>
-                  </v-sheet>
-                  <div>
-                    <ul>
-                      <li><span class="font-italic">{%fullName%}</span> - ФИО
-                      </li>
-                      <li><span class="font-italic">{%post%}</span> - Должность
-                      </li>
-                      <li><span class="font-italic">{%date%}</span> - Текущая дата
-                      </li>
-                      <li><span class="font-italic">{%vstart%}</span> - Дата начала отпуска
-                      </li>
-                      <li><span class="font-italic">{%vend%}</span> - Дата конца отпуска
-                      </li>
-                      <li><span class="font-italic">{%vdays%}</span> - Дней отпуска
-                      </li>
-                    </ul>
-                  </div>
-                </div>
-              </v-fade-transition>
-              <span v-else>
-                Файл ещё не загружен
-              </span>
-            </v-sheet>
-          </v-col>
-          <v-col :cols="12 / cols">
-          </v-col>
         </v-row>
       </v-card-text>
       <v-card-actions v-if="!noaction && !disabled">
@@ -161,11 +89,12 @@
 import IconBtnWithTip from "@/components/IconBtnWithTip";
 import {defWorkspace} from "@/plugins/schema";
 import {workspaceMethods} from "@/mixins/workspaceHelper";
-import {file, workspace} from "@/mixins/computedData";
+import {workspace} from "@/mixins/computedData";
+import {copyToClipboard} from "@/mixins/dataHelper";
 
 export default {
   components: {IconBtnWithTip},
-  mixins: [workspaceMethods, workspace, file],
+  mixins: [workspaceMethods, workspace, copyToClipboard],
   props: {
     disabled: {
       type: [Boolean],
@@ -186,10 +115,6 @@ export default {
   },
   data: () => ({
     isChanged: false,
-    templateFile: null,
-    isLoading: false,
-    isDeleting: false,
-    isDownloading: false
   }),
   computed: {
     domen: {
@@ -215,26 +140,6 @@ export default {
             console.log("err", err)
           })
     },
-    async uploadFile() {
-      console.log('this.uploadFile')
-      if (!!this.file) await this.deleteFile(this.file)
-
-      this.isLoading = true
-      await this.mixUploadFile(this.templateFile)
-      this.templateFile = null
-      this.isLoading = false
-    },
-    async downloadFile(file) {
-      this.isDownloading = true
-      await this.mixDownloadFile(file)
-      this.isDownloading = false
-    },
-    async deleteFile(file) {
-      console.log('this.deleteFile')
-      this.isDeleting = true
-      await this.mixDeleteFile(file)
-      this.isDeleting = false
-    },
     onChange() {
       this.isChanged = true;
       this.$emit("change");
@@ -253,5 +158,3 @@ export default {
 };
 </script>
 
-<style lang="scss" scoped>
-</style>

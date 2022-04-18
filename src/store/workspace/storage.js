@@ -111,7 +111,6 @@ export default {
       })
     },
     generate({dispatch, state}, data) {
-
       console.log('generate')
       return new Promise(async (res, rej) => {
         try {
@@ -125,29 +124,24 @@ export default {
               zip.loadAsync(val)
                 .then(function (zip) {
                   // в архиве найти файл word/document.xml
-                  console.log('zip: ', zip)
-                  zip.file("word/document.xml").async("string").then(async function (xmlfile) {
+                  zip.file("word/document.xml").async("string")
+                    .then(async function (xmlfile) {
 
-                    xmlfile = await dispatch('isprXML', xmlfile);
+                      xmlfile = await dispatch('isprXML', xmlfile);
 
-                    let newxml = xmlfile;
-                    console.log('newxml: ', newxml)
-                    for (let key in data) {
-                      newxml = newxml.replace("{" + key + "}", data[key]);
-                    }
-                    zip.file("word/document.xml", newxml);
+                      let newxml = xmlfile;
 
-                    var promise = null;
-                    if (JSZip.support.uint8array) {
-                      promise = zip.generateAsync({type: "uint8array"});
-                    }
-                    zip2.file("out.docx", promise);
+                      for (let key in data) {
+                        newxml = newxml.replace("{" + key + "}", data[key]);
+                      }
+                      zip.file("word/document.xml", newxml);
 
-                    zip2.generateAsync({type: "blob"})
-                      .then(function (blob) {
-                        FileDownload(blob, "out.zip");
-                      });
-                  })
+                      zip.generateAsync({type: "blob"})
+                        .then(function (blob) {
+                          FileDownload(blob, "example.docx");
+                          res()
+                        });
+                    })
                 })
                 .catch((e) => {
                   console.log('err: ', e)

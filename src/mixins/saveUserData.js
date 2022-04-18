@@ -4,7 +4,7 @@ import { defUser } from "../plugins/schema.js";
 export const saveUserData = {
   methods: {
     saveUserDataToDb(isNew, data) {
-      let saveMethod = isNew ? "user/db/create" : "user/update";
+      let saveMethod = isNew ? "user/DB/create" : "user/update";
       let workspace = this.$store.getters["workspace/id"];
       let uid = isNew ? short().new() : data.uid;
       let user = defUser(data, { uid, workspace });

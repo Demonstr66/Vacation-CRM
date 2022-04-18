@@ -25,7 +25,7 @@ export default {
           const auth = getAuth();
           const user = await dispatch('db/read', auth.currentUser)
           commit('set', user)
-          // dispatch('db/subscribe', auth.currentUser.uid)
+          // dispatch('DB/subscribe', auth.currentUser.uid)
           res()
         } catch (err) {
           rej(err)
