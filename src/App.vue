@@ -7,14 +7,11 @@
   </v-app>
 </template>
 
-
-
 <script>
 import MainLayout from "./layouts/Main.vue";
 import EmptyLayout from "./layouts/Empty.vue";
 import Message from "./components/Message.vue";
 import Loading from "@/layouts/Loading";
-import store from "@/store";
 
 export default {
   components: {
@@ -23,9 +20,6 @@ export default {
     Message,
     Loading
   },
-  data: () => ({
-    isLoading: false,
-  }),
   computed: {
     layout() {
       return this.$route.meta && this.$route.meta.layout
@@ -37,11 +31,6 @@ export default {
         ? this.$route.meta.title
         : "Добро пожаловать";
     },
-  },
-  async created() {
-    // this.$store.dispatch('onBeforeLoadingHandler')
-    // this.$store.dispatch("onLoadHandler");
-    // this.$store.dispatch("beforeLoading");
   },
 };
 </script>

@@ -128,14 +128,14 @@
 </template>
 
 <script>
-import {posts, tasks, teams, users} from "@/mixins/computedData";
+import {posts, tasks, teams, user, users} from "@/mixins/ComputedData";
 import UserItem from "@/components/Deportment/UsersTabUserItem";
 import IconBtnWithTip from "@/components/IconBtnWithTip";
 import AlertModal from "@/components/Modals/Alert"
 import {userData} from "@/mixins/workspaceHelper";
 
 export default {
-  mixins: [users, tasks, teams, posts, userData],
+  mixins: [users, tasks, teams, posts, user, userData],
   components: {
     IconBtnWithTip,
     UserItem,
@@ -236,23 +236,6 @@ export default {
     },
     removeUser(uid) {
       this.mixMoveUserToArchive(uid)
-    },
-    onRecover(uid) {
-      this.$store
-          .dispatch("restoreUser", uid)
-          .then(
-              this.$store.dispatch("setMessage", {
-                type: "success",
-                text: "Пользователь восстановлен",
-              })
-          )
-          .catch((err) =>
-              this.$store.dispatch("setMessage", {
-                type: "error",
-                code: err.code,
-                text: err.message,
-              })
-          );
     },
   },
 };

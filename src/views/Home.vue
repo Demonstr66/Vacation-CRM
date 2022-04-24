@@ -1,18 +1,14 @@
 <template>
   <div>
     <span> Welcome! </span>
-    <v-btn @click="Test1">Test1</v-btn>
-    <v-btn @click="Test2">logUser</v-btn>
-    <br />
+    <v-btn @click="testMSg">toast</v-btn>
+    <br/>
   </div>
 </template>
 
 
-
-
 <script>
-import { mapState, mapGetters } from "vuex";
-import { teams } from "../mixins/computedData";
+import {teams} from "@/mixins/ComputedData";
 
 export default {
   mixins: [teams],
@@ -23,19 +19,13 @@ export default {
     duration: null,
   }),
   methods: {
-    async Test1() {
-      this.$store.dispatch("workspace/storage/generate", {
-        fullName: 'Филиппов Дмитрий Олегович',
-        post: 'Старший специалист по программированию и обработке данных',
-        date: '"04" апреля 2022г.',
-        vstart: '"05" апреля 2022г.',
-        vend: '"06" апреля 2022u.',
-        vdays: '2',
-      });
-    },
-    Test2() {
-      this.$store.dispatch("logUser");
-    },
+    testMSg() {
+      this.$store.dispatch('setMessage', {
+        type: "success",
+        text:
+          'Ну ка ну ка а если очень длинное сообщение, например о том, что файрбэйз накрылся жопой',
+      })
+    }
   },
 };
 </script>

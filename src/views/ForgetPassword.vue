@@ -10,12 +10,12 @@
         v-model.trim="email"
         prepend-icon="mdi-account"
       >
-        <template slot="prepend">
+        <template v-slot:prepend>
           <v-icon color="blue-grey lighten-1">mdi-account</v-icon>
         </template></v-text-field
       >
       <div class="mt-4 mx-3">
-        <span>На страницу <router-link to="/login">входа</router-link></span>
+        <span>На страницу <router-link class="text-decoration-none" to="/login">входа</router-link></span>
       </div>
       <div class="d-flex flex-column align-stretch mx-3 mt-4">
         <v-btn type="submit" color="success" outlined :disabled="!valid">

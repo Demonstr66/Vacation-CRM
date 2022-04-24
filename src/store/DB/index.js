@@ -4,16 +4,18 @@ import {getDatabase, off, onValue, ref, remove, set} from "firebase/database";
 export default {
   namespaced: true,
   actions: {
-    subscribe({commit}, {path, setter}) {
+    subscribe({commit, dispatch}, {path, setter, dispatcher}) {
       const db = getDatabase();
       const dataRef = ref(db, path);
 
       onValue(dataRef, (data) => {
         const res = data.val();
         commit(setter, res, {root: true})
+        if (dispatcher) dispatch(dispatcher, res, {root: true})
       });
     },
     unsubscribe({}, path) {
+      const db = getDatabase();
       const wsRef = ref(db, path);
       off(wsRef)
     },

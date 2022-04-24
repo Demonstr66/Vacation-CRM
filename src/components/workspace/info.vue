@@ -89,7 +89,7 @@
 import IconBtnWithTip from "@/components/IconBtnWithTip";
 import {defWorkspace} from "@/plugins/schema";
 import {workspaceMethods} from "@/mixins/workspaceHelper";
-import {workspace} from "@/mixins/computedData";
+import {workspace} from "@/mixins/ComputedData";
 import {copyToClipboard} from "@/mixins/dataHelper";
 
 export default {

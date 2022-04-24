@@ -1,43 +1,43 @@
-import {defSchedule} from "@/plugins/schema";
+import {defTask} from "@/plugins/schema";
 import shortUUID from "short-uuid";
 import {asyncTryDecorator, basePathFunction, isUnique} from "@/plugins/utils";
 
-const basePath = basePathFunction(`schedules/{wid}`)
-const test = (item, wid) => !!wid && !!item && !!item.year && !!item.title
-const normalize = defSchedule
+const basePath = basePathFunction(`workspaces/{wid}/tasks`)
+const test = (item, wid) => !!wid && !!item && !!item.title
+const normalize = defTask
 
 export default {
   namespaced: true,
   state: () => ({
-    schedules: null,
+    tasks: null,
     ready: false
   }),
   getters: {
-    get: (s) => s.schedules || {},
+    get: (s) => s.tasks || {},
     isReady: (s) => s.ready
   },
   mutations: {
     set: (s, v) => {
       if (!s.ready) s.ready = true
-      s.schedules = v
+      s.tasks = v
     },
     setReady: (s, v) => s.ready = v,
-    clear: (s) => s.schedules = null
+    clear: (s) => s.tasks = null
   },
   actions: {
     get({}) {
 
     },
-    create({dispatch, rootGetters, getters}, schedule) {
+    create({dispatch, rootGetters, getters}, task) {
       return asyncTryDecorator(() => {
         const wid = rootGetters['getWID']
 
-        if (!test(schedule, wid)) throw new Error('Что-то пошло не так: schedules/create -> test')
-        if (!isUnique(schedule, Object.values(getters.get))) throw new Error('График уже существет')
+        if (!test(task, wid)) throw new Error('Что-то пошло не так: tasks/create -> test')
+        if (!isUnique(task, Object.values(getters.get))) throw new Error('Задача уже существет')
 
         const path = basePath(wid)
         const key = shortUUID().new()
-        const data = normalize(schedule, {id: key})
+        const data = normalize(task, {id: key})
 
         return dispatch('DB/set', {path, key, data}, {root: true})
       })
@@ -45,7 +45,7 @@ export default {
     delete({rootGetters, dispatch}, id) {
       return asyncTryDecorator(() => {
         const wid = rootGetters['getWID']
-        if (!id || !wid) throw new Error('Что-то пошло не так: schedules/delete -> test')
+        if (!id || !wid) throw new Error('Что-то пошло не так: tasks/delete -> test')
 
         const path = basePath(wid)
         const key = id
@@ -53,15 +53,15 @@ export default {
         return dispatch('DB/delete', {path, key}, {root: true})
       })
     },
-    update({rootGetters, dispatch}, schedule) {
+    update({rootGetters, dispatch}, task) {
       return asyncTryDecorator(() => {
         const wid = rootGetters['getWID']
 
-        if (!test(schedule, wid) || !schedule.id) throw new Error('Что-то пошло не так: schedules/update -> test')
+        if (!test(task, wid) || !task.id) throw new Error('Что-то пошло не так: tasks/update -> test')
 
         const path = basePath(wid)
-        const key = schedule.id
-        const data = normalize(schedule)
+        const key = task.id
+        const data = normalize(task)
 
         return dispatch('DB/set', {path, key, data}, {root: true})
       })
@@ -69,7 +69,7 @@ export default {
     subscribe({rootGetters, dispatch}) {
       const wid = rootGetters['getWID']
       const path = basePath(wid)
-      const setter = 'schedules/set'
+      const setter = 'tasks/set'
 
       dispatch('DB/subscribe', {path, setter}, {root: true})
     },
@@ -79,5 +79,6 @@ export default {
 
       dispatch('DB/unsubscribe', {path}, {root: true})
     },
-  }
+  },
+  modules: {}
 }

@@ -1,5 +1,5 @@
 import {parsePostsInArray, parseTeamsInArray} from "@/plugins/utils";
-import {posts, teams} from "@/mixins/computedData";
+import {posts, teams} from "@/mixins/ComputedData";
 import {dataMethods} from "@/mixins/dataHelper";
 import {messageHelper} from "@/mixins/messageHelper";
 
@@ -53,7 +53,7 @@ export const importHelper = {
     },
     mixSaveUsers(users) {
       return this.asyncDispatch({
-        method: 'workspace/addManyUsers',
+        method: 'workspace/addMultipleUsers',
         data: users
       })
     },

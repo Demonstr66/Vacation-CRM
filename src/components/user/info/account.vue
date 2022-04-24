@@ -1,61 +1,62 @@
 <template>
   <v-card flat>
-    <v-form @submit.prevent="onSubmit" ref="accUserForm">
+    <v-form ref="accUserForm" @submit.prevent="onSubmit">
       <v-card-title v-if="!notitle">Информация</v-card-title>
       <v-card-text>
         <v-row>
           <v-col :cols="12 / cols">
             <v-text-field
-              name="email"
-              label="Email"
               v-model="user.email"
-              :rules="[blankCheck]"
-              :disabled="disEmail"
               :append-icon="disEmail ? 'mdi-lock' : ''"
+              :disabled="disEmail"
+              :rules="[blankCheck]"
+              label="Email"
+              name="email"
               @change.once="changed"
             >
-              <template slot="prepend">
+              <template v-slot:prepend>
                 <v-icon color="blue-grey lighten-1">mdi-email</v-icon>
               </template>
-              <template v-if="!!domen && needDomen" slot="append">
-                {{domen}}
+              <template v-if="!!domen && needDomen" v-slot:append>
+                {{ domen }}
               </template>
             </v-text-field>
           </v-col>
           <v-col :cols="12 / cols">
             <v-select
-              label="Должность"
-              name="post"
+              v-model="user.post"
               :append-icon="disPost ? 'mdi-lock' : ''"
+              :disabled="disPost"
+              :items="Object.values(posts)"
               clearable
-              placeholder="Должность не указана"
-              :items="posts"
+              hide-selected
               item-text="title"
               item-value="id"
-              hide-selected
-              v-model="user.post"
+              label="Должность"
+              name="post"
+              placeholder="Должность не указана"
               @change.once="changed"
-              :disabled="disPost"
             >
               <template v-slot:prepend>
                 <v-icon color="blue-grey lighten-1"
-                  >mdi-file-account-outline</v-icon
+                >mdi-get-account-outline
+                </v-icon
                 >
               </template>
             </v-select>
           </v-col>
           <v-col :cols="12 / cols">
             <v-select
-              label="Команда"
-              :append-icon="disTeams ? 'mdi-lock' : ''"
-              placeholder="Не в команде"
-              :items="teams"
               v-model="user.team"
-              @change.once="changed"
+              :append-icon="disTeams ? 'mdi-lock' : ''"
               :disabled="disTeams"
+              :items="Object.values(teams)"
               clearable
               item-text="title"
               item-value="id"
+              label="Команда"
+              placeholder="Не в команде"
+              @change.once="changed"
             >
               <template v-slot:prepend>
                 <v-icon color="blue-grey lighten-1">mdi-account-group</v-icon>
@@ -64,21 +65,22 @@
           </v-col>
           <v-col :cols="12 / cols">
             <v-select
-              label="Задачи"
-              :append-icon="disTasks ? 'mdi-lock' : ''"
-              multiple
-              clearable
-              placeholder="Задач нет"
-              :items="tasks"
               v-model="user.tasks"
-              @change.once="changed"
+              :append-icon="disTasks ? 'mdi-lock' : ''"
               :disabled="disTasks"
+              :items="Object.values(tasks)"
+              clearable
               item-text="title"
               item-value="id"
+              label="Задачи"
+              multiple
+              placeholder="Задач нет"
+              @change.once="changed"
             >
               <template v-slot:prepend>
                 <v-icon color="blue-grey lighten-1"
-                  >mdi-format-list-bulleted-square</v-icon
+                >mdi-format-list-bulleted-square
+                </v-icon
                 >
               </template>
 
@@ -88,7 +90,7 @@
       </v-card-text>
       <v-card-actions v-if="!disSubmit && !noaction">
         <v-spacer></v-spacer>
-        <v-btn type="submit" color="success" text :disabled="!isChanged">
+        <v-btn :disabled="!isChanged" color="success" text type="submit">
           Сохранить
         </v-btn>
         <v-spacer></v-spacer>
@@ -98,15 +100,15 @@
 </template>
 
 <script>
-import { defUser } from "@/plugins/schema";
+import {defUser} from "@/plugins/schema";
 import {inputRules} from "@/mixins/inputRules";
-import {posts, tasks, teams} from "@/mixins/computedData";
-import {userData} from "@/mixins/workspaceHelper";
+import {posts, tasks, teams} from "@/mixins/ComputedData";
 
 export default {
-  mixins:[inputRules, teams, tasks, posts, userData],
+  name: 'AccountUserInfo',
+  mixins: [inputRules, teams, tasks, posts],
   props: {
-    data: {
+    user: {
       type: Object,
       required: true,
     },
@@ -134,11 +136,7 @@ export default {
   },
   data: () => ({
     isChanged: false,
-    user: defUser(),
   }),
-  created() {
-    this.update();
-  },
   computed: {
     disEmail() {
       return this.isDisableItem('email')
@@ -164,8 +162,8 @@ export default {
   methods: {
     isDisableItem(item) {
       return typeof this.disabled == "boolean"
-          ? this.disabled
-          : this.disabled[item] || false;
+        ? this.disabled
+        : this.disabled[item] || false;
     },
     onSubmit() {
       if (this.disSubmit || this.noaction) return;

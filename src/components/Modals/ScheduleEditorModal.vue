@@ -73,7 +73,7 @@ export default {
     initialize() {
       this.schedule = defSchedule({year: (new Date()).getFullYear()})
     },
-    onChange(file) {
+    onChange(get) {
       if (!file) return;
 
       this.isLoading = true;
@@ -105,7 +105,7 @@ export default {
       if (!this.schedule.name) this.schedule.name = this.defaultName
 
       this.mixSaveData({
-        saveMethod: !!this.schedule.id ? 'schedules/update' : 'schedules/add',
+        saveMethod: !!this.schedule.id ? 'schedules/update' : 'schedules/create',
         isNew: !!!this.schedule.id,
         data: this.schedule
       })

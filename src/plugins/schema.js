@@ -14,7 +14,7 @@ export function defUser(...data) {
     active: false,
     archive: false
   }
-  //roles 'user' < 'leader' < 'admin' < 'owner'
+  //roles 'currentUser' < 'leader' < 'admin' < 'owner'
 
 
   if (data) {
@@ -47,7 +47,7 @@ export function defWorkspace(...data) {
 export function defSchedule(...data) {
   let res = {
     id: '',
-    name: '',
+    title: '',
     startDate: '',
     endDate: '',
     year: '',

@@ -1,7 +1,7 @@
 <template>
   <list-with-add
       title="Задачи"
-      :items="tasks"
+      :items="Object.values(tasks)"
       @save="onSave"
       @delete="onDelete"
   >
@@ -19,7 +19,7 @@
 
 <script>
 import {defTask} from "@/plugins/schema";
-import {tasks} from "@/mixins/computedData";
+import {tasks} from "@/mixins/ComputedData";
 import {taskMethods} from "../../mixins/workspaceHelper";
 import ListWithAdd from "./BaseListWidget.vue";
 

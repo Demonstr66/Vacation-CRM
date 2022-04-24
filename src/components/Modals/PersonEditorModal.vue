@@ -9,7 +9,7 @@
     <v-form v-if="show" ref="userform" class="mt-4">
       <pers-user-info
           ref="pers"
-          :data="user"
+          :user="user"
           noaction
           notitle
           @change="onChange"
@@ -18,7 +18,7 @@
       <account-user-info
           ref="account"
           :cols="$vuetify.breakpoint.mdAndUp ? 2 : 1"
-          :data="user"
+          :user="user"
           :disabled="disabled"
           :domen="domen"
           noaction
@@ -37,7 +37,7 @@ import accountUserInfo from "../user/info/account.vue";
 
 import {defUser} from "@/plugins/schema.js";
 
-import {domen, teams} from "@/mixins/computedData";
+import {domen, teams} from "@/mixins/ComputedData";
 import {userData} from "@/mixins/workspaceHelper";
 
 export default {
@@ -57,8 +57,8 @@ export default {
     accountUserInfo,
   },
   data: () => ({
-    rules: [(value) => !!value || "Заполните поле"],
     user: null,
+    showForm: false,
     isChanged: false,
     disabled: {email: false},
     isNewUser: false,
@@ -87,8 +87,8 @@ export default {
       );
 
       this.mixSaveUserDataToDb(this.isNewUser, user)
-          .then((this.isChanged = false))
-          .then(this.closeModal());
+          .then(() => this.isChanged = false)
+          .then(() => this.closeModal());
     },
     onCancel() {
       this.closeModal();
@@ -102,7 +102,7 @@ export default {
   },
   watch: {
     show(val) {
-      if (!val || this.options.user == undefined) {
+      if (!val || this.options.user === undefined) {
         this.user = defUser();
         this.disabled = false;
         this.isNewUser = true;

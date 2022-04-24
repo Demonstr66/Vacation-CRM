@@ -1,10 +1,9 @@
 <template>
-  <v-form v-model="valid" @submit.prevent="onSubmit">
+  <v-form v-model="valid" class="px-3" @submit.prevent="onSubmit">
     <v-text-field
       v-model.trim="authData.email"
-      :rules="loginRules"
+      :rules="[blankCheck, emailCheck]"
       autocomplete="username"
-      class="mx-3"
       hide-details="auto"
       label="Email"
       name="email"
@@ -16,21 +15,29 @@
     </v-text-field>
     <v-text-field
       v-model.trim="authData.password"
-      :rules="passRules"
+      :rules="[min5char, blankCheck]"
       autocomplete="current-password"
-      class="mx-3"
       hide-details="auto"
       label="Пароль"
       name="password"
       prepend-icon="mdi-lock"
-      type="password"
+      :type="isPassVisible ? 'text' :'password'"
     >
       <template v-slot:prepend>
         <v-icon color="blue-grey lighten-1">mdi-lock</v-icon>
       </template>
+      <template v-slot:append>
+        <v-btn icon @click="isPassVisible = !isPassVisible">
+          <v-icon v-if="!isPassVisible" color="blue-grey lighten-1">mdi-eye</v-icon>
+          <v-icon v-else color="blue-grey lighten-1">mdi-eye-off</v-icon>
+        </v-btn>
+      </template>
     </v-text-field
     >
-    <div class="d-flex flex-column align-stretch mx-3 mt-2">
+    <v-checkbox
+      v-model="authData.remember" class="ml-7" dense hide-details label="Запонить меня">
+    </v-checkbox>
+    <div class="d-flex flex-column align-stretch mt-2">
       <div
         class="
           mt-1
@@ -42,14 +49,14 @@
         "
       >
         <router-link
+          :to="{name: 'Register'}"
           class="text-decoration-none mt-1 justify-self-start ml-5"
-          to="/register"
         >Регистрация
         </router-link
         >
         <router-link
+          :to="{name: 'Reset'}"
           class="text-decoration-none mt-1 justify-self-end"
-          to="/resetpassword"
         >Забыли пароль?
         </router-link
         >
@@ -69,26 +76,22 @@
 </template>
 
 <script>
+import {accountMethods} from "@/mixins/AccountMethods";
+import {inputRules} from "@/mixins/inputRules";
+import {getAuth} from "firebase/auth";
+
 export default {
+  name: 'Login',
+  mixins: [accountMethods, inputRules],
   data: () => ({
+    isPassVisible: false,
     valid: false,
     loading: false,
     authData: {
       email: "",
       password: "",
+      remember: true
     },
-    loginRules: [
-      (value) => !!value || "Обязательное поле.",
-      (value) => {
-        const pattern =
-          /^(([^<>()[\]\\.,;:\s@"]+(\.[^<>()[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
-        return pattern.test(value) || "Некорректный email.";
-      },
-    ],
-    passRules: [
-      (value) => !!value || "Обязательное поле.",
-      (value) => (value && value.length >= 6) || `Минимум 6 символов`,
-    ],
   }),
   mounted() {
     if (this.$route.query.msg) {
@@ -99,35 +102,10 @@ export default {
     }
   },
   methods: {
-    onSubmit: async function () {
+    async onSubmit() {
       this.loading = true;
-      this.$store
-        .dispatch("onSignInHandler", this.authData)
-        .then((res) => {
-          this.$router.push("/");
-          this.$store.dispatch("setMessage", {
-            type: "success",
-            text: "Вы успешно вошли",
-          });
-        })
-        .catch((err) => {
-          console.log(err)
-          if (err.code == "auth/email-not-verify") {
-            this.$router.push({
-              path: "/emailsending",
-              query: {
-                e: err.email,
-              },
-            });
-          }
-          this.$store.dispatch("setMessage", {
-            type: "error",
-            code: err.code,
-          });
-        })
-        .finally(() => {
-          this.loading = false;
-        });
+      await this.mixSignIn(this.authData)
+      this.loading = false;
     },
   },
 };

@@ -81,7 +81,7 @@
 <script>
 import IconBtnWithTip from "@/components/IconBtnWithTip";
 import ScheduleEditorModal from "@/components/Modals/ScheduleEditorModal";
-import {schedules} from "@/mixins/computedData";
+import {schedules} from "@/mixins/ComputedData";
 import {mapGetters} from "vuex";
 import Alert from "@/components/Modals/Alert";
 import {dataMethods} from "@/mixins/dataHelper";
@@ -95,7 +95,7 @@ export default {
     headers: [
       {
         text: 'Название',
-        value: 'name',
+        value: 'title',
       },
       {
         text: 'Год',

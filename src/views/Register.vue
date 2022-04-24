@@ -1,211 +1,197 @@
 <template>
   <v-form v-model="valid" @submit.prevent="onSubmit">
     <v-text-field
+      v-model.trim="authData.email"
+      :rules="[blankCheck, emailCheck]"
+      autocomplete="username"
+      class="mx-3"
+      hide-details="auto"
       label="Email"
       name="email"
-      :rules="[rules.req, rules.email]"
-      hide-details="auto"
-      v-model.trim="authData.email"
-      prepend-icon=""
-      class="mx-3"
     >
-      <template slot="prepend">
+      <template v-slot:prepend>
         <v-icon color="blue-grey lighten-1">mdi-email</v-icon>
         <span class="error--text">*</span>
       </template>
     </v-text-field>
     <v-text-field
-      label="Пароль"
-      :rules="[rules.req, rules.pass]"
-      hide-details="auto"
       v-model.trim="authData.password"
-      name="password"
-      type="password"
+      :rules="[blankCheck, min5char]"
+      autocomplete="current-password"
       class="mx-3"
+      hide-details="auto"
+      label="Пароль"
+      name="password"
+      :type="isPassVisible ? 'text' :'password'"
     >
-      <template slot="prepend">
+      <template v-slot:prepend>
         <v-icon color="blue-grey lighten-1">mdi-form-textbox-password</v-icon>
         <span class="error--text">*</span>
+      </template>
+      <template v-slot:append>
+        <v-btn icon @click="isPassVisible = !isPassVisible">
+          <v-icon v-if="!isPassVisible" color="blue-grey lighten-1">mdi-eye</v-icon>
+          <v-icon v-else color="blue-grey lighten-1">mdi-eye-off</v-icon>
+        </v-btn>
       </template>
     </v-text-field>
 
     <v-text-field
-      label="ФИО"
-      hide-details="auto"
+      v-if="!predefineUser"
       v-model.trim="authData.fullName"
-      name="fullname"
+      :rules="[blankCheck]"
+      autocomplete="name"
       class="mx-3"
+      hide-details="auto"
+      label="ФИО"
+      name="fullName"
     >
-      <template slot="prepend">
+      <template v-slot:prepend>
         <v-icon color="blue-grey lighten-1">mdi-form-textbox</v-icon>
-        <span style="opacity: 0">*</span>
+        <span class="error--text">*</span>
       </template>
     </v-text-field>
-    <div class="group d-flex flex-column align-stretch text-center mx-3 mt-8">
-      <span class="label ml-3 px-2"
-        >Пространство
+    <div v-if="!predefineUser"
+         class="group d-flex flex-column align-stretch text-center mx-3 mt-8 pa-3">
+      <span class="label pl-2"
+      >Пространство
         <span class="error--text">*</span>
-        <v-tooltip right>
-          <template v-slot:activator="{ on, attrs }">
-            <v-icon color="accent" class="ml-2" dark v-bind="attrs" v-on="on">
-              mdi-help-circle-outline
-            </v-icon>
-          </template>
-          <span>
-            Создайте своё Пространство, чтобы начать управлять отпусками,<br />
-            или же присоединйятесь к существующему!
-          </span>
-        </v-tooltip>
+        <icon-btn-with-tip btn-class="ml-2" icon="mdi-help-circle-outline">
+            Создайте своё Пространство, чтобы начать управлять отпусками,<br/>
+            или присоединйятесь к существующему!
+        </icon-btn-with-tip>
       </span>
-
-      <v-text-field class="d-none" :rules="[rules.req]" v-model="workspace">
-      </v-text-field>
-      <v-text-field
-        label="Ввести существующее"
-        :success="!!existWorkspace"
-        hide-details="auto"
-        v-model.trim="existWorkspace"
-        class="mx-3"
-        prepend-icon="mdi-sitemap"
+      <v-radio-group
+        v-model="isNewWS"
+        class="mb-3"
         dense
+        hide-details
+        row
       >
-        <template slot="prepend">
-          <v-icon color="blue-grey lighten-1">mdi-sitemap</v-icon>
-        </template>
-      </v-text-field>
-      <span class="my-2">ИЛИ</span>
-      <v-btn
-        :color="newWorkspace ? 'success' : 'grey'"
-        @click="newWorkspace = !newWorkspace"
-        v-model="newWorkspace"
-        text
-      >
-        <v-icon class="mr-3">{{
-          newWorkspace
-            ? "mdi-check-bold"
-            : "mdi-arrow-right-thin-circle-outline"
-        }}</v-icon>
-        Создать новое
-      </v-btn>
+        <v-radio :value="true" label="Создать новое"></v-radio>
+        <v-radio :value="false" label="У меня есть код"></v-radio>
+      </v-radio-group>
+      <v-expand-transition>
+        <v-text-field
+          v-if="!isNewWS"
+          v-model.trim="authData.workspace"
+          :rules="[blankCheck]"
+          :success="!!authData.workspace"
+          class="mx-3"
+          dense
+          hide-details="auto"
+          label="Код пространства"
+          prepend-icon="mdi-sitemap"
+        >
+          <template v-slot:prepend>
+            <v-icon color="blue-grey lighten-1">mdi-sitemap</v-icon>
+          </template>
+        </v-text-field>
+      </v-expand-transition>
     </div>
 
-    <div class="d-flex flex-column align-stretch mx-3 mt-7">
+    <div class="d-flex flex-column align-stretch mx-3 mt-3">
       <span class="align-self-center">
-        Уже есть аккаунт? <router-link to="/login" class="text-decoration-none">Войти</router-link></span
+        Уже есть аккаунт? <router-link class="text-decoration-none" to="/login">Войти</router-link></span
       >
       <v-btn
-        class="mt-4"
-        type="submit"
-        color="success"
-        outlined
         :disabled="!valid"
         :loading="loading"
-        >Подтвердить</v-btn
+        class="mt-4"
+        color="success"
+        outlined
+        type="submit"
+      >Подтвердить
+      </v-btn
       >
     </div>
   </v-form>
 </template>
 
 <script>
+import {inputRules} from "@/mixins/inputRules";
+import IconBtnWithTip from "@/components/IconBtnWithTip";
+import {accountMethods} from "@/mixins/AccountMethods";
+
 const short = require("short-uuid");
 
 export default {
+  name: 'Register',
+  components: {IconBtnWithTip},
+  mixins: [inputRules, accountMethods],
   data: () => ({
-    newWorkspace: false,
-    existWorkspace: "",
+    isPassVisible: false,
+    predefineUser: false,
+    isNewWS: true,
     valid: false,
     loading: false,
     authData: {
+      uid: null,
       email: "",
       password: "",
       fullName: "",
       workspace: "",
       role: "",
     },
-    rules: {
-      req: (value) => !!value || "Обязательное поле.",
-      pass: (value) => (value && value.length >= 5) || `Минимум 5 символов`,
-      email: (value) => {
-        const pattern =
-          /^(([^<>()[\]\\.,;:\s@"]+(\.[^<>()[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
-        return pattern.test(value) || "Некорректный e-mail.";
-      },
-    },
   }),
-  computed: {
-    workspace: function () {
-      let res = this.existWorkspace || (this.newWorkspace ? short().new() : "");
+  created() {
+    if (this.$route.query.u && this.$route.query.ws) {
+      this.authData.uid = this.$route.query.u
+      this.authData.workspace = this.$route.query.ws
 
-      this.authData.workspace = res;
+      this.predefineUser = true
+      this.isNewWS = false
 
-      return res;
-    },
-    displayName: function () {
-      return this.authData.fullName
+      if (this.$route.query.e) {
+        this.authData.email = this.$route.query.e
+      }
+    }
+  },
+  methods: {
+    displayName(val) {
+      return val
         .split(/\s+/)
         .map((w, i) => (i ? w.substring(0, 1).toUpperCase() + "." : w))
         .join(" ");
     },
-  },
-  methods: {
-    onSubmit: async function () {
+    async onSubmit() {
       this.loading = true;
-      let user = {
-        ...this.authData,
-        displayName: this.displayName,
-        role: this.newWorkspace ? "owner" : "user",
-      };
 
-      this.$store
-        .dispatch("onRegisterHandler", {
-          user,
-          workspace: {
-            id: this.authData.workspace,
-            isNew: this.newWorkspace,
-          },
-        })
-        .then((res) => {
-          this.$router.push({
-            path: "/emailsending",
-            query: {
-              u: this.$store.getters['user/uid'],
-              e: this.$store.getters['user/email'],
-            },
-          });
-        })
-        .catch((err) => {
-          this.$store.dispatch("setMessage", {
-            type: "error",
-            code: err.code,
-            text: err.message,
-          });
-        })
-        .finally(() => {
-          this.loading = false;
-        });
-    },
-  },
-  watch: {
-    existWorkspace: function (val) {
-      if (val != "") this.newWorkspace = false;
-    },
-    newWorkspace: function (val) {
-      if (val) this.existWorkspace = "";
-      this.authData.role = val ? "admin" : "user";
+      const user = {
+        ...this.authData,
+        displayName: this.displayName(this.authData.fullName),
+        role: this.isNewWS ? "owner" : "user",
+      };
+      const workspace = {
+        id: this.isNewWS ? short().new() : this.authData.workspace,
+        isNew: this.isNewWS,
+      }
+
+      await this.mixRegisterUser({user, workspace})
+
+      this.loading = false;
     },
   },
 };
 </script>
 
-<style lang="scss" scoped>
+<style lang="scss">
+.v-input--radio-group__input {
+  justify-content: space-around;
+}
+
 .group {
+  position: relative;
   border: thin solid #bdbdbd;
   border-radius: 4px;
   margin-top: 32px;
 
   & .label {
-    transition: translate-y(-100%);
-    transform: translateY(-50%) translateX(23px);
+    //transition: translateY(-100%);
+    //transform: translateY(-50%) translateX(23px);
+    position: absolute;
+    top: -18px;
+    left: 30px;
     background-color: white;
     width: fit-content;
   }

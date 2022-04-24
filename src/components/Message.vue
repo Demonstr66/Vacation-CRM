@@ -1,65 +1,48 @@
 <template>
-  <v-snackbar
-    v-model="isMessage"
-    timeout="2000"
-    top
-    right
+  <v-snackbars
+    :objects.sync="messages"
     outlined
-    :color="message.type"
+    right
+    top
+    :class="{'v-snack__small': $vuetify.breakpoint.xsOnly}"
   >
-    {{ message.text }}
-    <template v-slot:action="{ attrs }">
-      <v-btn text v-bind="attrs" @click="isMessage = false">
+    <template v-slot:action="{ close }">
+      <v-btn text @click="close()" class="pa-0">
         <v-icon>mdi-close</v-icon>
       </v-btn>
     </template>
-  </v-snackbar>
+  </v-snackbars>
 </template>
 
 <script>
-import { dictionary } from "../plugins/utils.js";
+import VSnackbars from "v-snackbars";
 
 export default {
   name: "Message",
-  data: () => ({
-    isMessage: false,
-    message: {
-      text: "",
-      type: "",
-    },
-  }),
+  components: {
+    "v-snackbars": VSnackbars,
+  },
   computed: {
-    msg() {
-      return this.$store.getters.isMessage;
-    },
-  },
-  watch: {
-    msg: function (val) {
-      this.isMessage = val;
-
-      if (!val) return;
-
-      const msg = this.$store.getters.message;
-
-      this.message.text =
-        dictionary[msg.code] || msg.text || "Неизвестная ошибка";
-
-      this.message.type = msg.type;
-      if (msg.type == "error")
-        this.message.text = "[Ошибка]: " + this.message.text;
-    },
-    isMessage: function (val) {
-      if (val) return;
-      
-      // this.$store.dispatch("clearMessage")
-      this.$store.commit("clearMessage")
-      // setTimeout(
-      //   function () {
-      //     this.$store.commit("clearMessage");
-      //   }.bind(this),
-      //   500
-      // );
-    },
-  },
+    messages: {
+      get: function () {
+        return this.$store.getters['messages']
+      },
+      set: function (v) {
+        return this.$store.commit('setMessages', v)
+      }
+    }
+  }
 };
 </script>
+<style>
+.v-snack__wrapper {
+  max-width: 400px;
+}
+.v-snack__small .v-snack__wrapper {
+  min-width: 80vw;
+}
+
+.v-snack__small .v-snack__content {
+padding-right: 0;
+}
+</style>

@@ -4,13 +4,13 @@
       <v-card-title v-if="!notitle">Личные данные</v-card-title>
       <v-card-text>
         <v-text-field
-            v-model="user.fullName"
-            :append-icon="disabled ? 'mdi-lock' : ''"
-            :disabled="disabled"
-            :rules="[blankCheck]"
-            label="ФИО"
-            name="fullName"
-            @change.once="changed"
+          v-model="user.fullName"
+          :append-icon="disabled ? 'mdi-lock' : ''"
+          :disabled="disabled"
+          :rules="[blankCheck]"
+          label="ФИО"
+          name="fullName"
+          @change.once="changed"
         >
           <template v-slot:prepend>
             <v-icon color="blue-grey lighten-1">mdi-account</v-icon>
@@ -32,14 +32,14 @@
 <script>
 import {defUser} from "@/plugins/schema";
 import {inputRules} from "@/mixins/inputRules";
-import {userData} from "@/mixins/workspaceHelper";
 
 export default {
-  mixins: [inputRules, userData],
+  name: 'PersonalUserInfo',
+  mixins: [inputRules],
   props: {
-    data: {
-      type: [Object],
-      default: "",
+    user: {
+      type: Object,
+      required: true,
     },
     disabled: {
       type: Boolean,
@@ -56,11 +56,7 @@ export default {
   },
   data: () => ({
     isChanged: false,
-    user: defUser(),
   }),
-  created() {
-    this.update();
-  },
   methods: {
     onSubmit() {
       if (this.disabled || this.noaction) return;

@@ -23,7 +23,7 @@
 </template>
 
 <script>
-import {archive} from "@/mixins/computedData";
+import {archive} from "@/mixins/ComputedData";
 import UserItemArchiveTabDeportment from "@/components/Deportment/ArchiveTabUserItem";
 import Alert from "@/components/Modals/Alert";
 import {userData} from "@/mixins/workspaceHelper";

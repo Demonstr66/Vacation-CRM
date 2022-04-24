@@ -49,7 +49,7 @@
           accept=".xlsx,.xls,.csv"
           class="mt-2"
           placeholder="Файл Excel ( .xlsx, .xls, .csv )"
-          type="file"
+          type="get"
           @change="onChange"
           @click:clear="reset"
       ></v-file-input>
@@ -131,7 +131,7 @@
 import BaseModal from "./Base.vue";
 import {excelToArray, parseArrayData} from "@/plugins/utils";
 import {importHelper} from "@/mixins/importHelper";
-import {users} from "@/mixins/computedData"
+import {users} from "@/mixins/ComputedData"
 
 export default {
   mixins: [importHelper, users],
@@ -181,7 +181,7 @@ export default {
     },
   },
   methods: {
-    onChange(file) {
+    onChange(get) {
       if (!file) return;
 
       this.isLoading = true;

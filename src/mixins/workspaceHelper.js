@@ -9,12 +9,12 @@ const taskMethods = {
   mixins: [dataMethods],
   methods: {
     mixSaveTask(isNew, data) {
-      let saveMethod = "workspace/addTask";
+      let saveMethod = isNew ? "tasks/create" : 'tasks/update';
 
       return this.mixSaveData({saveMethod, data, isNew})
     },
     mixDeleteTask(id) {
-      let delMethod = "workspace/db/removeTask";
+      let delMethod = "tasks/delete";
 
       return this.mixDeleteData({delMethod, id})
     }
@@ -25,12 +25,12 @@ const teamMethods = {
   mixins: [dataMethods],
   methods: {
     mixSaveTeam(isNew, data) {
-      let saveMethod = "workspace/addTeam";
+      let saveMethod = isNew ? "teams/create" : 'teams/update';
 
       return this.mixSaveData({saveMethod, data, isNew})
     },
     mixDeleteTeam(id) {
-      let delMethod = "workspace/db/removeTeam";
+      let delMethod = "teams/delete";
 
       return this.mixDeleteData({delMethod, id})
     }
@@ -41,12 +41,12 @@ const postMethods = {
   mixins: [dataMethods],
   methods: {
     mixSavePost(isNew, data) {
-      let saveMethod = "workspace/addPost";
+      let saveMethod = isNew ? "posts/create" : 'posts/update';
 
       return this.mixSaveData({saveMethod, data, isNew})
     },
     mixDeletePost(id) {
-      let delMethod = "workspace/db/removePost";
+      let delMethod = "posts/delete";
 
       return this.mixDeleteData({delMethod, id})
     }
@@ -57,8 +57,8 @@ const userData = {
   mixins: [dataMethods],
   methods: {
     mixSaveUserDataToDb(isNew, user) {
-      let saveMethod = isNew ? "user/db/create" : "user/update";
-      let workspace = this.$store.getters["workspace/id"];
+      let saveMethod = isNew ? "users/create" : "users/update";
+      let workspace = this.$store.getters["getWID"];
       let uid = isNew ? short().new() : user.uid;
       let data = defUser(user, {uid, workspace});
 
@@ -66,7 +66,7 @@ const userData = {
     },
     mixMoveUserToArchive(uid) {
       return this.mixDeleteData({
-        delMethod: 'workspace/archivingUser',
+        delMethod: 'users/moveUserToArchive',
         id: uid,
         msg: "Пользователь перемещён в архив"
       })
@@ -74,14 +74,14 @@ const userData = {
     mixRestoreUserFromArchive(uid) {
       console.log('mixRestoreUserFromArchive')
       return this.mixDeleteData({
-        delMethod: 'workspace/restoreUser',
+        delMethod: 'users/restoreUser',
         id: uid,
         msg: "Пользователь восстановлен"
       })
     },
     mixDeleteUser(uid) {
       return this.mixDeleteData({
-        delMethod: 'workspace/deleteUser',
+        delMethod: 'users/delete',
         id: uid,
         msg: "Пользователь удалён"
       })

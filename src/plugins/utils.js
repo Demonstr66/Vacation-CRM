@@ -168,3 +168,36 @@ export function parsePostsInArray(data, posts) {
     }
   })
 }
+
+export function isprXML(xmlfile) {
+  //почистить шаблон до правильного вида переменных {permennaya}
+  const re = /({.*?})/sg;
+  const re2 = /(<.*?>)/g;
+
+  let result = xmlfile.match(re) || [];
+  result.forEach(element => {
+    var newel = element.replace(re2, "");
+    xmlfile = xmlfile.replace(element, newel);
+  });
+  return xmlfile;
+}
+
+export function basePathFunction(base) {
+  return function (wid, ...child) {
+    let path = base.replaceAll('{wid}', wid)
+    if (child.length) path += '/' + child.join('/')
+    return path
+  }
+}
+
+export function isUnique(item, items, key = 'title') {
+  return !items.some(i => i[key] == item[key])
+}
+
+export async function asyncTryDecorator(callback) {
+  try {
+    return await callback()
+  } catch (e) {
+    return Promise.reject(e)
+  }
+}

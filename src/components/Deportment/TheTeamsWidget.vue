@@ -1,7 +1,7 @@
 <template>
   <list-with-add
       title="Команды"
-      :items="teams"
+      :items="Object.values(teams)"
       @save="onSave"
       @delete="onDelete"
   >
@@ -27,7 +27,7 @@
 
 <script>
 import {defTeam} from "@/plugins/schema";
-import {teams} from '@/mixins/computedData';
+import {teams} from '@/mixins/ComputedData';
 import {teamMethods} from '@/mixins/workspaceHelper';
 import ListWithAdd from "@/components/Deportment/BaseListWidget";
 import {getUserNameById} from "@/mixins/dataHelper";
@@ -38,8 +38,8 @@ export default {
     ListWithAdd
   },
   methods: {
-
     onSave(item) {
+      console.log(item)
       const team = defTeam(item);
       this.mixSaveTeam(!!!team.id, team);
     },

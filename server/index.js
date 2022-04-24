@@ -31,7 +31,7 @@ app.use(cors());
 app.use(express.urlencoded());
 app.use(express.json());
 
-app.get('/user/set/permission/base', async (req, res, next) => {
+app.get('/currentUser/set/permission/base', async (req, res, next) => {
     const {u: uid, o: owner} = req.query
 
     console.log(uid)

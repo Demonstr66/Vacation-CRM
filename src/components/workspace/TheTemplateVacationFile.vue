@@ -6,14 +6,14 @@
         <v-col :cols="12 / cols">
           <v-file-input
               v-model="newTempFile"
-              :color="!!existTempFile ? 'warning' : ''"
-              :messages="!!existTempFile ? 'Существующий файл будет заменён' : ''"
+              :color="!!templateFile ? 'warning' : ''"
+              :messages="!!templateFile ? 'Существующий файл будет заменён' : ''"
               accept=".docx"
               class="mt-2"
               placeholder="Шаблон файла для отпуска"
               single-line
               truncate-length="25"
-              type="file"
+              type="get"
           >
             <template v-slot:append-outer>
               <icon-btn-with-tip icon="mdi-help-circle-outline">
@@ -56,7 +56,7 @@
                 </v-skeleton-loader>
               </v-col>
             </v-row>
-            <v-fade-transition v-else-if="!!existTempFile">
+            <v-fade-transition v-else-if="templateFile && Object.keys(templateFile).length != 0">
               <div class="d-flex justify-space-between">
                 <v-sheet elevation="0" width="100%" class="text-left text-md-center">
                   <v-card class="d-flex" elevation="0" flat>
@@ -83,13 +83,13 @@
                       </icon-btn-with-tip>
                       <icon-btn-with-tip btnClass="float-end" color="primary" icon="mdi-download"
                                          small
-                                         @click="downloadFile(existTempFile)">
+                                         @click="downloadFile(templateFile)">
                         Скачать
                       </icon-btn-with-tip>
                     </div>
                   </v-card>
-                  <div :title="existTempFile.name" class="font-italic">
-                    {{ existTempFile.name | truncateFileName }}
+                  <div :title="templateFile.name" class="font-italic">
+                    {{ templateFile.name | truncateFileName }}
                   </div>
                 </v-sheet>
                 <div style="min-width: fit-content;">
@@ -117,12 +117,12 @@
 </template>
 <script>
 import IconBtnWithTip from "@/components/IconBtnWithTip"
-import {existTempFile} from "@/mixins/computedData";
+import {templateFile} from "@/mixins/ComputedData";
 import {workspaceMethods} from "@/mixins/workspaceHelper";
 
 export default {
   name: 'TheTemplateVacationFile',
-  mixins: [existTempFile, workspaceMethods],
+  mixins: [templateFile, workspaceMethods],
   components: {IconBtnWithTip},
   props: {
     cols: {
@@ -152,14 +152,14 @@ export default {
   methods: {
     async uploadFile() {
       console.log('this.uploadFile')
-      if (!!this.existTempFile) await this.deleteFile(this.existTempFile)
+      if (!!this.templateFile) await this.deleteFile(this.templateFile)
 
       this.isLoading = true
       await this.mixUploadFile(this.newTempFile)
       this.newTempFile = null
       this.isLoading = false
     },
-    async downloadFile(file) {
+    async downloadFile(get) {
       this.isDownloading = true
       console.log(file)
       await this.mixDownloadFile(file)
@@ -181,12 +181,13 @@ export default {
     async deleteFile() {
       console.log('this.deleteFile')
       this.isDeleting = true
-      await this.mixDeleteFile(this.existTempFile)
+      await this.mixDeleteFile(this.templateFile)
       this.isDeleting = false
     },
   },
   filters: {
     truncateFileName(val) {
+      if (!val) return
       const maxLength = 30
       if (val.length <= maxLength) return val
 

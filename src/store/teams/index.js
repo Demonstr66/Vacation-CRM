@@ -1,43 +1,43 @@
-import {defSchedule} from "@/plugins/schema";
+import {defTeam} from "@/plugins/schema";
 import shortUUID from "short-uuid";
 import {asyncTryDecorator, basePathFunction, isUnique} from "@/plugins/utils";
 
-const basePath = basePathFunction(`schedules/{wid}`)
-const test = (item, wid) => !!wid && !!item && !!item.year && !!item.title
-const normalize = defSchedule
+const basePath = basePathFunction(`workspaces/{wid}/teams`)
+const test = (item, wid) => !!wid && !!item  && !!item.title
+const normalize = defTeam
 
 export default {
   namespaced: true,
   state: () => ({
-    schedules: null,
+    teams: null,
     ready: false
   }),
   getters: {
-    get: (s) => s.schedules || {},
+    get: (s) => s.teams || {},
     isReady: (s) => s.ready
   },
   mutations: {
     set: (s, v) => {
       if (!s.ready) s.ready = true
-      s.schedules = v
+      s.teams = v
     },
     setReady: (s, v) => s.ready = v,
-    clear: (s) => s.schedules = null
+    clear: (s) => s.teams = null
   },
   actions: {
     get({}) {
 
     },
-    create({dispatch, rootGetters, getters}, schedule) {
+    create({dispatch, rootGetters, getters}, team) {
       return asyncTryDecorator(() => {
         const wid = rootGetters['getWID']
 
-        if (!test(schedule, wid)) throw new Error('Что-то пошло не так: schedules/create -> test')
-        if (!isUnique(schedule, Object.values(getters.get))) throw new Error('График уже существет')
+        if (!test(team, wid)) throw new Error('Что-то пошло не так: teams/create -> test')
+        if (!isUnique(team, Object.values(getters.get))) throw new Error('Команда уже существет')
 
         const path = basePath(wid)
         const key = shortUUID().new()
-        const data = normalize(schedule, {id: key})
+        const data = normalize(team, {id: key})
 
         return dispatch('DB/set', {path, key, data}, {root: true})
       })
@@ -45,7 +45,7 @@ export default {
     delete({rootGetters, dispatch}, id) {
       return asyncTryDecorator(() => {
         const wid = rootGetters['getWID']
-        if (!id || !wid) throw new Error('Что-то пошло не так: schedules/delete -> test')
+        if (!id || !wid) throw new Error('Что-то пошло не так: teams/delete -> test')
 
         const path = basePath(wid)
         const key = id
@@ -53,15 +53,16 @@ export default {
         return dispatch('DB/delete', {path, key}, {root: true})
       })
     },
-    update({rootGetters, dispatch}, schedule) {
+    update({rootGetters, dispatch}, team) {
       return asyncTryDecorator(() => {
         const wid = rootGetters['getWID']
 
-        if (!test(schedule, wid) || !schedule.id) throw new Error('Что-то пошло не так: schedules/update -> test')
+        if (!test(team, wid) || !team.id) throw new Error('Что-то пошло не так: teams/update ->' +
+          ' test')
 
         const path = basePath(wid)
-        const key = schedule.id
-        const data = normalize(schedule)
+        const key = team.id
+        const data = normalize(team)
 
         return dispatch('DB/set', {path, key, data}, {root: true})
       })
@@ -69,7 +70,7 @@ export default {
     subscribe({rootGetters, dispatch}) {
       const wid = rootGetters['getWID']
       const path = basePath(wid)
-      const setter = 'schedules/set'
+      const setter = 'teams/set'
 
       dispatch('DB/subscribe', {path, setter}, {root: true})
     },

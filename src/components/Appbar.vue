@@ -1,15 +1,18 @@
 <template>
-  <v-app-bar app dense flat clipped-left absolute>
+  <v-app-bar absolute app clipped-left dense flat>
     <v-app-bar-nav-icon @click="onNavIconClick"></v-app-bar-nav-icon>
 
     <!-- <v-app-bar-title v-if="$vuetify.breakpoint.smAndUp">{{ appName }}</v-app-bar-title> -->
     <!-- <v-app-bar-title v-else>{{ title }}</v-app-bar-title> -->
-    <v-app-bar-title >{{ $vuetify.breakpoint.name }}</v-app-bar-title>
+    <v-app-bar-title>{{ $vuetify.breakpoint.name }}</v-app-bar-title>
 
     <v-spacer></v-spacer>
-    <v-menu offset-y>
+    <v-menu offset-y transition="slide-y-transition">
       <template v-slot:activator="{ on, attrs }">
-        <v-btn color="primary" dark v-bind="attrs" v-on="on"> Аккаунт </v-btn>
+        <v-btn color="primary" text dark tile large v-bind="attrs" v-on="on">
+          <v-icon large>mdi-account</v-icon>
+          {{ user.displayName }}
+        </v-btn>
       </template>
       <v-list>
         <v-list-item
@@ -19,8 +22,8 @@
           @click="onMenuItemClick(item.action)"
         >
           <v-list-item-title class="d-flex flex-row justify-space-between">
-            <v-icon>{{ item.icon }}</v-icon>
             {{ item.title }}
+            <v-icon>{{ item.icon }}</v-icon>
           </v-list-item-title>
         </v-list-item>
       </v-list>
@@ -29,8 +32,11 @@
 </template>
 
 <script>
-import { mapState } from "vuex";
+import {appName, user} from "@/mixins/ComputedData";
+import {accountMethods} from "@/mixins/AccountMethods";
+
 export default {
+  mixins: [user, appName, accountMethods],
   props: {
     expand: {
       type: Boolean,
@@ -39,17 +45,11 @@ export default {
     title: String,
   },
   data: () => ({
-    user: {
-      name: "",
-    },
     menu: [
-      { title: "Аккаунт", action: "onAccount", icon: "mdi-cog" },
-      { title: "Выход", action: "onSignOut", icon: "mdi-exit-to-app" },
+      {title: "Аккаунт", action: "onAccount", icon: "mdi-cog"},
+      {title: "Выход", action: "onSignOut", icon: "mdi-exit-to-app"},
     ],
   }),
-  computed: {
-    ...mapState(["appName"]),
-  },
   methods: {
     onNavIconClick() {
       this.$emit("click");
@@ -60,28 +60,30 @@ export default {
       this[action]();
     },
     onSignOut() {
-      this.$store
-        .dispatch("signOut")
-        .then(() => {
-          this.$router.push("/login");
-          this.$store.dispatch("setMessage", {
-            type: "warning",
-            text: "Вы вышли из аккаунта",
-          });
-        })
-        .then(() => {
-          this.$store.dispatch("clearAllPersData");
-        })
-        .catch((err) => {
-          this.$store.dispatch("setMessage", {
-            type: "error",
-            code: err.code,
-            text: err.message,
-          });
-        });
+      this.mixSignOut()
+      // this.$store
+      //   .dispatch("signOut")
+      //   .then(() => {
+      //     this.$router.push("/login");
+      //     this.$store.dispatch("setMessage", {
+      //       type: "warning",
+      //       text: "Вы вышли из аккаунта",
+      //     });
+      //   })
+      //   .then(() => {
+      //     this.$store.dispatch("clearAllPersData");
+      //   })
+      //   .catch((err) => {
+      //     this.$store.dispatch("setMessage", {
+      //       type: "error",
+      //       code: err.code,
+      //       text: err.message,
+      //     });
+      //   });
     },
     onAccount() {
-      this.$router.push("/account");
+      if (this.$route.name == 'Account') return
+      this.$router.push({name: 'Account'});
     },
   },
 };

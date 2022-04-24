@@ -1,28 +1,28 @@
+import {dictionary} from "@/plugins/utils.js";
+
 export default {
   state: () => ({
-    message: null,
+    messages: [],
     pull: []
   }),
   getters: {
-    message: (s) => s.message,
-    isMessage: (s) => !!s.message,
-    getPull: (s) => s.pull,
+    messages: (s) => s.messages,
   },
   mutations: {
-    setMessage: (s, v) => s.message = v,
-    clearMessage: (s) => s.message = null,
-    setPull: (s, v) => s.pull = v,
-    addToPull: (s, v) => s.pull.push(v)
+    addMessage: (s, v) => s.messages.push(v),
+    setMessages: (s, v) => s.messages = v
   },
   actions: {
-    setMessage({ commit }, message) {
-      commit('clearMessage')
-      setTimeout(
-        function () {
-          commit("setMessage", message);
-        },
-        300
-      );
+    setMessage({commit,getters}, data) {
+      let obj = {}
+      console.log(data)
+      obj.message = dictionary[data.code] || data.text || "Неизвестная ошибка";
+      obj.color = data.type;
+      obj.timeout = 2000 + 500 * getters.messages.length
+      // obj.timeout = -1
+      if (data.type === "error") obj.message = "[Ошибка]: " + obj.message
+
+      commit('addMessage', obj)
     }
   }
 }

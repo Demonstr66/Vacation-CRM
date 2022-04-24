@@ -20,18 +20,19 @@ export const dataMethods = {
 
     asyncDispatchWithMessage({method, data, msg}) {
       return this.$store.dispatch(method, data)
-        .then(() => this.mixSuccess(msg))
+        .then((res) => {
+
+          console.log('asyncDispatchWithMessage -> then: ', res)
+          this.mixMessage({
+            type: res ? res.type ? res.type : 'success' : 'success',
+            text: res ? res.text ? res.text : msg : msg
+          })
+        })
         .catch((err) => this.mixError(err));
     },
     asyncDispatch({method, data}) {
-      return new Promise(async (res, rej) => {
-        try {
-          await this.$store.dispatch(method, data)
-          res()
-        } catch (e) {
-          rej(e)
-        }
-      })
+      return this.$store.dispatch(method, data)
+        .catch((err) => this.mixError(err));
     },
     asyncCallbackWithMessage({method, data, msg}) {
       return method(data)

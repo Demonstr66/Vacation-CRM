@@ -1,7 +1,7 @@
 <template>
   <list-with-add
       title="Должности"
-      :items="posts"
+      :items="Object.values(posts)"
       @save="onSave"
       @delete="onDelete"
   >
@@ -20,7 +20,7 @@
 <script>
 
 import {defPost} from "../../plugins/schema";
-import {posts} from "../../mixins/computedData";
+import {posts} from "../../mixins/ComputedData";
 import {postMethods} from "../../mixins/workspaceHelper";
 import ListWithAdd from "./BaseListWidget.vue";
 
