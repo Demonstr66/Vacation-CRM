@@ -52,7 +52,11 @@ export function defSchedule(...data) {
     endDate: '',
     year: '',
     isTemp: true,
-    isActive: false
+    isActive: false,
+    exception: {
+      holidays: [],
+      workdays: []
+    }
   }
 
   if (data) {
@@ -97,6 +101,27 @@ export function defTeam(...data) {
     title: '',
     leaderId: '',
     tempLeaderId: ''
+  }
+
+  if (data) {
+    data.map(d => {
+      res = updateObject(res, d)
+    })
+  }
+  return res
+}
+
+export function defVacation(...data) {
+  let res = {
+    id: '',
+    uid: '',
+    sid: '',
+    //True - если отпуск фактический, и не совпадает с заявлением
+    actually: false,
+    start: null,
+    end: null,
+    approved: false,
+    approvedBy: ''
   }
 
   if (data) {

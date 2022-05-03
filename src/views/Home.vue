@@ -3,14 +3,17 @@
     <span> Welcome! </span>
     <v-btn @click="testMSg">toast</v-btn>
     <br/>
+    <the-calendar></the-calendar>
   </div>
 </template>
 
 
 <script>
 import {teams} from "@/mixins/ComputedData";
+import TheCalendar from "@/components/TheCalendar";
 
 export default {
+  components: {TheCalendar},
   mixins: [teams],
   data: () => ({
     snackbar: false,

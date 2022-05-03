@@ -21,7 +21,7 @@ export default {
     ready: false
   }),
   getters: {
-    get: (s) => s.file || {},
+    get: (s) => s.file || null,
     isReady: (s) => s.ready
   },
   mutations: {
@@ -87,19 +87,21 @@ export default {
           const bytes = await getBytes(ref(storage, state.file.fullPath))
 
           const zip = new JSZip();
+
           const zip2 = await zip.loadAsync(bytes)
 
           let xmlFile = await zip2.file("word/document.xml").async("string")
+
           xmlFile = isprXML(xmlFile);
 
-          let newXML
+          let newXML = xmlFile
           for (let key in data) {
-            newXML = xmlFile.replace("{" + key + "}", data[key]);
+            newXML = newXML.replace("{" + key + "}", data[key]);
           }
 
-          zip.file("word/document.xml", xmlFile);
+          await zip2.file("word/document.xml", newXML);
 
-          const blob = await zip.generateAsync({type: "blob"})
+          const blob = await zip2.generateAsync({type: "blob"})
           return FileDownload(blob, "example.docx");
       })
     },

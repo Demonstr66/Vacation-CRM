@@ -11,6 +11,7 @@ import users from './users'
 import teams from './teams'
 import posts from './posts'
 import tasks from './tasks'
+import vacations from './vacations'
 import schedules from './schedules'
 import templateFile from './templateFile'
 
@@ -27,6 +28,7 @@ const modules = {
   schedules,
   templateFile,
   auth,
+  vacations
 }
 
 

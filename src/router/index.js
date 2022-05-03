@@ -2,6 +2,7 @@ import Vue from 'vue'
 import VueRouter from 'vue-router'
 import Home from '@/views/Home.vue'
 import Vacations from '@/views/Vacations.vue'
+import Vacation from '@/views/Vacation.vue'
 import Deportment from '@/views/Deportment.vue'
 import Login from '@/views/Login.vue'
 import Account from '@/views/Account.vue'
@@ -9,7 +10,7 @@ import Register from '@/views/Register.vue'
 import ForgetPassword from '@/views/ForgetPassword.vue'
 import EmailVerifed from '@/views/EmailVerifed'
 import EmailSending from '@/views/EmailSending'
-import Schedule from '@/views/Shedule'
+import Schedule from '@/views/Schedule'
 import store from '@/store'
 import {getAuth} from "firebase/auth";
 
@@ -43,6 +44,18 @@ const routes = [
     }
   },
   {
+    path: '/vacation/:id',
+    name: 'Vacation',
+    component: Vacation,
+    meta: {
+      layout: 'MainLayout',
+      title: 'Мои отпуска',
+      protected: {
+        accessLevel: [2]
+      }
+    }
+  },
+  {
     path: '/deportment',
     name: 'Deportment',
     component: Deportment,
@@ -56,7 +69,7 @@ const routes = [
   },
   {
     path: '/schedules',
-    name: 'Schedule',
+    name: 'Schedules',
     component: Schedule,
     meta: {
       layout: 'MainLayout',

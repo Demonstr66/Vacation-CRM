@@ -6,7 +6,7 @@
       @cancel="onCancel"
       @submit="onSubmit"
   >
-    <v-form v-if="show" ref="userform" class="mt-4">
+    <v-form v-if="show" v-model="formVal" ref="userform" class="mt-4">
       <pers-user-info
           ref="pers"
           :user="user"
@@ -57,6 +57,7 @@ export default {
     accountUserInfo,
   },
   data: () => ({
+    formVal: false,
     user: null,
     showForm: false,
     isChanged: false,

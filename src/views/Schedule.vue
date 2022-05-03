@@ -6,12 +6,11 @@
       :loading="!schedulesReady"
       item-class="clickable"
       item-key="id"
+      dense
+      mobile-breakpoint="100"
+      no-data-text="Графики ещё не добавлены"
+
     >
-      <template v-slot:no-data>
-        <v-row justify="center">
-          Отпуска ещё не добавлены
-        </v-row>
-      </template>
       <template v-slot:top>
         <v-toolbar dense flat>
           <v-spacer></v-spacer>
@@ -29,8 +28,19 @@
         </v-switch>
       </template>
       <template v-slot:item.action="{item}">
-        <v-row class="d-flex ma-0 pa-0" style="max-width: fit-content">
-          <v-col class="ma-0 pa-0">
+        <v-menu
+          v-if="$vuetify.breakpoint.smAndDown"
+          content-class="no-sheet"
+          offset-y
+          top
+
+        >
+          <template v-slot:activator="{ on, attrs }">
+            <v-btn icon v-bind="attrs" v-on="on">
+              <v-icon>mdi-dots-vertical</v-icon>
+            </v-btn>
+          </template>
+          <div class="d-flex flex-column white">
             <icon-btn-with-tip
               :disable="item.isActive || item.isLoading"
               :icon="item.isActive ? 'mdi-pencil-lock' : 'mdi-pencil'"
@@ -38,8 +48,6 @@
             >
               Редактировать
             </icon-btn-with-tip>
-          </v-col>
-          <v-col class="ma-0 pa-0">
             <icon-btn-with-tip
               :disable="item.isActive || item.isLoading"
               color="error"
@@ -48,13 +56,31 @@
             >
               Удалить
             </icon-btn-with-tip>
-          </v-col>
-          <v-col class="ma-0 pa-0">
             <icon-btn-with-tip color="info" icon="mdi-eye">
               Просмотр
             </icon-btn-with-tip>
-          </v-col>
-        </v-row>
+          </div>
+        </v-menu>
+        <div v-else>
+            <icon-btn-with-tip
+              :disable="item.isActive || item.isLoading"
+              :icon="item.isActive ? 'mdi-pencil-lock' : 'mdi-pencil'"
+              @click="onEdit(item)"
+            >
+              Редактировать
+            </icon-btn-with-tip>
+            <icon-btn-with-tip
+              :disable="item.isActive || item.isLoading"
+              color="error"
+              icon="mdi-delete"
+              @click="onDelete(item.id)"
+            >
+              Удалить
+            </icon-btn-with-tip>
+            <icon-btn-with-tip color="info" icon="mdi-eye">
+              Просмотр
+            </icon-btn-with-tip>
+        </div>
       </template>
     </v-data-table>
     <Alert
@@ -104,7 +130,7 @@ export default {
       {
         text: 'Статус',
         value: 'isActive',
-        sortable: false
+        sortable: false,
       },
       {
         text: 'Действия',

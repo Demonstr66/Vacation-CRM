@@ -1,7 +1,7 @@
 <template>
-  <v-dialog max-width="700" v-model="isShow" persistent>
+  <v-dialog :max-width="large ? 1000: 700" v-model="isShow" persistent>
     <template v-slot:default="">
-      <v-card style="z-index: 10000 important!">
+      <v-card style="z-index: 10000 !important">
         <v-toolbar
           color="accent"
           dark
@@ -72,6 +72,10 @@ export default {
       type: Boolean,
       required: true,
     },
+    large: {
+      type: Boolean,
+      required: false,
+    },
   },
   data: () => ({}),
   computed: {
@@ -89,7 +93,7 @@ export default {
     },
     onSubmit() {
       this.$emit("submit", this.result || "");
-      this.reset();
+      // this.reset();
     },
     reset() {
       this.$emit("reset");

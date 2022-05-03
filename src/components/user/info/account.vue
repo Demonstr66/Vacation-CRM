@@ -1,6 +1,5 @@
 <template>
   <v-card flat>
-    <v-form ref="accUserForm" @submit.prevent="onSubmit">
       <v-card-title v-if="!notitle">Информация</v-card-title>
       <v-card-text>
         <v-row>
@@ -95,7 +94,6 @@
         </v-btn>
         <v-spacer></v-spacer>
       </v-card-actions>
-    </v-form>
   </v-card>
 </template>
 

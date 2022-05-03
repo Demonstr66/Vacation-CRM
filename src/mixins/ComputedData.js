@@ -36,6 +36,7 @@ export const posts = {
   }
 }
 
+
 export const messages = {
   computed: {
     ...mapGetters(["messages"]),
@@ -53,7 +54,6 @@ export const appName = {
     ...mapGetters({'appName': "getAppName"}),
   }
 }
-
 
 export const users = {
   computed: {
@@ -86,5 +86,15 @@ export const currentUID = {
     ...mapGetters("currentUser", {
       currentUID: "uid"
     }),
+  }
+}
+
+export const myVacations = {
+  mixins: [currentUID],
+  computed: {
+    ...mapGetters("vacations", ['getByUid']),
+    myVacations() {
+      return this.getByUid(this.currentUID)
+    }
   }
 }

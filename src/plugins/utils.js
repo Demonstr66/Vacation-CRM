@@ -4,7 +4,7 @@ import shortUUID from "short-uuid";
 
 const moment = require('moment')
 
-export function dateDiff(start, end) {
+export function dateDiff({start, end}) {
   return moment(end).diff(moment(start), 'days') + 1
 }
 
@@ -170,11 +170,11 @@ export function parsePostsInArray(data, posts) {
 }
 
 export function isprXML(xmlfile) {
-  //почистить шаблон до правильного вида переменных {permennaya}
-  const re = /({.*?})/sg;
-  const re2 = /(<.*?>)/g;
-
+  // //почистить шаблон до правильного вида переменных {permennaya}
+  var re = /({.*?})/sg;
+  var re2 = /(<.*?>)/g;
   let result = xmlfile.match(re) || [];
+
   result.forEach(element => {
     var newel = element.replace(re2, "");
     xmlfile = xmlfile.replace(element, newel);

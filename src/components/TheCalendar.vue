@@ -97,13 +97,13 @@ export default {
 }
 </script>
 
-<style lang="scss">
-.vc-highlight {
-  border: 2px solid var(--blue-600) !important;
-
-  &:not(.vc-highlight-base-middle, .vc-highlight-base-start, .vc-highlight-base-end) {
-    background-color: #ffffff !important;
-
-  }
-}
+<style lang="scss" scoped>
+//.vc-highlight {
+//  border: 2px solid var(--blue-600) !important;
+//
+//  &:not(.vc-highlight-base-middle, .vc-highlight-base-start, .vc-highlight-base-end) {
+//    background-color: #ffffff !important;
+//
+//  }
+//}
 </style>

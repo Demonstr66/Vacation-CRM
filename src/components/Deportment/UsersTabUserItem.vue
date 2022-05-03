@@ -99,6 +99,7 @@
             content-class="no-sheet"
             offset-y
             top
+
           >
             <template v-slot:activator="{ on, attrs }">
               <v-btn icon v-bind="attrs" v-on="on">
@@ -224,12 +225,10 @@ export default {
   width: 100%;
   width: -moz-available;          /* WebKit игнор. */
   width: -webkit-fill-available;  /* Mozilla игнор. */
-  width: fill-available;
 
   height: 100%;
   height: -moz-available;          /* WebKit игнор. */
   height: -webkit-fill-available;  /* Mozilla игнор. */
-  height: fill-available;
 
   background-color: rgba(138, 255, 255, 0.1);
   border-radius: 4px;

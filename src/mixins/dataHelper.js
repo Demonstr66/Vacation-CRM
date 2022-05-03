@@ -45,6 +45,7 @@ export const dataMethods = {
           await callback(data)
           res()
         } catch (e) {
+          this.mixError(e.message)
           rej(e)
         }
       })

@@ -5,28 +5,28 @@
       <v-row>
         <v-col :cols="12 / cols">
           <v-file-input
-              v-model="newTempFile"
-              :color="!!templateFile ? 'warning' : ''"
-              :messages="!!templateFile ? 'Существующий файл будет заменён' : ''"
-              accept=".docx"
-              class="mt-2"
-              placeholder="Шаблон файла для отпуска"
-              single-line
-              truncate-length="25"
-              type="get"
+            v-model="newTempFile"
+            :color="!!templateFile ? 'warning' : ''"
+            :messages="!!templateFile ? 'Существующий файл будет заменён' : ''"
+            accept=".docx"
+            class="mt-2"
+            placeholder="Шаблон файла для отпуска"
+            single-line
+            truncate-length="25"
           >
             <template v-slot:append-outer>
               <icon-btn-with-tip icon="mdi-help-circle-outline">
 
-          <span>Загрузите шаблон для отпуска.<br>
-            Используйте в шаблоне ключевые слова для
-            подстановки
-            значений:</span>
+                <span>Загрузите шаблон для отпуска.<br>
+                  Используйте в шаблоне ключевые слова для
+                  подстановки
+                  значений:
+                </span>
                 <ul>
                   <li v-for="(tempKey, idx) in templateKeys" :key="idx">
-                  <span class="font-italic">
-                    <span>&#123;</span>{{ tempKey.key }}<span>&#125;</span>
-                  </span> - {{ tempKey.title }}
+                    <span class="font-italic">
+                      <span>&#123;</span>{{ tempKey.key }}<span>&#125;</span>
+                    </span> - {{ tempKey.title }}
                   </li>
                 </ul>
               </icon-btn-with-tip>
@@ -58,9 +58,9 @@
             </v-row>
             <v-fade-transition v-else-if="templateFile && Object.keys(templateFile).length != 0">
               <div class="d-flex justify-space-between">
-                <v-sheet elevation="0" width="100%" class="text-left text-md-center">
+                <v-sheet class="text-left text-md-center" elevation="0" width="100%">
                   <v-card class="d-flex" elevation="0" flat>
-                    <v-img aspect-ratio="1" src="@/assets/docx.png" max-width="200px">
+                    <v-img aspect-ratio="1" max-width="200px" src="@/assets/docx.png">
                       <v-fade-transition>
                         <v-overlay v-if="isDeleting || isDownloading"
                                    :color="isDownloading ? 'success' : 'error'"
@@ -68,8 +68,8 @@
                                    absolute
                         >
                           <v-progress-circular
-                              indeterminate
-                              size="48"
+                            indeterminate
+                            size="48"
                           ></v-progress-circular>
                         </v-overlay>
                       </v-fade-transition>
@@ -159,7 +159,7 @@ export default {
       this.newTempFile = null
       this.isLoading = false
     },
-    async downloadFile(get) {
+    async downloadFile(file) {
       this.isDownloading = true
       console.log(file)
       await this.mixDownloadFile(file)
@@ -167,7 +167,7 @@ export default {
     },
     async downloadExample() {
       this.isExampleLoading = true
-      await this.$store.dispatch('workspace/storage/generate', {
+      await this.$store.dispatch('templateFile/generate', {
         fullName: 'Филиппов Дмитрий Олегович',
         post: 'Старший специалист по программированию и обработке данных',
         date: '"04" апреля 2022г.',

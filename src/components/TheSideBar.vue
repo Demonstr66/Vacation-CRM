@@ -65,7 +65,7 @@ export default {
   },
   data: () => ({
     links: [
-      {path: 'Schedule', icon: 'mdi-folder', title: 'Графики отпусков'},
+      {path: 'Schedules', icon: 'mdi-folder', title: 'Графики отпусков'},
       {path: 'Vacations', icon: 'mdi-star', title: 'Мои отпуска'},
       {path: 'Deportment', icon: 'mdi-account-group', title: 'Команда'},
     ]

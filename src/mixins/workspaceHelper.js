@@ -1,8 +1,8 @@
 import {messageHelper} from "@/mixins/messageHelper";
-
-const short = require("short-uuid");
 import {defUser} from "../plugins/schema.js";
 import {dataMethods} from "@/mixins/dataHelper";
+
+const short = require("short-uuid");
 
 
 const taskMethods = {
@@ -114,20 +114,40 @@ const workspaceMethods = {
       return this.mixSaveData({saveMethod, data, isNew})
     },
     mixUploadFile(file) {
-      return this.mixSaveData({saveMethod: 'workspace/upload', isNew: true, data: file})
-        .then(() => this.$store.dispatch('workspace/storage/getAll'))
+      return this.mixSaveData({saveMethod: 'templateFile/upload', isNew: true, data: file})
+        .then(() => this.$store.dispatch('templateFile/get'))
     },
     mixDownloadFile(file) {
-      return this.$store.dispatch('workspace/storage/download', file)
-        .catch(err => {this.mixError(err)})
+      return this.$store.dispatch('templateFile/download', file)
+        .catch(err => {
+          this.mixError(err)
+        })
     },
     mixDeleteFile(file) {
-      return this.mixDeleteData({delMethod: 'workspace/storage/delete', id: file.fullPath, msg: 'Файл' +
-          ' удалён'})
-        .then(() => this.$store.dispatch('workspace/storage/getAll'))
+      return this.mixDeleteData({
+        delMethod: 'templateFile/delete', id: file.fullPath, msg: 'Файл' +
+          ' удалён'
+      })
+        .then(() => this.$store.dispatch('templateFile/get'))
     }
   }
 }
 
-export {userData, taskMethods, teamMethods, postMethods, workspaceMethods}
+const vacationMethods = {
+  mixins: [dataMethods],
+  methods: {
+    mixSaveVacation(isNew, data) {
+      let saveMethod = isNew ? "vacations/create" : 'vacations/update';
+      console.log('mixSaveVacation', data)
+      return this.mixSaveData({saveMethod, data, isNew})
+    },
+    mixDeleteVacation(vacation) {
+      let delMethod = "vacations/delete";
+
+      return this.mixDeleteData({delMethod, id: vacation})
+    }
+  }
+}
+
+export {userData, taskMethods, teamMethods, postMethods, workspaceMethods, vacationMethods}
 

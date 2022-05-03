@@ -5,10 +5,7 @@ import store from './store'
 import vuetify from './plugins/vuetify'
 import {initializeApp} from "firebase/app";
 import {
-  browserSessionPersistence,
   getAuth,
-  inMemoryPersistence,
-  setPersistence
 } from "firebase/auth";
 import {getDatabase} from "firebase/database";
 import {firebaseConfig} from './plugins/secure'
@@ -18,7 +15,7 @@ const fb = initializeApp(firebaseConfig);
 getDatabase(fb)
 const moment = require('moment')
 
-  require('moment/locale/ru')
+require('moment/locale/ru')
 
 Vue.use(require('vue-moment'), {
   moment
