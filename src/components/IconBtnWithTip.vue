@@ -8,6 +8,7 @@
           :fab="fab"
           :icon="!fab"
           :small="fab || small"
+          :loading="loading"
           v-bind="attrs"
           @click="onClick($event)"
           v-on="on"
@@ -43,6 +44,10 @@ export default {
       default: false,
     },
     small: {
+      type: Boolean,
+      default: false
+    },
+    loading: {
       type: Boolean,
       default: false
     }

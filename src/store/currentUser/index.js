@@ -27,6 +27,13 @@ export default {
     clear: (s) => s.user = null
   },
   actions: {
+    initialize({dispatch}) {
+      dispatch('subscribe')
+    },
+    onLogOut({dispatch, commit}) {
+      dispatch('unsubscribe')
+      commit('clear')
+    },
     create({dispatch, commit}, {user, wid}) {
       // return asyncTryDecorator(async () => {
       //   if (!test(user, wid)) throw new Error('Что-то пошло не так: currentUser/create -> test')

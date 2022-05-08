@@ -2,6 +2,7 @@ import {
   browserLocalPersistence,
   browserSessionPersistence,
   createUserWithEmailAndPassword,
+  inMemoryPersistence,
   getAuth,
   setPersistence,
   updateProfile
@@ -30,10 +31,12 @@ export default {
       })
     },
     remember({}) {
+      console.log('browserLocalPersistence')
       const auth = getAuth();
       return setPersistence(auth, browserLocalPersistence)
     },
     sessionRemember({}) {
+      console.log('browserSessionPersistence')
       const auth = getAuth();
       console.log('session')
       return setPersistence(auth, browserSessionPersistence)

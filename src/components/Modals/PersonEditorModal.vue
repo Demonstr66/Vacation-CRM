@@ -77,9 +77,9 @@ export default {
   },
   methods: {
     async onSubmit() {
-      let val1 = this.$refs.pers.validate()
-      let val2 = this.$refs.account.validate()
-      if (!val1 || !val2) return
+      // let val1 = this.$refs.pers.validate()
+      // let val2 = this.$refs.account.validate()
+      // if (!val1 || !val2) return
 
       let user = defUser(
           this.user,

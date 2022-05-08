@@ -8,7 +8,16 @@
     >
       <template v-slot:top>
         <v-toolbar dense flat>
-          <v-toolbar-title>{{ schedule.title }}</v-toolbar-title>
+          <v-toolbar-title class="d-flex flex-column">
+            <span>{{ schedule.title }}</span>
+            <span :class="schedule.isActive ? 'error--text' : 'info--text'" class="caption">
+            {{
+                schedule.isActive
+                  ? 'Редактирование не доступно'
+                  : 'Доступно для редактирования'
+              }}
+          </span>
+          </v-toolbar-title>
           <v-spacer></v-spacer>
           <v-btn color="primary" text @click="onAddVocation">
             добавить отпуск
@@ -26,13 +35,30 @@
       </template>
       <template v-slot:item.approved="{item}">
         <div>
-          <v-chip v-if="item.approved" color="success" label outlined small>
-            Утдверждено
-          </v-chip>
+          <v-tooltip v-if="item.approved" bottom>
+            <template v-slot:activator="{ on, attrs }">
+              <v-chip color="success" label outlined small
+                      v-bind="attrs"
+                      v-on="on">
+                Утдверждено
+              </v-chip>
+            </template>
+            <span>
+              Утверждено: {{ getUserShortName(item.approvedBy) }}
+            </span>
+          </v-tooltip>
           <v-chip v-else color="warning" label outlined small>
             Ожидает подтверждения
           </v-chip>
         </div>
+      </template>
+      <template v-slot:item.actually="{value}">
+        <icon-btn-with-tip
+          :color="!value ? 'success': 'error'"
+          :icon="!value ? 'mdi-text-box-check' : 'mdi-text-box-remove'"
+        >
+          {{ !value ? 'Отпуск по заявлению' : 'Фактический отпуск (без заявления)' }}
+        </icon-btn-with-tip>
       </template>
       <template v-slot:item.action="{item}">
         <v-menu
@@ -49,42 +75,56 @@
           </template>
           <div class="d-flex flex-column white">
             <icon-btn-with-tip
-              :disable="item.isActive || item.isLoading"
-              :icon="item.isActive ? 'mdi-pencil-lock' : 'mdi-pencil'"
-              @click="onEdit(item)"
+              :disable="item.approved || schedule.isActive"
+              :icon="item.approved || schedule.isActive ? 'mdi-pencil-lock' : 'mdi-pencil'"
+              @click="onEdit(item.id)"
             >
               Редактировать
             </icon-btn-with-tip>
             <icon-btn-with-tip
-              :disable="item.isActive || item.isLoading"
+              :disable="item.approved || schedule.isActive"
               color="error"
               icon="mdi-delete"
               @click="onDelete(item)"
             >
               Удалить
             </icon-btn-with-tip>
-            <icon-btn-with-tip color="info" icon="mdi-eye">
-              Просмотр
+            <icon-btn-with-tip
+              v-if="!!templateFile"
+              :disable="item.actually"
+              :loading="item.id == loading"
+              color="info"
+              icon="mdi-download"
+              @click="downloadVacation(item.id)"
+            >
+              Заявление
             </icon-btn-with-tip>
           </div>
         </v-menu>
         <div v-else>
           <icon-btn-with-tip
-            :disable="item.isActive || item.isLoading"
-            :icon="item.isActive ? 'mdi-pencil-lock' : 'mdi-pencil'"
+            :disable="item.approved || schedule.isActive"
+            :icon="item.approved || schedule.isActive ? 'mdi-pencil-lock' : 'mdi-pencil'"
             @click="onEdit(item.id)"
           >
             Редактировать
           </icon-btn-with-tip>
           <icon-btn-with-tip
-            :disable="item.isActive || item.isLoading"
+            :disable="item.approved || schedule.isActive"
             color="error"
             icon="mdi-delete"
             @click="onDelete(item)"
           >
             Удалить
           </icon-btn-with-tip>
-          <icon-btn-with-tip color="info" icon="mdi-download">
+          <icon-btn-with-tip
+            v-if="!!templateFile"
+            :disable="item.actually"
+            :loading="item.id == loading"
+            color="info"
+            icon="mdi-download"
+            @click="downloadVacation(item.id)"
+          >
             Заявление
           </icon-btn-with-tip>
         </div>
@@ -92,27 +132,28 @@
     </v-data-table>
     <add-vacation
       v-if="addModal.visible"
+      :existVacations="vacations.filter(v => v.id !== addModal.item.id)"
       :schedule="schedule || {}"
       :show="addModal.show"
       :vacation="addModal.item"
-      :existVacations="vacations.filter(v => v.id !== addModal.item.id)"
       @close="closeModal"
     ></add-vacation>
   </div>
 </template>
 
 <script>
-import {myVacations, schedules} from "@/mixins/ComputedData";
+import {myVacations, posts, schedules, templateFile, user} from "@/mixins/ComputedData";
 import {dateDiff} from "@/plugins/utils";
 import AddVacation from "@/components/Modals/AddVacation";
 import IconBtnWithTip from "@/components/IconBtnWithTip";
 import {dataMethods} from "@/mixins/dataHelper";
 import {vacationMethods} from "@/mixins/workspaceHelper";
+import {dataToGenerateFile} from "@/plugins/schema";
 
 export default {
   name: 'Vacation',
   components: {IconBtnWithTip, AddVacation},
-  mixins: [schedules, myVacations, dataMethods, vacationMethods],
+  mixins: [schedules, myVacations, dataMethods, vacationMethods, user, posts, templateFile],
   data: () => ({
     schedule: null,
     addModal: {
@@ -122,7 +163,9 @@ export default {
     },
     headers: [
       {text: 'Даты', value: 'start', align: 'start'},
+      {text: 'Дней', value: 'days', align: 'start'},
       {text: 'Статус', value: 'approved', align: 'center'},
+      {text: 'Тип', value: 'actually', align: 'center'},
       {
         text: 'Действия',
         value: 'action',
@@ -130,7 +173,8 @@ export default {
         sortable: false
       },
 
-    ]
+    ],
+    loading: null
   }),
   created() {
     this.initialize()
@@ -145,6 +189,23 @@ export default {
     }
   },
   methods: {
+    getUserShortName(uid) {
+      return this.$store.getters['users/getUserById'](uid).displayName
+    },
+    async downloadVacation(id) {
+      this.loading = id
+      const vacation = this.vacations.find(v => v.id === id)
+
+      let data = dataToGenerateFile(this.user, {
+        post: this.user.post ? this.posts[this.user.post].title : '',
+        date: this.$moment().format('YYYY-MM-DD'),
+        vstart: vacation.start,
+        vend: vacation.end,
+        vdays: vacation.days
+      })
+      await this.$store.dispatch('templateFile/generate', data)
+      this.loading = null
+    },
     initialize() {
       const id = this.$route.params.id
       this.schedule = this.schedules[id]

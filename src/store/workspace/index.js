@@ -25,6 +25,13 @@ export default {
     clear: (s) => s.workspace = null
   },
   actions: {
+    initialize({dispatch}) {
+      dispatch('subscribe')
+    },
+    onLogOut({dispatch, commit}) {
+      dispatch('unsubscribe')
+      commit('clear')
+    },
     create({dispatch, rootGetters, getters}, wid) {
       return asyncTryDecorator(() => {
         // const wid = rootGetters['getWID']

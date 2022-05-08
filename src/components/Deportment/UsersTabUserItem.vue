@@ -109,6 +109,7 @@
             <main-tools
               :active="user.active"
               :fab="true"
+              :disable="{'delete': user.uid === currentUID}"
               :vertical="true"
               @delete="onDeleteUser(user.uid)"
               @edit="onEdit(user.uid)"

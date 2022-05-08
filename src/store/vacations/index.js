@@ -41,6 +41,13 @@ export default {
     clear: (s) => s.vacations = null
   },
   actions: {
+    initialize({dispatch}) {
+      dispatch('subscribe')
+    },
+    onLogOut({dispatch, commit}) {
+      dispatch('unsubscribe')
+      commit('clear')
+    },
     get({}) {
 
     },
@@ -59,7 +66,6 @@ export default {
     },
     delete({rootGetters, dispatch}, vacation) {
       return asyncTryDecorator(() => {
-        console.log('ondel', vacation)
         const wid = rootGetters['getWID']
         if (!vacation.id || !wid) throw new Error('Что-то пошло не так: vacations/delete -> test')
 
@@ -94,6 +100,19 @@ export default {
       const path = basePath(wid)
 
       dispatch('DB/unsubscribe', {path}, {root: true})
+    },
+
+
+    deleteAllBySid({rootGetters, dispatch}, sid) {
+      return asyncTryDecorator(() => {
+        const wid = rootGetters['getWID']
+        if (!sid || !wid) throw new Error('Что-то пошло не так: vacations/deleteAllBySid -> test')
+
+        const path = basePath(wid)
+        const key = sid
+
+        return dispatch('DB/delete', {path, key}, {root: true})
+      })
     },
   },
   modules: {}

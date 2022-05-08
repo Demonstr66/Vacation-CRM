@@ -10,6 +10,7 @@ import Register from '@/views/Register.vue'
 import ForgetPassword from '@/views/ForgetPassword.vue'
 import EmailVerifed from '@/views/EmailVerifed'
 import EmailSending from '@/views/EmailSending'
+import Schedules from '@/views/Schedules'
 import Schedule from '@/views/Schedule'
 import store from '@/store'
 import {getAuth} from "firebase/auth";
@@ -70,10 +71,22 @@ const routes = [
   {
     path: '/schedules',
     name: 'Schedules',
-    component: Schedule,
+    component: Schedules,
     meta: {
       layout: 'MainLayout',
       title: 'Графики отпусков',
+      protected: {
+        accessLevel: [2]
+      }
+    }
+  },
+  {
+    path: '/schedule/:id',
+    name: 'Schedule',
+    component: Schedule,
+    meta: {
+      layout: 'MainLayout',
+      title: 'График отпусков',
       protected: {
         accessLevel: [2]
       }

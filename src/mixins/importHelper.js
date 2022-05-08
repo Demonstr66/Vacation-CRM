@@ -53,19 +53,19 @@ export const importHelper = {
     },
     mixSaveUsers(users) {
       return this.asyncDispatch({
-        method: 'workspace/addMultipleUsers',
+        method: 'users/addMultiple',
         data: users
       })
     },
     mixSaveTeams(teams) {
       return this.asyncDispatch({
-        method: 'workspace/addManyTeams',
+        method: 'teams/addMultiple',
         data: teams
       })
     },
     mixSavePosts(posts) {
       return this.asyncDispatch({
-        method: 'workspace/addManyPosts',
+        method: 'posts/addMultiple',
         data: posts
       })
     },

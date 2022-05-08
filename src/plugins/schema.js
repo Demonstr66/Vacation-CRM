@@ -1,3 +1,5 @@
+import {dateToFileFormat} from "@/plugins/utils";
+
 export function defUser(...data) {
   let res = {
     uid: '',
@@ -120,6 +122,7 @@ export function defVacation(...data) {
     actually: false,
     start: null,
     end: null,
+    days: 0,
     approved: false,
     approvedBy: ''
   }
@@ -129,6 +132,29 @@ export function defVacation(...data) {
       res = updateObject(res, d)
     })
   }
+  return res
+}
+
+export function dataToGenerateFile(...data) {
+  let res = {
+    fullName: '',
+    post: '',
+    date: '',
+    vstart: '',
+    vend: '',
+    vdays: '',
+  }
+
+  if (data) {
+    data.map(d => {
+      res = updateObject(res, d)
+    })
+  }
+
+  if (!!res.vstart) res.vstart = dateToFileFormat(res.vstart)
+  if (!!res.vend) res.vend = dateToFileFormat(res.vend)
+  if (!!res.date) res.date = dateToFileFormat(res.date)
+
   return res
 }
 

@@ -57,58 +57,62 @@
               </v-col>
             </v-row>
             <v-fade-transition v-else-if="templateFile && Object.keys(templateFile).length != 0">
-              <div class="d-flex justify-space-between">
-                <v-sheet class="text-left text-md-center" elevation="0" width="100%">
-                  <v-card class="d-flex" elevation="0" flat>
-                    <v-img aspect-ratio="1" max-width="200px" src="@/assets/docx.png">
-                      <v-fade-transition>
-                        <v-overlay v-if="isDeleting || isDownloading"
-                                   :color="isDownloading ? 'success' : 'error'"
-                                   :value="true"
-                                   absolute
-                        >
-                          <v-progress-circular
-                            indeterminate
-                            size="48"
-                          ></v-progress-circular>
-                        </v-overlay>
-                      </v-fade-transition>
-                    </v-img>
-                    <div class="d-flex flex-column">
-                      <icon-btn-with-tip btnClass="float-end" color="error"
-                                         icon="mdi-close"
-                                         small
-                                         @click="deleteFile">
-                        Удалить
-                      </icon-btn-with-tip>
-                      <icon-btn-with-tip btnClass="float-end" color="primary" icon="mdi-download"
-                                         small
-                                         @click="downloadFile(templateFile)">
-                        Скачать
-                      </icon-btn-with-tip>
+              <v-row>
+                <v-col>
+                  <v-sheet class="text-left text-md-center" elevation="0" width="100%">
+                    <v-card class="d-flex" elevation="0" flat>
+                      <v-img aspect-ratio="1" max-width="200px" src="@/assets/docx.png">
+                        <v-fade-transition>
+                          <v-overlay v-if="isDeleting || isDownloading"
+                                     :color="isDownloading ? 'success' : 'error'"
+                                     :value="true"
+                                     absolute
+                          >
+                            <v-progress-circular
+                              indeterminate
+                              size="48"
+                            ></v-progress-circular>
+                          </v-overlay>
+                        </v-fade-transition>
+                      </v-img>
+                      <div class="d-flex flex-column">
+                        <icon-btn-with-tip btnClass="float-end" color="error"
+                                           icon="mdi-close"
+                                           small
+                                           @click="deleteFile">
+                          Удалить
+                        </icon-btn-with-tip>
+                        <icon-btn-with-tip btnClass="float-end" color="primary" icon="mdi-download"
+                                           small
+                                           @click="downloadFile(templateFile)">
+                          Скачать
+                        </icon-btn-with-tip>
+                      </div>
+                    </v-card>
+                    <div :title="templateFile.name" class="font-italic">
+                      {{ templateFile.name | truncateFileName }}
                     </div>
-                  </v-card>
-                  <div :title="templateFile.name" class="font-italic">
-                    {{ templateFile.name | truncateFileName }}
-                  </div>
-                </v-sheet>
-                <div style="min-width: fit-content;">
-                  <ul class="text-left">
-                    <li v-for="(tempKey, idx) in templateKeys" :key="idx">
+                  </v-sheet>
+                </v-col>
+                <v-col>
+                  <div style="min-width: fit-content;">
+                    <ul class="text-left">
+                      <li v-for="(tempKey, idx) in templateKeys" :key="idx">
                   <span class="font-italic">
                     <span>&#123;</span>{{ tempKey.key }}<span>&#125;</span>
                   </span> - {{ tempKey.title }}
-                    </li>
-                  </ul>
-                  <v-btn :loading="isExampleLoading" block text @click="downloadExample">Скачать
-                    пример
-                  </v-btn>
-                </div>
-              </div>
+                      </li>
+                    </ul>
+                    <v-btn :loading="isExampleLoading" block text @click="downloadExample">Скачать
+                      пример
+                    </v-btn>
+                  </div>
+                </v-col>
+              </v-row>
             </v-fade-transition>
             <span v-else>
-          Файл ещё не загружен
-        </span>
+                        Файл ещё не загружен
+                      </span>
           </v-sheet>
         </v-col>
       </v-row>

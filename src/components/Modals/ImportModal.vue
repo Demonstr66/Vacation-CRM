@@ -48,8 +48,7 @@
           :loading="isLoading"
           accept=".xlsx,.xls,.csv"
           class="mt-2"
-          placeholder="Файл Excel ( .xlsx, .xls, .csv )"
-          type="get"
+          label="Файл Excel ( .xlsx, .xls, .csv )"
           @change="onChange"
           @click:clear="reset"
       ></v-file-input>
@@ -182,11 +181,11 @@ export default {
   },
   methods: {
     onChange(get) {
-      if (!file) return;
+      if (!this.file) return;
 
       this.isLoading = true;
 
-      excelToArray(file)
+      excelToArray(this.file)
           .then(data => parseArrayData(data, this.availableFields, Object.values(this.users)))
           .then((data) => {
             this.fields = Object.values(data.cols)

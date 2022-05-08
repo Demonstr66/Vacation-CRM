@@ -40,6 +40,13 @@ export default {
     }
   },
   actions: {
+    initialize({dispatch}) {
+      dispatch('subscribe')
+    },
+    onLogOut({dispatch, commit}) {
+      dispatch('unsubscribe')
+      commit('clear')
+    },
     get({}) {
 
     },
@@ -130,10 +137,10 @@ export default {
         return dispatch('update', user)
       })
     },
-    addMultipleUsers({dispatch, rootGetters}, users) {
+    addMultiple({dispatch, rootGetters}, users) {
       return asyncTryDecorator(() => {
         const wid = rootGetters['getWID']
-        if (!users) throw new Error('Что-то пошло не так: users/addMultipleUsers -> !users')
+        if (!users) throw new Error('Что-то пошло не так: users/addMultiple -> !users')
         if (!users.every(user => test(user, wid))) throw new Error('Обязтельные поля не добавлены')
 
         let promises = users.map(user => {

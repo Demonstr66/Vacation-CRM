@@ -25,6 +25,13 @@ export default {
     clear: (s) => s.tasks = null
   },
   actions: {
+    initialize({dispatch}) {
+      dispatch('subscribe')
+    },
+    onLogOut({dispatch, commit}) {
+      dispatch('unsubscribe')
+      commit('clear')
+    },
     get({}) {
 
     },
@@ -79,6 +86,20 @@ export default {
 
       dispatch('DB/unsubscribe', {path}, {root: true})
     },
+    
+    addMultiple({dispatch, rootGetters}, tasks) {
+      return asyncTryDecorator(() => {
+        const wid = rootGetters['getWID']
+        if (!tasks) throw new Error('Что-то пошло не так: tasks/addMultiple -> !tasks')
+        if (!tasks.every(task => test(task, wid))) throw new Error('Обязтельные поля не добавлены')
+
+        let promises = tasks.map(task => {
+          return dispatch('create', task)
+        })
+
+        return Promise.any(promises)
+      })
+    }
   },
   modules: {}
 }

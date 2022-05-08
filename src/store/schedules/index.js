@@ -25,6 +25,13 @@ export default {
     clear: (s) => s.schedules = null
   },
   actions: {
+    initialize({dispatch}) {
+      dispatch('subscribe')
+    },
+    onLogOut({dispatch, commit}) {
+      dispatch('unsubscribe')
+      commit('clear')
+    },
     get({}) {
 
     },
@@ -50,6 +57,7 @@ export default {
         const path = basePath(wid)
         const key = id
 
+        dispatch('vacations/deleteAllBySid', id, {root: true})
         return dispatch('DB/delete', {path, key}, {root: true})
       })
     },

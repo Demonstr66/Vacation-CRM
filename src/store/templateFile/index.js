@@ -33,6 +33,13 @@ export default {
     clear: (s) => s.file = null
   },
   actions: {
+    initialize({dispatch}) {
+      dispatch('get')
+    },
+    onLogOut({dispatch, commit}) {
+      // dispatch('unsubscribe')
+      commit('clear')
+    },
     upload({rootGetters, dispatch}, data) {
       return asyncTryDecorator(() => {
         const storage = getStorage();

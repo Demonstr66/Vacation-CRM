@@ -14,6 +14,8 @@ import tasks from './tasks'
 import vacations from './vacations'
 import schedules from './schedules'
 import templateFile from './templateFile'
+import * as XLSX from "xlsx/xlsx.mjs";
+import FileDownload from "js-file-download";
 
 const modules = {
   message,
@@ -70,8 +72,8 @@ export default new Vuex.Store({
       commit('setAccessLevel', 2)
       commit('setWID', user.photoURL)
       commit('setReady', true)
-      dispatch('FB/remember')
-      dispatch('subscribeOnData')
+      // dispatch('FB/remember')
+      dispatch('initializeStoreElement')
     },
     async onChangeAuthState({dispatch, commit, getters}, user) {
       console.log('onChangeAuthState')
@@ -85,8 +87,8 @@ export default new Vuex.Store({
       await dispatch('setAccessLevel', user)
 
       commit('setReady', true)
-      dispatch('FB/remember')
-      dispatch('subscribeOnData')
+      // dispatch('FB/remember')
+      dispatch('initializeStoreElement')
       return Promise.resolve()
     },
     onRouteEnter() {
@@ -107,7 +109,7 @@ export default new Vuex.Store({
       let rememberMethod = 'FB/remember'
       if (!data.remember) rememberMethod = 'FB/sessionRemember'
 
-      // await dispatch(rememberMethod)
+      await dispatch(rememberMethod)
 
       const res = await dispatch('auth/singIn', data)
     
@@ -147,11 +149,11 @@ export default new Vuex.Store({
 
       commit('setAccessLevel', accessLevel)
     },
-    subscribeOnData({dispatch}) {
+    initializeStoreElement({dispatch}) {
       for (let module in modules) {
         try {
-          if (modules[module].actions && modules[module].actions.subscribe)
-            dispatch(`${module}/subscribe`)
+          if (modules[module].actions && modules[module].actions.initialize)
+            dispatch(`${module}/initialize`)
         } catch (e) {
           continue
         }
@@ -162,16 +164,25 @@ export default new Vuex.Store({
       commit('setWID', null)
       for (let module in modules) {
         try {
-          if (modules[module].mutations && modules[module].mutations.clear)
-            commit(`${module}/clear`)
-
-          if (modules[module].actions && modules[module].actions.unsubscribe)
-            dispatch(`${module}/unsubscribe`)
+          if (modules[module].actions && modules[module].actions.onLogOut)
+            dispatch(`${module}/onLogOut`)
         } catch (e) {
           continue
         }
       }
     },
+    createAndDownloadXLSX() {
+      const wb = XLSX.utils.book_new()
+      wb.SheetNames.push('testSheet')
+      wb.SheetNames.push('testSheet2')
+
+      const ws = XLSX.utils.aoa_to_sheet([['a1', 'b1'], ['a2','b2']])
+
+      wb.Sheets['testSheet'] = ws
+      wb.Sheets['testSheet2'] = ws
+
+      XLSX.writeFile(wb, "autoGenerateFile.xlsx");
+    }
   },
   modules
 })

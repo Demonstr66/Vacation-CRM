@@ -36,25 +36,31 @@
             </div>
           </template>
         </vc-date-picker>
-        <v-btn block color="primary" text @click="dates=null">Сбросить</v-btn>
+        <v-btn block color="primary" text @click="reset">Сбросить</v-btn>
 
       </v-col>
       <v-col class="d-flex flex-column justify-space-between">
         <div>
+          <div class="d-flex align-end">
+            <span class="title">Дней выбрано:</span>
+            <v-chip class="ml-4" :color="rangeLength === 0 ? '' : 'success'" label outlined>
+              <span class="font-weight-bold"> {{ rangeLength }}</span>
+            </v-chip>
+          </div>
           <v-text-field
             v-model="dateRangeText"
+            hide-details
             label="Даты"
             prepend-icon="mdi-calendar"
             readonly
           ></v-text-field>
-          <div class="d-flex align-center justify-center">
-              <span class="text-h4">Дней:</span
-              >
-            <v-chip :color="rangeLength === 0 ? '' : 'success'" label large>{{
-                rangeLength
-              }}
-            </v-chip>
-          </div>
+          <v-checkbox
+            v-model="vacation.actually"
+            hide-details
+            label="Фактический отпуск (без заявления)"
+          >
+
+          </v-checkbox>
         </div>
         <div>
           <small>
@@ -70,7 +76,21 @@
       </v-col>
     </v-row>
 
-    <v-row justify="space-between">
+    <v-row>
+      <v-col
+        v-for="(lvl, index) in levels.filter(l => !l.hidden)"
+        :key="index"
+        cols="auto"
+      >
+        <div class="d-flex align-center">
+          <div class="mx-1" style="width: 12px !important;">
+            <span :style="`background-color: ${colors[lvl.id]}`" class="d-block vc-bar"></span>
+          </div>
+          <span style="width: fit-content;">{{ lvl.title }}</span>
+        </div>
+      </v-col>
+    </v-row>
+    <v-row>
       <v-col cols="auto">
         <v-badge color="black" dot inline left>
           <span class="subtitle-1"> Рабочие дни </span>
@@ -123,7 +143,10 @@ export default {
       type: Object,
       required: true
     },
-    vacation: {},
+    vacation: {
+      type: Object,
+      default: defVacation()
+    },
     existVacations: {}
   },
   data: () => ({
@@ -194,10 +217,12 @@ export default {
       return this.dates != null
     },
     disableDates() {
-      return Object.values(this.existVacations).map(x => ({
-        start: new Date(x.start),
-        end: new Date(x.end)
-      }))
+      return Object.values(this.existVacations)
+        .filter(x => x.actually === !!this.vacation.actually)
+        .map(x => ({
+          start: new Date(x.start),
+          end: new Date(x.end)
+        }))
     },
     dateRangeText() {
       if (!this.dates) return ""
@@ -207,14 +232,14 @@ export default {
       return `C ${start} по ${end}`
     },
     rangeLength() {
-      if (!this.dates) return "0";
+      if (!this.dates) return 0;
 
       return dateDiff(this.dates);
     },
     selectAttributes() {
       return {
         highlight: {
-          fillMode: 'light',
+          fillMode: 'light'
         }
       }
     },
@@ -262,26 +287,29 @@ export default {
           }
         }),
         //Мои отпуска
-        ...Object.values(this.existVacations).map(v => {
-          return {
-            key: `myVocation-${v.id}`,
-            highlight: {
-              color: 'green',
-              fillMode: 'light',
-              contentClass: 'dayContentDisabled'
-            },
-            customData: {
-              title: 'Мой отпуск'
-            },
-            popover: {
-              label: 'Мой отпуск'
-            },
-            dates: {
-              start: v.start,
-              end: v.end
+        ...Object.values(this.existVacations)
+          .filter(v => v.actually === !!this.vacation.actually)
+          .map(v => {
+            const title =
+              `Мой отпуск: ${this.$options.filters.dateFilter(v.start)} - ${this.$options.filters.dateFilter(v.end)}`
+            return {
+              key: `myVocation-${v.id}`,
+              highlight: {
+                color: !v.actually ? 'green' : 'red',
+                fillMode: 'light',
+              },
+              customData: {
+                title
+              },
+              popover: {
+                label: title
+              },
+              dates: {
+                start: v.start,
+                end: v.end
+              }
             }
-          }
-        }),
+          }),
         {
           key: 'weekends',
           highlight: {
@@ -339,12 +367,13 @@ export default {
       }
 
       let root = document.documentElement;
-      root.style.setProperty('--min-h-day', "52px");
+      root.style.setProperty('--min-h-day', "47px");
     },
     onSubmit() {
       let vacation = defVacation(this.vacation, {
         start: this.$moment(this.dates.start).format('YYYY-MM-DD'),
         end: this.$moment(this.dates.end).format('YYYY-MM-DD'),
+        days: this.rangeLength,
         sid: this.schedule.id,
         uid: this.currentUID
       })
@@ -361,15 +390,29 @@ export default {
     },
     reset() {
       this.dates = null;
+      this.vacation.actually = false
     },
   },
+  filters: {
+    weekDayFilter(val) {
+      const weekDay = ['ВС', 'ПН', 'ВТ', 'СР', 'ЧТ', 'ПТ', 'СБ']
+      return weekDay[new Date(val).getDay()]
+    },
+    dateFilter(val) {
+      return val.split('-').reverse().join('.')
+    },
+    lowerCase(val) {
+      return val.toLowerCase()
+    }
+  }
 };
 </script>
 
 <style lang="css">
 :root {
-  --min-h-day: 52px;
+  --min-h-day: 47px;
 }
+
 .vc-day {
   min-height: var(--min-h-day) !important;
 }
@@ -398,5 +441,9 @@ export default {
 
 .vc-day-popover-row-indicator {
   margin-top: 10px;
+}
+
+.is-disabled {
+  font-style: italic !important;
 }
 </style>

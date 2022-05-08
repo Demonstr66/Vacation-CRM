@@ -120,7 +120,7 @@ export function parseTeamsInArray(data, teams) {
         if (!d.team) return d
 
         const titleTeam = normalize(d.team)
-        let team = teams.find(t => normalize(t.title) == titleTeam)
+        let team = Object.values(teams).find(t => normalize(t.title) == titleTeam)
 
         if (!team) team = newTeams.find(t => normalize(t.title) == titleTeam)
 
@@ -149,7 +149,7 @@ export function parsePostsInArray(data, posts) {
         if (!d.post) return d
 
         const titlePost = normalize(d.post)
-        let post = posts.find(t => normalize(t.title) == titlePost)
+        let post = Object.values(posts).find(t => normalize(t.title) == titlePost)
 
         if (!post) post = newPosts.find(t => normalize(t.title) == titlePost)
 
@@ -192,6 +192,14 @@ export function basePathFunction(base) {
 
 export function isUnique(item, items, key = 'title') {
   return !items.some(i => i[key] == item[key])
+}
+
+export function dateToFileFormat(val, format = '"DD" piping YYYYг.') {
+  //форматирвоание даты для заявления
+  const months = ['января', 'февраля', 'марта', 'апреля', 'мая', 'июня', 'июля', 'августа', 'сентября', 'октября', 'ноября', 'декабря',]
+  const date = moment(val)
+  const month = date.get('month')
+  return date.format(format).replace('piping', months[month])
 }
 
 export async function asyncTryDecorator(callback) {

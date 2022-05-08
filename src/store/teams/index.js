@@ -25,6 +25,13 @@ export default {
     clear: (s) => s.teams = null
   },
   actions: {
+    initialize({dispatch}) {
+      dispatch('subscribe')
+    },
+    onLogOut({dispatch, commit}) {
+      dispatch('unsubscribe')
+      commit('clear')
+    },
     get({}) {
 
     },
@@ -80,5 +87,19 @@ export default {
 
       dispatch('DB/unsubscribe', {path}, {root: true})
     },
+
+    addMultiple({dispatch, rootGetters}, teams) {
+      return asyncTryDecorator(() => {
+        const wid = rootGetters['getWID']
+        if (!teams) throw new Error('Что-то пошло не так: teams/addMultiple -> !teams')
+        if (!teams.every(team => test(team, wid))) throw new Error('Обязтельные поля не добавлены')
+
+        let promises = teams.map(team => {
+          return dispatch('create', team)
+        })
+
+        return Promise.any(promises)
+      })
+    }
   }
 }

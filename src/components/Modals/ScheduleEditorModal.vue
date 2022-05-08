@@ -226,7 +226,7 @@ export default {
       ]
     },
     defaultName() {
-      return `График отпусков на ${(new Date()).getFullYear()} год`
+      return `График отпусков на ${this.schedule.year || (new Date()).getFullYear()} год`
     },
     years() {
       const d = 4
