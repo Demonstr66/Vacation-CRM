@@ -14,9 +14,10 @@ const taskMethods = {
       return this.mixSaveData({saveMethod, data, isNew})
     },
     mixDeleteTask(id) {
-      let delMethod = "tasks/delete";
-
-      return this.mixDeleteData({delMethod, id})
+      return Promise.all([
+        this.mixDeleteData({delMethod: "tasks/delete", id}),
+        this.mixDeleteData({delMethod: "users/deleteTaskFromUsers", id})
+      ])
     }
   }
 }
@@ -30,9 +31,10 @@ const teamMethods = {
       return this.mixSaveData({saveMethod, data, isNew})
     },
     mixDeleteTeam(id) {
-      let delMethod = "teams/delete";
-
-      return this.mixDeleteData({delMethod, id})
+      return Promise.all([
+        this.mixDeleteData({delMethod: "teams/delete", id}),
+        this.mixDeleteData({delMethod: "users/deleteTeamFromUsers", id})
+      ])
     }
   }
 }
@@ -46,9 +48,10 @@ const postMethods = {
       return this.mixSaveData({saveMethod, data, isNew})
     },
     mixDeletePost(id) {
-      let delMethod = "posts/delete";
-
-      return this.mixDeleteData({delMethod, id})
+      return Promise.all([
+        this.mixDeleteData({delMethod: "posts/delete", id}),
+        this.mixDeleteData({delMethod: "users/deletePostFromUsers", id})
+      ])
     }
   }
 }

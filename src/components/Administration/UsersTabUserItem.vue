@@ -61,8 +61,8 @@
                 <v-chip
                   v-for="(task, index) in user.tasks"
                   :key="index"
-                  class="mb-1 mr-1"
                   :color="task === draggingEl.item && draggingEl.uid === user.uid ? 'success' : ''"
+                  class="mb-1 mr-1"
                   close
                   label
                   small
@@ -74,10 +74,10 @@
                   v-if="draggingEl.uid === user.uid &&
                   (!user.tasks || !user.tasks.some(task => task === draggingEl.item))"
                   class="mb-1 mr-1"
+                  close
                   color="primary"
                   label
                   small
-                  close
                 >
                   <v-list-item-subtitle>{{ taskTitle(draggingEl.item) }}</v-list-item-subtitle>
                 </v-chip>
@@ -108,11 +108,12 @@
             </template>
             <main-tools
               :active="user.active"
-              :fab="true"
               :disable="{'delete': user.uid === currentUID}"
+              :fab="true"
               :vertical="true"
               @delete="onDeleteUser(user.uid)"
               @edit="onEdit(user.uid)"
+              @goto="gotoUser(user.uid)"
             ></main-tools>
           </v-menu>
 
@@ -122,6 +123,7 @@
             :disable="{'delete': user.uid === currentUID}"
             @delete="onDeleteUser(user.uid)"
             @edit="onEdit(user.uid)"
+            @goto="gotoUser(user.uid)"
           ></main-tools>
         </v-col>
       </v-row>
@@ -145,6 +147,10 @@ export default {
     onEdit: {},
   },
   methods: {
+    gotoUser(uid) {
+      console.log(uid)
+      this.$router.push({name: 'User', params: {uid}})
+    },
     taskTitle(id) {
       const task = Object.values(this.tasks).find((t) => t.id === id);
       return task ? task.title : "Без названия";
@@ -224,12 +230,12 @@ export default {
   left: 0;
 
   width: 100%;
-  width: -moz-available;          /* WebKit игнор. */
-  width: -webkit-fill-available;  /* Mozilla игнор. */
+  width: -moz-available; /* WebKit игнор. */
+  width: -webkit-fill-available; /* Mozilla игнор. */
 
   height: 100%;
-  height: -moz-available;          /* WebKit игнор. */
-  height: -webkit-fill-available;  /* Mozilla игнор. */
+  height: -moz-available; /* WebKit игнор. */
+  height: -webkit-fill-available; /* Mozilla игнор. */
 
   background-color: rgba(138, 255, 255, 0.1);
   border-radius: 4px;
@@ -261,8 +267,8 @@ export default {
   background-color: rgb(25, 118, 210, 0);
   transition: background-color 0.5s ease-in-out;
 
-  &:hover {
-    background-color: rgb(25, 118, 210, 0.12);
-  }
+  //&:hover {
+  //  background-color: rgb(25, 118, 210, 0.12);
+  //}
 }
 </style>

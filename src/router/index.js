@@ -1,19 +1,28 @@
 import Vue from 'vue'
 import VueRouter from 'vue-router'
-import Home from '@/views/Home.vue'
-import Vacations from '@/views/Vacations.vue'
-import Vacation from '@/views/Vacation.vue'
-import Deportment from '@/views/Deportment.vue'
-import Login from '@/views/Login.vue'
-import Account from '@/views/Account.vue'
-import Register from '@/views/Register.vue'
-import ForgetPassword from '@/views/ForgetPassword.vue'
-import EmailVerifed from '@/views/EmailVerifed'
-import EmailSending from '@/views/EmailSending'
-import Schedules from '@/views/Schedules'
-import Schedule from '@/views/Schedule'
 import store from '@/store'
+
 import {getAuth} from "firebase/auth";
+
+const Home = () => import('@/views/Home.vue')
+const Vacations = () => import('@/views/Vacations.vue')
+const Vacation = () => import('@/views/Vacation.vue')
+const Deportment = () => import('@/views/Deportment.vue')
+const Administration = () => import('@/views/Administration.vue')
+const Login = () => import('@/views/Login.vue')
+const Account = () => import('@/views/Account.vue')
+const Register = () => import('@/views/Register.vue')
+const ForgetPassword = () => import('@/views/ForgetPassword.vue')
+const EmailVerifed = () => import('@/views/EmailVerifed')
+const EmailSending = () => import('@/views/EmailSending')
+const Schedules = () => import('@/views/Schedules')
+const Schedule = () => import('@/views/Schedule')
+const User = () => import('@/views/User')
+const Tab1 = () => import('@/components/Administration/Users')
+const Tab2 = () => import('@/components/Administration/Structure')
+const Tab3 = () => import('@/components/Administration/Archive')
+const Game = () => import('@/views/Game')
+const Manage = () => import('@/views/Manage')
 
 
 Vue.use(VueRouter)
@@ -45,12 +54,12 @@ const routes = [
     }
   },
   {
-    path: '/vacation/:id',
+    path: '/vacation/:uid/:id',
     name: 'Vacation',
     component: Vacation,
     meta: {
       layout: 'MainLayout',
-      title: 'Мои отпуска',
+      title: '',
       protected: {
         accessLevel: [2]
       }
@@ -63,6 +72,81 @@ const routes = [
     meta: {
       layout: 'MainLayout',
       title: 'Управление',
+      protected: {
+        accessLevel: [2]
+      }
+    }
+  },
+  {
+    path: '/manage',
+    name: 'Manage',
+    component: Manage,
+    meta: {
+      layout: 'MainLayout',
+      title: 'Управление',
+      protected: {
+        accessLevel: [2]
+      }
+    }
+  },
+  {
+    path: '/administration',
+    name: 'Administration',
+    component: Administration,
+    children: [
+      {
+        path: '/',
+        redirect: {name: 'Tab1'}
+      },
+      {
+        path: 'tab1',
+        component: Tab1,
+        name: 'Tab1',
+        meta: {
+          layout: 'MainLayout',
+          title: 'Управление',
+          protected: {
+            accessLevel: [2]
+          }
+        }
+      }, {
+        path: 'tab2',
+        component: Tab2,
+        name: 'Tab2',
+        meta: {
+          layout: 'MainLayout',
+          title: 'Управление',
+          protected: {
+            accessLevel: [2]
+          }
+        }
+      }, {
+        path: 'tab3',
+        component: Tab3,
+        name: 'Tab3',
+        meta: {
+          layout: 'MainLayout',
+          title: 'Управление',
+          protected: {
+            accessLevel: [2]
+          }
+        }
+      }],
+    meta: {
+      layout: 'MainLayout',
+      title: 'Управление',
+      protected: {
+        accessLevel: [2]
+      }
+    }
+  },
+  {
+    path: '/user/:uid',
+    name: 'User',
+    component: User,
+    meta: {
+      layout: 'MainLayout',
+      title: 'Профиль',
       protected: {
         accessLevel: [2]
       }
@@ -101,6 +185,18 @@ const routes = [
       title: 'Настройки аккаунта',
       protected: {
         accessLevel: [2]
+      }
+    }
+  },
+  {
+    path: '/game',
+    name: 'Game',
+    component: Game,
+    meta: {
+      layout: 'fullScreen',
+      title: 'Игра',
+      protected: {
+        accessLevel: [0, 1]
       }
     }
   },
@@ -186,10 +282,19 @@ router.beforeEach(async (to, from, next) => {
     if (available.some(a => a == accessLevel)) next()
     else {
       switch (accessLevel) {
-        case 0: next({name: 'Login'}); console.log('Redirect to Login'); break;
-        case 1: next({name: 'EmailSending', query: {e: user.email}}); console.log('Redirect to' +
-          ' EmailSending'); break;
-        case 2: next({name: 'Home'}); console.log('Redirect to Home'); break;
+        case 0:
+          next({name: 'Login'});
+          console.log('Redirect to Login');
+          break;
+        case 1:
+          next({name: 'EmailSending', query: {e: user.email}});
+          console.log('Redirect to' +
+            ' EmailSending');
+          break;
+        case 2:
+          next({name: 'Home'});
+          console.log('Redirect to Home');
+          break;
       }
     }
   }

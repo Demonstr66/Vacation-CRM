@@ -2,10 +2,10 @@
   <div>
     <v-list v-if="Object.values(archive).length">
       <UserItemArchiveTabDeportment
-          v-for="user in archive"
-          :key="user.uid"
-          :user="user"
-          @userEvent="onItemEvent"
+        v-for="user in archive"
+        :key="user.uid"
+        :user="user"
+        @userEvent="onItemEvent"
       />
     </v-list>
     <span v-else>
@@ -24,7 +24,7 @@
 
 <script>
 import {archive} from "@/mixins/ComputedData";
-import UserItemArchiveTabDeportment from "@/components/Deportment/ArchiveTabUserItem";
+import UserItemArchiveTabDeportment from "@/components/Administration/ArchiveTabUserItem";
 import Alert from "@/components/Modals/Alert";
 import {userData} from "@/mixins/workspaceHelper";
 

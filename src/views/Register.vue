@@ -112,13 +112,14 @@
 import {inputRules} from "@/mixins/inputRules";
 import IconBtnWithTip from "@/components/IconBtnWithTip";
 import {accountMethods} from "@/mixins/AccountMethods";
+import {displayName} from "@/mixins/dataHelper";
 
 const short = require("short-uuid");
 
 export default {
   name: 'Register',
   components: {IconBtnWithTip},
-  mixins: [inputRules, accountMethods],
+  mixins: [inputRules, accountMethods, displayName],
   data: () => ({
     isPassVisible: false,
     predefineUser: false,
@@ -148,12 +149,6 @@ export default {
     }
   },
   methods: {
-    displayName(val) {
-      return val
-        .split(/\s+/)
-        .map((w, i) => (i ? w.substring(0, 1).toUpperCase() + "." : w))
-        .join(" ");
-    },
     async onSubmit() {
       this.loading = true;
 
@@ -161,6 +156,7 @@ export default {
         ...this.authData,
         displayName: this.displayName(this.authData.fullName),
         role: this.isNewWS ? "owner" : "user",
+        parent: ''
       };
       const workspace = {
         id: this.isNewWS ? short().new() : this.authData.workspace,

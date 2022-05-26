@@ -3,8 +3,8 @@
     v-model="isExpand"
     :mini-variant="!isExpand"
     :permanent="!$vuetify.breakpoint.mobile"
-    app
     clipped
+    app
   >
     <v-list v-if="!loading" dense nav>
       <v-list-item
@@ -67,7 +67,8 @@ export default {
     links: [
       {path: 'Schedules', icon: 'mdi-folder', title: 'Графики отпусков'},
       {path: 'Vacations', icon: 'mdi-star', title: 'Мои отпуска'},
-      {path: 'Deportment', icon: 'mdi-account-group', title: 'Команда'},
+      {path: 'Manage', icon: 'mdi-briefcase-check', title: 'Управление'},
+      {path: 'Tab1', icon: 'mdi-account-group', title: 'Команда'},
     ]
   }),
   computed: {

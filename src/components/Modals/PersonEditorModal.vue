@@ -39,9 +39,10 @@ import {defUser} from "@/plugins/schema.js";
 
 import {domen, teams} from "@/mixins/ComputedData";
 import {userData} from "@/mixins/workspaceHelper";
+import {displayName} from "@/mixins/dataHelper";
 
 export default {
-  mixins: [userData, teams, domen],
+  mixins: [userData, teams, domen, displayName],
   props: {
     show: {
       type: Boolean,
@@ -77,15 +78,13 @@ export default {
   },
   methods: {
     async onSubmit() {
-      // let val1 = this.$refs.pers.validate()
-      // let val2 = this.$refs.account.validate()
-      // if (!val1 || !val2) return
-
       let user = defUser(
           this.user,
           this.$refs.account.getData(),
           this.$refs.pers.getData()
       );
+
+      if (!!!user.displayName) user.displayName = this.displayName(user.fullName)
 
       this.mixSaveUserDataToDb(this.isNewUser, user)
           .then(() => this.isChanged = false)

@@ -4,9 +4,9 @@
       :headers="headers"
       :items="Object.values(schedules)"
       :loading="!schedulesReady"
+      dense
       item-class="clickable"
       item-key="id"
-      dense
       mobile-breakpoint="100"
       no-data-text="Графики ещё не добавлены"
 
@@ -56,30 +56,30 @@
             >
               Удалить
             </icon-btn-with-tip>
-            <icon-btn-with-tip color="info" icon="mdi-eye">
+            <icon-btn-with-tip color="info" icon="mdi-eye" @click="onShowSchedule(item.id)">
               Просмотр
             </icon-btn-with-tip>
           </div>
         </v-menu>
         <div v-else>
-            <icon-btn-with-tip
-              :disable="item.isActive || item.isLoading"
-              :icon="item.isActive ? 'mdi-pencil-lock' : 'mdi-pencil'"
-              @click="onEdit(item)"
-            >
-              Редактировать
-            </icon-btn-with-tip>
-            <icon-btn-with-tip
-              :disable="item.isActive || item.isLoading"
-              color="error"
-              icon="mdi-delete"
-              @click="onDelete(item.id)"
-            >
-              Удалить
-            </icon-btn-with-tip>
-            <icon-btn-with-tip color="info" icon="mdi-eye">
-              Просмотр
-            </icon-btn-with-tip>
+          <icon-btn-with-tip
+            :disable="item.isActive || item.isLoading"
+            :icon="item.isActive ? 'mdi-pencil-lock' : 'mdi-pencil'"
+            @click="onEdit(item)"
+          >
+            Редактировать
+          </icon-btn-with-tip>
+          <icon-btn-with-tip
+            :disable="item.isActive || item.isLoading"
+            color="error"
+            icon="mdi-delete"
+            @click="onDelete(item.id)"
+          >
+            Удалить
+          </icon-btn-with-tip>
+          <icon-btn-with-tip color="info" icon="mdi-eye" @click="onShowSchedule(item.id)">
+            Просмотр
+          </icon-btn-with-tip>
         </div>
       </template>
     </v-data-table>
@@ -202,6 +202,9 @@ export default {
         this.activation.text = null
         this.activation.msg = null
       })
+    },
+    onShowSchedule(id) {
+      this.$router.push({name: 'Schedule', params: {id: id}})
     },
     onDelete(id) {
       this.deleting.id = id

@@ -35,28 +35,12 @@ export default {
       commit('clear')
     },
     create({dispatch, commit}, {user, wid}) {
-      // return asyncTryDecorator(async () => {
-      //   if (!test(user, wid)) throw new Error('Что-то пошло не так: currentUser/create -> test')
-      //
-      //   const userCredential = await dispatch('FB/createAccount', user, {root: true})
-      //   const uid = userCredential.user.uid
-      //
-      //   const path = basePath(wid)
-      //   const key = uid
-      //   const data = normalize(user, {uid, workspace: wid})
-      //
-      //   dispatch('FB/updateAccountInfo', data, {root: true})
-      //   commit('set', data)
-      //
-      //   return dispatch('DB/set', {path, key, data}, {root: true})
-      // })
-
       return new Promise(async(res, rej) => {
         try {
           if (!test(user, wid)) throw new Error('Что-то пошло не так: currentUser/create -> test')
-console.log('before')
+
           const userCredential = await dispatch('FB/createAccount', user, {root: true})
-          console.log('after')
+
           const uid = userCredential.user.uid
 
           const path = basePath(wid)

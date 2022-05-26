@@ -19,6 +19,7 @@ export default {
     getArchive: (s) => s.archive,
     getUserById: (s) => (uid) => s.users ? s.users[uid] : null,
     getUserByIdFromArchive: (s) => (uid) => s.archive ? s.archive[uid] : null,
+    getDisplayNameById: (s) => (uid) => s.users ? s.users[uid] ? s.users[uid].displayName : '' : '',
     isReady: (s) => s.ready
   },
   mutations: {
@@ -174,14 +175,14 @@ export default {
       })
     },
 
-    deleteTeamFromUsers({dispatch}, {id}) {
+    deleteTeamFromUsers({dispatch}, id) {
       return dispatch('deleteSingleItemFromUsers', {type: 'team', id})
     },
-    deletePostFromUsers({dispatch}, {id}) {
+    deletePostFromUsers({dispatch}, id) {
       return dispatch('deleteSingleItemFromUsers', {type: 'post', id})
     },
-    deleteTaskFromUsers({dispatch}, {id}) {
-      return dispatch('deleteItemFromArrayItemsFromUsers', {type: 'task', id})
+    deleteTaskFromUsers({dispatch}, id) {
+      return dispatch('deleteItemFromArrayItemsFromUsers', {type: 'tasks', id})
     },
     deleteSingleItemFromUsers({rootGetters, dispatch}, {type, id}) {
       return asyncTryDecorator(() => {
@@ -215,9 +216,13 @@ export default {
 
         Object.values(users).map(user => {
           if (!user[type]) return
-          const data = user[type].filter(item => item !== id)
 
-          if (!data.length) return
+          const idx = user[type].findIndex(item => item === id)
+
+          if (idx === -1) return
+
+          let data = user[type]
+          data.splice(idx, 1)
 
           const path = basePath(wid, user.uid)
           const key = type

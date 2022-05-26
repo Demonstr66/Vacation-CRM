@@ -17,10 +17,20 @@ export const teams = {
     ...mapGetters("teams", {teams: 'get'}),
   }
 }
+export const teamsCount = {
+  computed: {
+    ...mapGetters("teams", {teamsCount: 'count'}),
+  }
+}
 
 export const tasks = {
   computed: {
     ...mapGetters("tasks", {tasks: 'get'}),
+  }
+}
+export const tasksCount = {
+  computed: {
+    ...mapGetters("tasks", {tasksCount: 'count'}),
   }
 }
 
@@ -33,6 +43,11 @@ export const schedules = {
 export const posts = {
   computed: {
     ...mapGetters("posts", {posts: 'get'}),
+  }
+}
+export const postsCount = {
+  computed: {
+    ...mapGetters("posts", {postsCount: 'count'}),
   }
 }
 
@@ -97,4 +112,57 @@ export const myVacations = {
       return this.getByUid(this.currentUID)
     }
   }
+}
+
+export const allVacations = {
+  computed: {
+    ...mapGetters("vacations", {'allVacations': 'get'})
+  }
+}
+
+export const calendar = {
+  computed: {
+    calendar() {
+      let currDay = this.$moment(`${this.year}-01-01`)
+      let days = []
+      let months = {}
+
+      while (currDay.get('year') === this.year) {
+        days.push(this.$moment(currDay))
+
+        const m = currDay.get('month')
+        if (!months[m]) months[m] = {
+          title: currDay.format('MMMM'),
+          days: 0
+        }
+        months[m].days += 1
+
+        currDay.add(1, 'days')
+      }
+
+      days = days.map(r => ({
+        dayNumber: r.format('DD'),
+        date: r.format('YYYY-MM-DD'),
+        endOfMonth: r.get('month') !== this.$moment(r).add(1, 'days').get('month'),
+        endOfYear: r.get('year') !== this.$moment(r).add(1, 'days').get('year'),
+        weekend: r.day() == 6 || r.day() == 0,
+        workday: this.schedule.exception.workdays.indexOf(r.format('YYYY-MM-DD')) != -1,
+        holiday: this.schedule.exception.holidays.indexOf(r.format('YYYY-MM-DD')) != -1,
+        today: r.format('YYYY-MM-DD') === this.$moment().format('YYYY-MM-DD')
+      }))
+
+      return {days, months: Object.values(months)}
+    }
+  },
+}
+
+export const vacationStatuses = {
+  data: () => ({
+    vacationStatuses: Object.freeze({
+      0: 'Черновик',
+      1: 'Ожидает подтверждения',
+      2: 'Утверждено',
+      3: 'Отклонено'
+    })
+  })
 }

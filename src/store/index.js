@@ -55,44 +55,13 @@ export default new Vuex.Store({
     setWID: (s, v) => s.wid = v
   },
   actions: {
-    // loadUserData({dispatch}, user) {
-    //   return new Promise((res) => {
-    //     if (!user.emailVerified) router.replace({name: 'EmailSending'})
-    //     // getAuth().onAuthStateChanged(async (user) => {
-    //     //   // const result = await dispatch('onChangeAuthState', user)
-    //     //
-    //     //   res(result)
-    //     // })
-    //
-    //   })
-    // },
     loadUserData({commit, dispatch}, user) {
       if (!user.emailVerified) return commit('setAccessLevel', 1)
 
       commit('setAccessLevel', 2)
       commit('setWID', user.photoURL)
       commit('setReady', true)
-      // dispatch('FB/remember')
       dispatch('initializeStoreElement')
-    },
-    async onChangeAuthState({dispatch, commit, getters}, user) {
-      console.log('onChangeAuthState')
-      if (!user) {
-        if (getters.isReady) dispatch('logOut')
-        return
-      }
-      if (!user.emailVerified) return dispatch('sendEmailVerification')
-
-      commit('setWID', user.photoURL)
-      await dispatch('setAccessLevel', user)
-
-      commit('setReady', true)
-      // dispatch('FB/remember')
-      dispatch('initializeStoreElement')
-      return Promise.resolve()
-    },
-    onRouteEnter() {
-
     },
     async logOut({dispatch, commit}) {
       commit('setReady', true)
@@ -162,6 +131,7 @@ export default new Vuex.Store({
     clearAllData({commit, dispatch}) {
       commit('setAccessLevel', 0)
       commit('setWID', null)
+      commit('setReady', true)
       for (let module in modules) {
         try {
           if (modules[module].actions && modules[module].actions.onLogOut)

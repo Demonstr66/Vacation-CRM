@@ -31,6 +31,7 @@ export const dictionary = {
   "auth/invalid-email": "Некорректный email",
   "auth/email-not-verify": "Email не подтверждён",
   "email_confirm": "Email подтверждён",
+  "auth/network-request-failed": "Проверьте подключение к сети"
 }
 
 export function excelToArray(file) {

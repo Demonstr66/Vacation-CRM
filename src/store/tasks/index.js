@@ -14,6 +14,8 @@ export default {
   }),
   getters: {
     get: (s) => s.tasks || {},
+    count: (s) => Object.values(s.tasks).length,
+    getTitle: (s) => (id) => s.tasks ? s.tasks[id] ? s.tasks[id].title : '' : '',
     isReady: (s) => s.ready
   },
   mutations: {

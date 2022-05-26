@@ -1,18 +1,57 @@
 <template>
   <div>
+    <v-progress-linear v-if="!dataIsReady" indeterminate></v-progress-linear>
     <v-data-table
-      v-if="!!schedule"
+      v-else
+      :expanded="expanded"
       :headers="headers"
-      :items="vacations"
+      :items="Object.values(vacations)"
+      :items-per-page="-1"
+      hide-default-footer
       no-data-text="Отпуска ещё не добавлены"
+      show-expand
     >
-      <template v-slot:top>
+      <template v-slot:expanded-item="{ headers, item }">
+        <td :colspan="headers.length">
+          <div v-if="!!item.history">
+            <v-timeline
+              dense
+            >
+              <v-timeline-item
+                small
+                v-for="(historyItem, idx) in item.history"
+                :key="idx"
+              >
+                <v-card
+                  flat
+
+                >
+                  <v-card-title>
+                    {{historyItem.statusChangeByUid}}
+                  </v-card-title>
+                  <v-card-subtitle>
+                    {{$moment(historyItem.statusChangeAt).format('YYYY-MM-DD hh:mm')}}
+                  </v-card-subtitle>
+                  <blockquote>
+                    {{historyItem.comment}}
+                  </blockquote>
+                </v-card>
+              </v-timeline-item>
+            </v-timeline>
+          </div>
+          <div v-else>
+            История отсутсвует
+          </div>
+        </td>
+      </template>
+      <template v-slot:top="item">
         <v-toolbar dense flat>
           <v-toolbar-title class="d-flex flex-column">
-            <span>{{ schedule.title }}</span>
-            <span :class="schedule.isActive ? 'error--text' : 'info--text'" class="caption">
+            <span>{{ schedule ? schedule.title : '' }}</span>
+            <span :class="schedule && schedule.isActive ? 'error--text' : 'info--text'"
+                  class="caption">
             {{
-                schedule.isActive
+                schedule && schedule.isActive
                   ? 'Редактирование не доступно'
                   : 'Доступно для редактирования'
               }}
@@ -27,30 +66,32 @@
       <template v-slot:item.start="{item}">
         <div>
           <v-icon>mdi-calendar</v-icon>
-          {{ item.start | weekDayFilter | lowerCase }}
-          <span class="font-weight-bold">{{ item.start | dateFilter }}</span> -
-          {{ item.end | weekDayFilter | lowerCase }}
-          <span class="font-weight-bold">{{ item.end | dateFilter }}</span>
+          {{ item.start | makeWeekDay | lowerCase }}
+          <span class="font-weight-bold">{{ item.start | normalizeDate }}</span> -
+          {{ item.end | makeWeekDay | lowerCase }}
+          <span class="font-weight-bold">{{ item.end | normalizeDate }}</span>
         </div>
       </template>
-      <template v-slot:item.approved="{item}">
-        <div>
-          <v-tooltip v-if="item.approved" bottom>
-            <template v-slot:activator="{ on, attrs }">
-              <v-chip color="success" label outlined small
-                      v-bind="attrs"
-                      v-on="on">
-                Утдверждено
-              </v-chip>
-            </template>
-            <span>
-              Утверждено: {{ getUserShortName(item.approvedBy) }}
-            </span>
-          </v-tooltip>
-          <v-chip v-else color="warning" label outlined small>
-            Ожидает подтверждения
-          </v-chip>
-        </div>
+      <template v-slot:item.status="{item}">
+        <v-chip
+          :id="item.id"
+          :color="getStatusColor(item.status)"
+          label
+          outlined
+          small
+        >
+          {{ vacationStatuses[item.status] }}
+        </v-chip>
+        <v-tooltip v-if="item.statusChangeByUid" :activator="'#'+item.id" bottom>
+          <span>
+              {{ getUserShortName(item.statusChangeByUid) }}:
+              {{ $moment(item.statusChangeAt).format('YYYY-MM-DD hh:mm') }}
+          </span>
+          <br/>
+          <span v-if="item.comment" class="font-italic">
+            {{ item.comment }}
+          </span>
+        </v-tooltip>
       </template>
       <template v-slot:item.actually="{value}">
         <icon-btn-with-tip
@@ -75,6 +116,13 @@
           </template>
           <div class="d-flex flex-column white">
             <icon-btn-with-tip
+              v-if="item.status === 3"
+              icon="mdi-content-copy"
+              @click="onCopy(item.id)"
+            >
+              Предложить исправление
+            </icon-btn-with-tip>
+            <icon-btn-with-tip
               :disable="item.approved || schedule.isActive"
               :icon="item.approved || schedule.isActive ? 'mdi-pencil-lock' : 'mdi-pencil'"
               @click="onEdit(item.id)"
@@ -92,16 +140,23 @@
             <icon-btn-with-tip
               v-if="!!templateFile"
               :disable="item.actually"
-              :loading="item.id == loading"
+              :loading="item.id == downloadingItemId"
               color="info"
               icon="mdi-download"
               @click="downloadVacation(item.id)"
             >
-              Заявление
+              Скачать заявление
             </icon-btn-with-tip>
           </div>
         </v-menu>
         <div v-else>
+          <icon-btn-with-tip
+            v-if="item.status === 3"
+            icon="mdi-content-copy"
+            @click="onCopy(item.id)"
+          >
+            Предложить исправление
+          </icon-btn-with-tip>
           <icon-btn-with-tip
             :disable="item.approved || schedule.isActive"
             :icon="item.approved || schedule.isActive ? 'mdi-pencil-lock' : 'mdi-pencil'"
@@ -120,155 +175,158 @@
           <icon-btn-with-tip
             v-if="!!templateFile"
             :disable="item.actually"
-            :loading="item.id == loading"
+            :loading="item.id == downloadingItemId"
             color="info"
             icon="mdi-download"
             @click="downloadVacation(item.id)"
           >
-            Заявление
+            Скачать заявление
           </icon-btn-with-tip>
         </div>
       </template>
     </v-data-table>
     <add-vacation
-      v-if="addModal.visible"
-      :existVacations="vacations.filter(v => v.id !== addModal.item.id)"
-      :schedule="schedule || {}"
-      :show="addModal.show"
-      :vacation="addModal.item"
+      :show="addModalVisible"
+      :vacation-id="addModalEditItemId"
       @close="closeModal"
     ></add-vacation>
   </div>
 </template>
 
 <script>
-import {myVacations, posts, schedules, templateFile, user} from "@/mixins/ComputedData";
-import {dateDiff} from "@/plugins/utils";
+import {posts, schedules, templateFile, vacationStatuses} from "@/mixins/ComputedData";
 import AddVacation from "@/components/Modals/AddVacation";
 import IconBtnWithTip from "@/components/IconBtnWithTip";
 import {dataMethods} from "@/mixins/dataHelper";
 import {vacationMethods} from "@/mixins/workspaceHelper";
 import {dataToGenerateFile} from "@/plugins/schema";
+import {lowerCase, makeWeekDay, normalizeDate} from "@/mixins/Filters";
 
 export default {
   name: 'Vacation',
   components: {IconBtnWithTip, AddVacation},
-  mixins: [schedules, myVacations, dataMethods, vacationMethods, user, posts, templateFile],
+  mixins: [schedules, dataMethods, vacationMethods, posts, templateFile, makeWeekDay,
+    lowerCase, normalizeDate, vacationStatuses],
   data: () => ({
+    expanded: [],
     schedule: null,
-    addModal: {
-      show: false,
-      visible: false,
-      item: {}
-    },
+    uid: null,
+    vacations: {},
+    addModalVisible: false,
+    addModalEditItemId: null,
     headers: [
       {text: 'Даты', value: 'start', align: 'start'},
       {text: 'Дней', value: 'days', align: 'start'},
-      {text: 'Статус', value: 'approved', align: 'center'},
+      {text: 'Статус', value: 'status', align: 'center'},
       {text: 'Тип', value: 'actually', align: 'center'},
       {
-        text: 'Действия',
+        text: '',
         value: 'action',
         align: 'end',
-        sortable: false
+        sortable: false,
       },
-
     ],
-    loading: null
+    downloadingItemId: null
   }),
   created() {
-    this.initialize()
+    this.$nextTick(() => {
+      if (this.dataIsReady) this.initialize()
+    })
   },
   computed: {
-    vacations() {
-      try {
-        return Object.values(this.myVacations[this.schedule.id] || {})
-      } catch (e) {
-        return []
-      }
-    }
+    dataIsReady() {
+      return this.$store.getters['vacations/isReady'] &&
+        this.$store.getters["schedules/isReady"] &&
+        this.$store.getters["users/isReady"]
+    },
   },
   methods: {
+    initialize() {
+      const id = this.$route.params.id
+      const uid = this.$route.params.uid
+      if (!uid || !id) return
+
+      const vacations = this.$store.getters['vacations/getByUid'](uid)
+      const user = this.$store.getters['users/getUserById'](uid)
+      const schedule = this.schedules[id]
+
+      if (!user || !schedule) this.redirect()
+
+      this.schedule = schedule
+      this.vacations = vacations[id] || {}
+      this.uid = uid
+      this.user = user
+
+
+    },
+    getStatusColor(status) {
+      switch (status) {
+        case 0:
+          return '';
+        case 1:
+          return 'warning';
+        case 2:
+          return 'success';
+        case 3:
+          return 'error';
+      }
+    },
     getUserShortName(uid) {
       return this.$store.getters['users/getUserById'](uid).displayName
     },
+
     async downloadVacation(id) {
-      this.loading = id
-      const vacation = this.vacations.find(v => v.id === id)
+      this.downloadingItemId = id
+
+      const {start, end, days} = this.vacations[id]
+
+      const postId = this.user.post
+      const postObject = postId ? this.posts[postId] : null
+      const post = postObject ? postObject.title : ''
 
       let data = dataToGenerateFile(this.user, {
-        post: this.user.post ? this.posts[this.user.post].title : '',
+        post,
         date: this.$moment().format('YYYY-MM-DD'),
-        vstart: vacation.start,
-        vend: vacation.end,
-        vdays: vacation.days
+        vstart: start,
+        vend: end,
+        vdays: days
       })
+
       await this.$store.dispatch('templateFile/generate', data)
-      this.loading = null
-    },
-    initialize() {
-      const id = this.$route.params.id
-      this.schedule = this.schedules[id]
-      if (!this.schedule) this.$router.replace({name: 'Vacations'})
+      this.downloadingItemId = null
     },
     onEdit(id) {
-      this.addModal.item = this.myVacations[this.schedule.id][id]
-      this.showModal()
+      this.addModalEditItemId = id
+      this.$nextTick(() => {
+        this.showModal()
+      })
+    },
+    onCopy(id) {
+      this.addModalEditItemId = id
+      this.$nextTick(() => {
+        this.showModal()
+      })
     },
     onAddVocation() {
       this.showModal();
     },
     showModal() {
-      this.addModal.visible = true;
-      this.$nextTick(() => {
-        this.addModal.show = true;
-      })
+      this.addModalVisible = true;
     },
     closeModal() {
-      this.addModal.show = false;
-      this.addModal.item = {};
-
-      this.$nextTick(() => {
-        this.addModal.visible = false;
-      })
-    },
-    onSubmitModal(dates) {
-      this.addItem(dates);
-      this.closeModal();
+      this.addModalVisible = false;
+      this.addModalEditItemId = null
     },
     onDelete(item) {
       this.mixDeleteVacation(item)
     },
-    addItem(dates) {
-      const [start, end] = dates;
-      const length = dateDiff(...dates);
-
-      const item = {
-        interval: {start, end, length},
-        isApproved: false,
-      };
-
-      let items = localStorage.getItem("items") || [];
-
-      if (items.length) items = JSON.parse(items);
-
-      items.push(item);
-
-      this.items = items;
-
-      localStorage.setItem("items", JSON.stringify(items));
-    },
+    redirect() {
+      this.$router.replace({name: 'Vacations'})
+    }
   },
-  filters: {
-    weekDayFilter(val) {
-      const weekDay = ['ВС', 'ПН', 'ВТ', 'СР', 'ЧТ', 'ПТ', 'СБ']
-      return weekDay[new Date(val).getDay()]
-    },
-    dateFilter(val) {
-      return val.split('-').reverse().join('.')
-    },
-    lowerCase(val) {
-      return val.toLowerCase()
+  watch: {
+    dataIsReady(val) {
+      if (val) this.initialize()
     }
   }
 }

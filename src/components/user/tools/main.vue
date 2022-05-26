@@ -4,23 +4,6 @@
     :class="{ 'flex-column': vertical }"
   >
     <icon-btn-with-tip
-      v-if="active"
-      :fab="fab"
-      icon="mdi-check-decagram"
-      color="success"
-    >
-      Зарегистрирован
-    </icon-btn-with-tip>
-    <icon-btn-with-tip
-      :fab="fab"
-      v-else
-      icon="mdi-account-plus"
-      color="primary"
-      @click="$emit('invite')"
-    >
-      Пригласить
-    </icon-btn-with-tip>
-    <icon-btn-with-tip
       :fab="fab"
       icon="mdi-account-edit"
       color="primary"
@@ -29,6 +12,7 @@
       Редактировать
     </icon-btn-with-tip>
     <icon-btn-with-tip
+      v-if="!vertical || !deleteDisable"
       icon="mdi-delete"
       color="error"
       :fab="fab"
@@ -36,6 +20,14 @@
       @click="$emit('delete')"
     >
       Удалить
+    </icon-btn-with-tip>
+    <icon-btn-with-tip
+      icon="mdi-eye"
+      color="info"
+      :fab="fab"
+      @click="$emit('goto')"
+    >
+      Перейти в аккаунт
     </icon-btn-with-tip>
   </div>
 </template>

@@ -29,7 +29,7 @@
 import {defTeam} from "@/plugins/schema";
 import {teams} from '@/mixins/ComputedData';
 import {teamMethods} from '@/mixins/workspaceHelper';
-import ListWithAdd from "@/components/Deportment/BaseListWidget";
+import ListWithAdd from "@/components/Administration/BaseListWidget";
 import {getUserNameById} from "@/mixins/dataHelper";
 
 export default {

@@ -88,3 +88,14 @@ export const copyToClipboard = {
     }
   }
 }
+
+export const displayName = {
+  methods: {
+    displayName(val) {
+      return val
+        .split(/\s+/)
+        .map((w, i) => (i ? w.substring(0, 1).toUpperCase() + "." : w))
+        .join(" ");
+    }
+  }
+}

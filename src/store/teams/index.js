@@ -14,6 +14,7 @@ export default {
   }),
   getters: {
     get: (s) => s.teams || {},
+    count: (s) => Object.values(s.teams).length,
     isReady: (s) => s.ready
   },
   mutations: {
@@ -101,5 +102,5 @@ export default {
         return Promise.any(promises)
       })
     }
-  }
+  },
 }

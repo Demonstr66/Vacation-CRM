@@ -1,5 +1,5 @@
 <template>
-  <v-dialog :max-width="large ? 1000: 700" v-model="isShow" persistent>
+  <v-dialog :max-width="large ? 1000 : 700" v-model="isShow" persistent>
     <template v-slot:default="">
       <v-card style="z-index: 10000 !important">
         <v-toolbar
@@ -93,7 +93,6 @@ export default {
     },
     onSubmit() {
       this.$emit("submit", this.result || "");
-      // this.reset();
     },
     reset() {
       this.$emit("reset");

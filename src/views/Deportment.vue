@@ -41,13 +41,45 @@
     </v-row>
     <v-tabs-items v-model="activeTab">
       <v-tab-item>
-        <users-tab @editUser="showEditor"></users-tab>
+
+        <v-list :dense="$vuetify.breakpoint.mdAndDown">
+          <v-data-iterator
+            :custom-filter="userFilter"
+            :footer-props="{
+                'items-per-page-all-text' : 'Все',
+                'items-per-page-text': 'На странице',
+              }"
+            :items="Object.values(users)"
+            :search="JSON.stringify({selectedTeam, selectedTask, selectedPost})"
+            :sort-by="selectedSortItem.id"
+            :sort-desc="selectedSortItem.desc"
+            loading
+            no-results-text="Пользователей не найдено"
+            @update:options="onDataIteratorUpdateOptions"
+          >
+            <template v-slot:loading>
+              <v-progress-linear indeterminate></v-progress-linear>
+            </template>
+            <template v-slot:default="{ items }">
+              <user-item
+                v-for="(user, id) in items"
+                :key="id"
+                :draggingEl="draggingEl"
+                :items="items"
+                :on-delete-user="onDeleteUser"
+                :on-edit="onEdit"
+                :user="user"
+              />
+            </template>
+          </v-data-iterator>
+        </v-list>
+<!--        <users-tab @editUser="showEditor"></users-tab>-->
       </v-tab-item>
       <v-tab-item>
-        <structure-tab></structure-tab>
+<!--        <structure-tab></structure-tab>-->
       </v-tab-item>
       <v-tab-item>
-        <archive-tab></archive-tab>
+<!--        <archive-tab></archive-tab>-->
       </v-tab-item>
     </v-tabs-items>
     <PersonEditorModal
@@ -67,22 +99,16 @@
 </template>
 
 <script>
-import UsersTab from "@/components/Deportment/UsersTab.vue";
 import IconBtnWithTip from "@/components/IconBtnWithTip.vue";
 import PersonEditorModal from "@/components/Modals/PersonEditorModal.vue";
-import StructureTab from "@/components/Deportment/StructureTab.vue";
-import ArchiveTab from "@/components/Deportment/ArchiveTab.vue";
 import ImportModal from "@/components/Modals/ImportModal";
 
 export default {
   name: "Deportment",
   components: {
     ImportModal,
-    UsersTab,
     IconBtnWithTip,
     PersonEditorModal,
-    StructureTab,
-    ArchiveTab,
   },
   data: () => ({
     activeTab: "",

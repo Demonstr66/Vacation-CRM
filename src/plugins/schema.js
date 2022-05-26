@@ -124,7 +124,15 @@ export function defVacation(...data) {
     end: null,
     days: 0,
     approved: false,
-    approvedBy: ''
+    createdAt: null,
+
+    //[0: draft, 1: requireApproval, 2: approved, 3: rejected]
+    status: 0,
+    statusChangeByUid: null,
+    statusChangeAt: null,
+    comment: null,
+    history: null,
+    isCurrent: true
   }
 
   if (data) {

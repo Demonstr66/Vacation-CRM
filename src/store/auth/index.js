@@ -23,14 +23,6 @@ export default {
   },
   actions: {
     register({dispatch}, {user, workspace}) {
-      // return asyncTryDecorator(async () => {
-      //
-      //   await dispatch('currentUser/create', {user, wid: workspace.id}, {root: true})
-      //   if (workspace.isNew) dispatch('workspace/create', workspace.id, {root: true})
-      //
-      //   return Promise.resolve()
-      // })
-
       return new Promise(async (res, rej) => {
         try {
           await dispatch('currentUser/create', {user, wid: workspace.id}, {root: true})

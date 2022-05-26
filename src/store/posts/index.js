@@ -14,6 +14,7 @@ export default {
   }),
   getters: {
     get: (s) => s.posts || {},
+    count: (s) => Object.values(s.posts).length,
     isReady: (s) => s.ready
   },
   mutations: {
