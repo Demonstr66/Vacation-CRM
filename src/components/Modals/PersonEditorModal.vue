@@ -1,12 +1,12 @@
 <template>
   <BaseModal
       :show="show"
-      :submitDisable="!isValid"
+      :submitDisable="!valid"
       :title="title"
       @cancel="onCancel"
       @submit="onSubmit"
   >
-    <v-form v-if="show" v-model="formVal" ref="userform" class="mt-4">
+    <v-form v-if="show" v-model="valid" ref="userform" class="mt-4">
       <pers-user-info
           ref="pers"
           :user="user"
@@ -20,9 +20,12 @@
           :cols="$vuetify.breakpoint.mdAndUp ? 2 : 1"
           :user="user"
           :disabled="disabled"
-          :domen="domen"
-          noaction
-          notitle
+          :domain="domain"
+          :data="{
+            email: 'myEmail'
+          }"
+          no-action
+          no-title
           @change="onChange"
       >
       </account-user-info>
@@ -37,12 +40,12 @@ import accountUserInfo from "../user/info/account.vue";
 
 import {defUser} from "@/plugins/schema.js";
 
-import {domen, teams} from "@/mixins/ComputedData";
+import {domain, teams} from "@/mixins/ComputedData";
 import {userData} from "@/mixins/workspaceHelper";
 import {displayName} from "@/mixins/dataHelper";
 
 export default {
-  mixins: [userData, teams, domen, displayName],
+  mixins: [userData, teams, domain, displayName],
   props: {
     show: {
       type: Boolean,
@@ -58,7 +61,7 @@ export default {
     accountUserInfo,
   },
   data: () => ({
-    formVal: false,
+    valid: false,
     user: null,
     showForm: false,
     isChanged: false,
@@ -69,9 +72,6 @@ export default {
     this.user = defUser();
   },
   computed: {
-    isValid() {
-      return this.isChanged;
-    },
     title() {
       return this.isNewUser ? "Новый сотрудник" : "Редактирование";
     },
@@ -86,7 +86,7 @@ export default {
 
       if (!!!user.displayName) user.displayName = this.displayName(user.fullName)
 
-      this.mixSaveUserDataToDb(this.isNewUser, user)
+      this.saveUser(this.isNewUser, user)
           .then(() => this.isChanged = false)
           .then(() => this.closeModal());
     },

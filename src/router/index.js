@@ -1,28 +1,26 @@
 import Vue from 'vue'
 import VueRouter from 'vue-router'
 import store from '@/store'
-
 import {getAuth} from "firebase/auth";
 
-const Home = () => import('@/views/Home.vue')
-const Vacations = () => import('@/views/Vacations.vue')
-const Vacation = () => import('@/views/Vacation.vue')
-const Deportment = () => import('@/views/Deportment.vue')
-const Administration = () => import('@/views/Administration.vue')
-const Login = () => import('@/views/Login.vue')
-const Account = () => import('@/views/Account.vue')
-const Register = () => import('@/views/Register.vue')
-const ForgetPassword = () => import('@/views/ForgetPassword.vue')
-const EmailVerifed = () => import('@/views/EmailVerifed')
-const EmailSending = () => import('@/views/EmailSending')
-const Schedules = () => import('@/views/Schedules')
-const Schedule = () => import('@/views/Schedule')
-const User = () => import('@/views/User')
+const DEBUG = process.env.VUE_APP_DEBUG;
+
+const Home = () => import('@/views/App/Home.vue')
+const Vacations = () => import('@/views/App/Vacations.vue')
+const Vacation = () => import('@/views/App/Vacation.vue')
+const Administration = () => import('@/views/App/Administration.vue')
+const Login = () => import('@/views/Auth/Login.vue')
+const Account = () => import('@/views/App/Account.vue')
+const Register = () => import('@/views/Auth/Register.vue')
+const ForgetPassword = () => import('@/views/Auth/ResetPassword.vue')
+const EmailSending = () => import('@/views/Auth/EmailSending')
+const Schedules = () => import('@/views/App/Schedules')
+const Schedule = () => import('@/views/App/Schedule')
+const User = () => import('@/views/App/User')
 const Tab1 = () => import('@/components/Administration/Users')
 const Tab2 = () => import('@/components/Administration/Structure')
 const Tab3 = () => import('@/components/Administration/Archive')
-const Game = () => import('@/views/Game')
-const Manage = () => import('@/views/Manage')
+const Manage = () => import('@/views/App/Manage')
 
 
 Vue.use(VueRouter)
@@ -60,18 +58,6 @@ const routes = [
     meta: {
       layout: 'MainLayout',
       title: '',
-      protected: {
-        accessLevel: [2]
-      }
-    }
-  },
-  {
-    path: '/deportment',
-    name: 'Deportment',
-    component: Deportment,
-    meta: {
-      layout: 'MainLayout',
-      title: 'Управление',
       protected: {
         accessLevel: [2]
       }
@@ -189,18 +175,6 @@ const routes = [
     }
   },
   {
-    path: '/game',
-    name: 'Game',
-    component: Game,
-    meta: {
-      layout: 'fullScreen',
-      title: 'Игра',
-      protected: {
-        accessLevel: [0, 1]
-      }
-    }
-  },
-  {
     path: '/login',
     name: 'Login',
     component: Login,
@@ -237,18 +211,6 @@ const routes = [
     }
   },
   {
-    path: '/emailverify',
-    name: 'EmailVerifed',
-    component: EmailVerifed,
-    meta: {
-      layout: 'EmptyLayout',
-      title: 'Емейл подтверждён',
-      protected: {
-        accessLevel: [2]
-      }
-    }
-  },
-  {
     path: '/emailsending',
     name: 'EmailSending',
     component: EmailSending,
@@ -268,14 +230,17 @@ const router = new VueRouter({
 })
 
 router.beforeEach(async (to, from, next) => {
-  const accessLevel = store.getters.getAccessLevel
+  const accessLevel = store.getters['app/getAccessLevel']
   const user = getAuth().currentUser
-  console.group('beforeEach')
-  console.log(user || 'Not currentUser')
-  console.log('accessLevel', accessLevel)
-  console.log(`from: ${from.path}; to: ${to.path};`)
-  console.groupEnd()
 
+  if (DEBUG) {
+    console.group('beforeEach')
+    console.log(user || 'Not currentUser')
+    console.log('accessLevel', accessLevel)
+    console.log(`from: ${from.path}; to: ${to.path};`)
+    console.groupEnd()
+  }
+  // next()
   if (!to.meta.protected) next()
   else {
     let available = to.meta.protected.accessLevel
@@ -284,16 +249,12 @@ router.beforeEach(async (to, from, next) => {
       switch (accessLevel) {
         case 0:
           next({name: 'Login'});
-          console.log('Redirect to Login');
           break;
         case 1:
           next({name: 'EmailSending', query: {e: user.email}});
-          console.log('Redirect to' +
-            ' EmailSending');
           break;
         case 2:
           next({name: 'Home'});
-          console.log('Redirect to Home');
           break;
       }
     }

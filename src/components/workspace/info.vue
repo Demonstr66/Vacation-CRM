@@ -59,11 +59,11 @@
           </v-col>
           <v-col :cols="12 / cols">
             <v-text-field
-                v-model.trim="domen"
+                v-model.trim="domain"
                 :disabled="disabled"
                 dense
                 label="Домен для почты по умолчанию"
-                name="domen"
+                name="domain"
                 single-line
                 @change.once="onChange"
             >
@@ -117,14 +117,14 @@ export default {
     isChanged: false,
   }),
   computed: {
-    domen: {
+    domain: {
       get() {
-        return this.workspace.domen
+        return this.workspace.domain
       },
       set(val) {
         let isAt = val.indexOf('@') != -1
         let needAt = val != ''
-        this.workspace.domen = (!isAt && needAt ? '@' : '') + val
+        this.workspace.domain = (!isAt && needAt ? '@' : '') + val
       }
     }
   },

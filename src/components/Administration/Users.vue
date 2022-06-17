@@ -8,7 +8,6 @@
           :headers="headers"
           :item-class="() => 'dropRow'"
           :items="usersArray"
-          :loading="!usersIsReady"
           :search="JSON.stringify({selectedTeam, selectedTask, selectedPost})"
           dense
           item-key="uid"
@@ -503,7 +502,7 @@ export default {
       this.deleatingUser = null;
     },
     removeUser(uid) {
-      this.mixMoveUserToArchive(uid)
+      this.moveUserToArchive(uid)
     },
     onAddUser() {
       this.showEditor();

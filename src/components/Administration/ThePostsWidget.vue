@@ -33,10 +33,10 @@ export default {
 
     onSave(item) {
       const post = defPost(item);
-      this.mixSavePost(!!!post.id, post);
+      this.savePost(!!!post.id, post);
     },
     onDelete(id) {
-      this.mixDeletePost(id);
+      this.deletePost(id);
     },
   },
 };

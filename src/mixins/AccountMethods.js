@@ -5,14 +5,14 @@ export const accountMethods = {
   methods: {
     mixSignOut() {
       return this.asyncDispatchWithMessage({
-        method: 'logOut',
+        method: 'app/logOut',
         data: null,
         msg: 'Вы вышли из аккаунта'
       })
     },
     mixSignIn(data) {
       return this.asyncDispatchWithMessage({
-        method: 'logIn',
+        method: 'app/logIn',
         data,
         msg: 'Вы вошли в аккаунт'
       })

@@ -1,91 +1,143 @@
 import {messageHelper} from "@/mixins/messageHelper";
 import {defUser} from "../plugins/schema.js";
 import {dataMethods} from "@/mixins/dataHelper";
+import {dispatchMethods} from "@/mixins/BaseMethods";
+import {WID} from "@/mixins/ComputedData";
 
 const short = require("short-uuid");
 
-
-const taskMethods = {
-  mixins: [dataMethods],
+export const taskMethods = {
+  mixins: [messageHelper, dispatchMethods],
   methods: {
-    mixSaveTask(isNew, data) {
-      let saveMethod = isNew ? "tasks/create" : 'tasks/update';
+    saveTask(isNew, data) {
+      const method = isNew ? "tasks/create" : 'tasks/update';
 
-      return this.mixSaveData({saveMethod, data, isNew})
+      return this.dispatchSaveData({
+        method,
+        isNew,
+        data,
+        msg: isNew ? 'Задача добавлена' : 'Задача обновлена'
+      })
     },
-    mixDeleteTask(id) {
-      return Promise.all([
-        this.mixDeleteData({delMethod: "tasks/delete", id}),
-        this.mixDeleteData({delMethod: "users/deleteTaskFromUsers", id})
-      ])
+    deleteTask(id) {
+      return this.dispatchMethod({
+        method: 'tasks/delete',
+        data: id
+      })
+        .then((res) => {
+          return this.dispatchMethod({
+            method: 'users/deleteTaskFromUsers',
+            data: id
+          })
+        })
+        .then((res) => {
+          this.successMessage('Задача удалена')
+        })
+        .catch((err) => {
+          this.errorMessage(err)
+        })
     }
   }
 }
 
-const teamMethods = {
-  mixins: [dataMethods],
+export const teamMethods = {
+  mixins: [messageHelper, dispatchMethods],
   methods: {
-    mixSaveTeam(isNew, data) {
-      let saveMethod = isNew ? "teams/create" : 'teams/update';
+    saveTeam(isNew, data) {
+      const method = isNew ? "teams/create" : 'teams/update';
 
-      return this.mixSaveData({saveMethod, data, isNew})
+      return this.dispatchSaveData({
+        method,
+        isNew,
+        data,
+        msg: isNew ? 'Команда добавлена' : 'Команда обновлена'
+      })
     },
-    mixDeleteTeam(id) {
-      return Promise.all([
-        this.mixDeleteData({delMethod: "teams/delete", id}),
-        this.mixDeleteData({delMethod: "users/deleteTeamFromUsers", id})
-      ])
+    deleteTeam(id) {
+      return this.dispatchMethod({
+        method: 'teams/delete',
+        data: id
+      })
+        .then((res) => {
+          return this.dispatchMethod({
+            method: 'users/deleteTeamFromUsers',
+            data: id
+          })
+        })
+        .then((res) => {
+          this.successMessage('Команда удалена')
+        })
+        .catch((err) => {
+          this.errorMessage(err)
+        })
     }
   }
 }
 
-const postMethods = {
-  mixins: [dataMethods],
+export const postMethods = {
+  mixins: [messageHelper, dispatchMethods],
   methods: {
-    mixSavePost(isNew, data) {
-      let saveMethod = isNew ? "posts/create" : 'posts/update';
+    savePost(isNew, data) {
+      const method = isNew ? "posts/create" : 'posts/update';
 
-      return this.mixSaveData({saveMethod, data, isNew})
+      return this.dispatchSaveData({
+        method,
+        isNew,
+        data,
+        msg: isNew ? 'Должность добавлена' : 'Должность обновлена'
+      })
     },
-    mixDeletePost(id) {
-      return Promise.all([
-        this.mixDeleteData({delMethod: "posts/delete", id}),
-        this.mixDeleteData({delMethod: "users/deletePostFromUsers", id})
-      ])
+    deletePost(id) {
+      return this.dispatchMethod({
+        method: 'posts/delete',
+        data: id
+      })
+        .then((res) => {
+          return this.dispatchMethod({
+            method: 'users/deletePostFromUsers',
+            data: id
+          })
+        })
+        .then((res) => {
+          this.successMessage('Должность удалена')
+        })
+        .catch((err) => {
+          this.errorMessage(err)
+        })
     }
   }
 }
 
-const userData = {
-  mixins: [dataMethods],
+export const userData = {
+  mixins: [dataMethods, dispatchMethods, WID],
   methods: {
-    mixSaveUserDataToDb(isNew, user) {
-      let saveMethod = isNew ? "users/create" : "users/update";
-      let workspace = this.$store.getters["getWID"];
-      let uid = isNew ? short().new() : user.uid;
-      let data = defUser(user, {uid, workspace});
+    saveUser(isNew, user) {
+      const method = isNew ? "users/create" : "users/update"
 
-      return this.mixSaveData({saveMethod, data, isNew})
+      return this.dispatchSaveData({
+        method,
+        isNew,
+        data: user
+      })
     },
-    mixMoveUserToArchive(uid) {
-      return this.mixDeleteData({
-        delMethod: 'users/moveUserToArchive',
-        id: uid,
+    moveUserToArchive(uid) {
+      return this.dispatchMethodWithMessage({
+        method: 'users/moveUserToArchive',
+        data: uid,
         msg: "Пользователь перемещён в архив"
       })
     },
-    mixRestoreUserFromArchive(uid) {
-      console.log('mixRestoreUserFromArchive')
-      return this.mixDeleteData({
-        delMethod: 'users/restoreUser',
-        id: uid,
+    restoreUserFromArchive(uid) {
+      return this.dispatchMethodWithMessage({
+        method: 'users/restoreUser',
+        data: uid,
         msg: "Пользователь восстановлен"
       })
     },
-    mixDeleteUser(uid) {
+    deleteUser(uid) {
       return this.mixDeleteData({
-        delMethod: 'users/delete',
-        id: uid,
+        method: 'users/delete',
+        data: uid,
         msg: "Пользователь удалён"
       })
     },
@@ -108,7 +160,7 @@ const userData = {
   }
 }
 
-const workspaceMethods = {
+export const workspaceMethods = {
   mixins: [dataMethods, messageHelper],
   methods: {
     mixSaveWorkspace(isNew, data) {
@@ -136,7 +188,7 @@ const workspaceMethods = {
   }
 }
 
-const vacationMethods = {
+export const vacationMethods = {
   mixins: [dataMethods],
   methods: {
     mixSaveVacation(isNew, data) {
@@ -152,5 +204,4 @@ const vacationMethods = {
   }
 }
 
-export {userData, taskMethods, teamMethods, postMethods, workspaceMethods, vacationMethods}
 

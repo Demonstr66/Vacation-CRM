@@ -1,42 +1,29 @@
 <template>
-  <widjet :title="title">
-    <v-toolbar v-if="$vuetify.breakpoint.smAndUp" dense flat>
-      <v-spacer>
-      </v-spacer>
-      <icon-btn-with-tip color="primary" icon="mdi-import">
-        Импорт
-      </icon-btn-with-tip>
-      <icon-btn-with-tip color="primary" icon="mdi-export">
-        Экспорт
-      </icon-btn-with-tip>
-      <icon-btn-with-tip color="primary" icon="mdi-help-circle-outline">
-        Инфо
-      </icon-btn-with-tip>
-    </v-toolbar>
+  <widget :title="title">
     <v-list v-if="items && items.length > 0" class="pa-0 ma-0">
       <v-list-item
-          v-for="(item, id) in items"
-          :key="id"
-          :class="{ editing: item.id == newItem.id }"
-          class="pa-0 borderbtm"
+        v-for="(item, id) in items"
+        :key="id"
+        :class="{ editing: item.id === newItemId }"
+        class="pa-0 border-bottom"
       >
         <v-list-item-content>
           <v-list-item-title v-text="item.title"></v-list-item-title>
-          <slot name="subtitle" :item="item">
+          <slot :item="item" name="subtitle">
           </slot>
         </v-list-item-content>
         <v-list-item-action class="d-flex flex-row">
           <icon-btn-with-tip
-              color="primary"
-              icon="mdi-pencil"
-              @click="onEditItem(item)"
+            color="primary"
+            icon="mdi-pencil"
+            @click="onEditItem(item)"
           >
             Изменить
           </icon-btn-with-tip>
           <icon-btn-with-tip
-              color="error"
-              icon="mdi-close"
-              @click="onDeleteItem(item)"
+            color="error"
+            icon="mdi-close"
+            @click="onDeleteItem(item.id)"
           >
             Удалить
           </icon-btn-with-tip>
@@ -47,51 +34,61 @@
       {{ noDataText }}
     </span>
     <v-form
-        ref="addItem"
-        v-model="valid"
-        class="mt-4"
-        @submit.prevent="onSubmitForm"
+      ref="addItem"
+      v-model="valid"
+      class="mt-4"
+      @submit.prevent="saveItem"
     >
       <v-text-field
-          ref="inputTitle"
-          v-model="newItem.title"
-          :error="error"
-          :error-messages="error ? 'Заполните поле' : ''"
-          hint="Введите название"
-          placeholder="Добавить новый элемент"
-          solo
-          @blur="error = false"
+        v-model="newItemTitle"
+        ref="inputTitle"
+        :rules="[blankCheck]"
+        hint="Введите название"
+        placeholder="Добавить новый элемент"
+        solo
       >
-        <template slot="append">
-          <v-btn v-if="!!newItem.id" color="error" icon @click="onStopEditing">
-            <v-icon>mdi-pencil-off</v-icon>
-          </v-btn>
-          <v-btn color="primary" icon type="submit">
-            <v-icon>mdi-send</v-icon>
-          </v-btn>
+        <template v-slot:append>
+          <icon-btn-with-tip
+            v-if="!!newItemId"
+            color="error"
+            icon="mdi-pencil-off"
+            @click="onStopEditing"
+          >
+            Отмена
+          </icon-btn-with-tip>
+          <icon-btn-with-tip
+            color="primary"
+            icon="mdi-send"
+            type="submit"
+            :disable="!valid"
+          >
+            Добавить
+          </icon-btn-with-tip>
         </template>
       </v-text-field>
     </v-form>
     <Alert
-        :data="deletingItem ? deletingItem.id : null"
-        :show="isAlertShow"
-        @cancel="onCancelAlert"
-        @submit="onSubmitAlert"
+      :show="showAlert"
+      @cancel="closeAlert"
+      @submit="deleteItem"
     >
-      <slot :item="deletingItem" name="alert">
+      <slot :item="deletingId" name="alert">
       </slot>
     </Alert>
-  </widjet>
+  </widget>
 </template>
 
 <script>
-import Widjet from "./BaseWidget.vue";
+import Widget from "./BaseWidget.vue";
 import IconBtnWithTip from "../IconBtnWithTip.vue";
 import Alert from "../Modals/Alert.vue";
+import {inputRules} from "@/mixins/inputRules";
+import {messageHelper} from "@/mixins/messageHelper";
 
 export default {
+  mixins: [inputRules, messageHelper],
   components: {
-    Widjet,
+    Widget,
     IconBtnWithTip,
     Alert,
   },
@@ -104,65 +101,50 @@ export default {
     noDataText: {
       type: String,
       default: "Данные ещё не добавлены"
-    }
+    },
   },
   data: () => ({
-    newItem: {
-      title: "",
-      id: "",
-    },
-    error: false,
-    deletingItem: null,
+    newItemTitle: null,
+    newItemId: null,
+    deletingId: null,
+    valid: false,
+    showAlert: false
   }),
-  computed: {
-    valid: {
-      get() {
-        return !!this.newItem.title;
-      },
-      set() {
-      },
-    },
-    isAlertShow() {
-      return !!this.deletingItem;
-    },
-  },
   methods: {
-    onSubmitForm() {
-      if (!this.valid) {
-        this.error = true;
-        return;
-      }
-
-      this.addNewItem();
-    },
-    onDeleteItem(item) {
-      this.deletingItem = item;
-    },
-    onCancelAlert() {
-      this.deletingItem = null;
-    },
-    onSubmitAlert(id) {
-      this.deleteItem(id)
-    },
     onEditItem(item) {
-      this.newItem = {...item};
+      this.newItemTitle = item.title
+      this.newItemId = item.id
       this.$refs.inputTitle.focus();
     },
     onStopEditing() {
       this.clearForm();
     },
-    clearForm() {
-      this.newItem.id = null;
-      this.$refs.addItem.reset();
-      this.$refs.inputTitle.blur();
+
+    onDeleteItem(id) {
+      this.deletingId = id
+      this.showAlert = true
     },
-    addNewItem() {
-      this.$emit('save', {...this.newItem})
+    closeAlert() {
+      this.deletingId = null
+      this.showAlert = false
+    },
+
+    saveItem() {
+      const newItem = {title: this.newItemTitle, id: this.newItemId}
+      this.$emit('save', newItem)
       this.clearForm();
     },
-    deleteItem(id) {
-      this.deletingItem = null;
+    deleteItem() {
+      const id = this.deletingId
       this.$emit('delete', id)
+      this.closeAlert()
+    },
+    clearForm() {
+      this.item = null
+      this.newItemId = null
+      this.deletingId = null
+      this.$refs.addItem.reset()
+      this.$refs.inputTitle.blur()
     },
   },
 };
@@ -178,7 +160,7 @@ export default {
   transition: background-color 0.5s cubic-bezier(0.35, 0.93, 0.5, 1);
 }
 
-.borderbtm {
+.border-bottom {
   border-bottom: thin solid #949494;
 }
 </style>

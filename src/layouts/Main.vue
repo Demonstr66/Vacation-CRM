@@ -5,10 +5,8 @@
       @close="expandNavigation = false"
     />
     <Appbar :expand="expandNavigation" :title="title" app @click="onExpandClick"/>
-    <v-overlay v-if="loading">
-      <v-progress-circular indeterminate></v-progress-circular>
-    </v-overlay>
-    <v-main v-else>
+    <the-app-loader v-if="loading"></the-app-loader>
+    <v-main>
       <div class="mt-0 mt-md-8 px-0 px-md-8">
         <span v-if="$vuetify.breakpoint.smAndUp && !!title" class="text-h4 ml-1 mb-1">{{
             title
@@ -29,9 +27,11 @@
 <script>
 import SideNavigation from "../components/TheSideBar.vue";
 import Appbar from "../components/Appbar.vue";
+import TheAppLoader from "@/components/TheAppLoader";
 
 export default {
   components: {
+    TheAppLoader,
     SideNavigation,
     Appbar,
   },

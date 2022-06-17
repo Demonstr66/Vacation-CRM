@@ -7,6 +7,7 @@ export function defUser(...data) {
     emailVerified: false,
     displayName: '',
     fullName: '',
+    level: '',
     parent: '',
     post: null,
     tasks: [],
@@ -31,7 +32,7 @@ export function defWorkspace(...data) {
   let res = {
     id: '',
     name: '',
-    domen: '',
+    domain: '',
     owner: '',
     tasks: [],
     posts: [],

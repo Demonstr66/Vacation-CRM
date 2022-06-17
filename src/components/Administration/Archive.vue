@@ -65,11 +65,11 @@ export default {
     },
     onRestoreSubmit(uid) {
       console.log('onRestoreSubmit')
-      this.mixRestoreUserFromArchive(uid)
+      this.restoreUserFromArchive(uid)
     },
     onDeleteSubmit(uid) {
       console.log('onDeleteSubmit')
-      this.mixDeleteUser(uid)
+      this.deleteUser(uid)
     },
   }
 }

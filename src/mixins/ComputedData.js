@@ -1,5 +1,10 @@
 import {mapGetters, mapState} from "vuex";
 
+export const appReady = {
+  computed: {
+    ...mapGetters("app", {appReady: 'isReady'}),
+  }
+}
 export const workspace = {
   computed: {
     ...mapGetters("workspace", {workspace: 'get'}),
@@ -82,17 +87,9 @@ export const archive = {
   }
 }
 
-export const domen = {
+export const domain = {
   computed: {
-    ...mapState({
-      domen: function (state) {
-        try {
-          return state.workspace.workspace.domen || '';
-        } catch (e) {
-          return ''
-        }
-      }
-    }),
+    ...mapGetters('workspace', ['domain']),
   }
 }
 
@@ -100,6 +97,21 @@ export const currentUID = {
   computed: {
     ...mapGetters("currentUser", {
       currentUID: "uid"
+    }),
+  }
+}
+export const WID = {
+  computed: {
+    ...mapGetters("app", {
+      WID: "getWID"
+    }),
+  }
+}
+
+export const FBEmail = {
+  computed: {
+    ...mapGetters("FB", {
+      FBEmail: "email"
     }),
   }
 }

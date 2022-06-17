@@ -1,21 +1,21 @@
 import Vue from 'vue'
 import Vuex from 'vuex'
-import router from '@/router'
+
+import app from './modules/app'
 import message from './message'
-import DB from './DB'
-import FB from './FB'
-import auth from './auth/index'
-import workspace from './workspace'
-import currentUser from './currentUser'
-import users from './users'
-import teams from './teams'
-import posts from './posts'
-import tasks from './tasks'
-import vacations from './vacations'
-import schedules from './schedules'
-import templateFile from './templateFile'
+import DB from './modules/DB'
+import FB from './modules/FB'
+import auth from './modules/auth'
+import workspace from './modules/workspace'
+import currentUser from './modules/currentUser'
+import users from './modules/users'
+import teams from './modules/teams'
+import posts from './modules/posts'
+import tasks from './modules/tasks'
+import vacations from './modules/vacations'
+import schedules from './modules/schedules'
+import templateFile from './modules/templateFile'
 import * as XLSX from "xlsx/xlsx.mjs";
-import FileDownload from "js-file-download";
 
 const modules = {
   message,
@@ -30,108 +30,32 @@ const modules = {
   schedules,
   templateFile,
   auth,
-  vacations
+  vacations,
+  app
 }
 
 
 Vue.use(Vuex)
 
 export default new Vuex.Store({
-  state: {
-    appName: 'Vacation CRM',
-    accessLevel: 0,
-    ready: false,
-    wid: null
-  },
-  getters: {
-    isReady: (s) => s.ready,
-    getAppName: (s) => s.appName,
-    getAccessLevel: (s) => s.accessLevel,
-    getWID: (s) => s.wid,
-  },
-  mutations: {
-    setAccessLevel: (s, v) => s.accessLevel = v,
-    setReady: (s, v) => s.ready = v,
-    setWID: (s, v) => s.wid = v
-  },
+  state: {},
+  getters: {},
+  mutations: {},
   actions: {
-    loadUserData({commit, dispatch}, user) {
-      if (!user.emailVerified) return commit('setAccessLevel', 1)
-
-      commit('setAccessLevel', 2)
-      commit('setWID', user.photoURL)
-      commit('setReady', true)
-      dispatch('initializeStoreElement')
-    },
-    async logOut({dispatch, commit}) {
-      commit('setReady', true)
-      commit('auth/setAuth', false, {root: true})
-      await dispatch('clearAllData')
-      await dispatch('auth/singOut')
-      await dispatch('setAccessLevel')
-      router.replace({name: 'Login'})
-        .catch(() => {
-        })
-      return Promise.resolve()
-    },
-    async logIn({dispatch, commit}, data) {
-      let rememberMethod = 'FB/remember'
-      if (!data.remember) rememberMethod = 'FB/sessionRemember'
-
-      await dispatch(rememberMethod)
-
-      const res = await dispatch('auth/singIn', data)
-    
-      router.replace({name: 'Home'})
-        .catch(() => {
-        })
-      console.log('logIn: ', res)
-      return res
-    },
-    sendEmailVerification({commit, dispatch}) {
-      commit('setReady', true)
-      return dispatch('auth/sendEmailVerify')
-    },
-    setAccessLevel({commit}, user) {
-      const isAuth = !!user
-      const isEmailVerified = isAuth && user.emailVerified
-      const isLogging = isAuth && isEmailVerified
-
-      commit('auth/setAuth', isAuth, {root: true})
-
-      let accessLevel
-
-      switch (true) {
-        case (!isAuth):
-          accessLevel = 0;
-          break;
-        case (!isEmailVerified):
-          accessLevel = 1;
-          break;
-        case (isLogging):
-          accessLevel = 2;
-          break;
-        default:
-          accessLevel = 0;
-          break;
-      }
-
-      commit('setAccessLevel', accessLevel)
-    },
-    initializeStoreElement({dispatch}) {
+    async initModules({dispatch}) {
+      let promises = []
       for (let module in modules) {
         try {
           if (modules[module].actions && modules[module].actions.initialize)
-            dispatch(`${module}/initialize`)
+            promises.push(dispatch(`${module}/initialize`))
         } catch (e) {
           continue
         }
       }
+      return Promise.all(promises)
     },
-    clearAllData({commit, dispatch}) {
-      commit('setAccessLevel', 0)
-      commit('setWID', null)
-      commit('setReady', true)
+
+    clearModulesData({dispatch}) {
       for (let module in modules) {
         try {
           if (modules[module].actions && modules[module].actions.onLogOut)
@@ -141,12 +65,14 @@ export default new Vuex.Store({
         }
       }
     },
+
+
     createAndDownloadXLSX() {
       const wb = XLSX.utils.book_new()
       wb.SheetNames.push('testSheet')
       wb.SheetNames.push('testSheet2')
 
-      const ws = XLSX.utils.aoa_to_sheet([['a1', 'b1'], ['a2','b2']])
+      const ws = XLSX.utils.aoa_to_sheet([['a1', 'b1'], ['a2', 'b2']])
 
       wb.Sheets['testSheet'] = ws
       wb.Sheets['testSheet2'] = ws

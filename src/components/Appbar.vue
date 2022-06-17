@@ -34,9 +34,10 @@
 <script>
 import {appName, user} from "@/mixins/ComputedData";
 import {accountMethods} from "@/mixins/AccountMethods";
+import {signOut} from "@/mixins/AuthMethods";
 
 export default {
-  mixins: [user, appName, accountMethods],
+  mixins: [user, appName, accountMethods, signOut],
   props: {
     expand: {
       type: Boolean,
@@ -60,26 +61,7 @@ export default {
       this[action]();
     },
     onSignOut() {
-      this.mixSignOut()
-      // this.$store
-      //   .dispatch("signOut")
-      //   .then(() => {
-      //     this.$router.push("/login");
-      //     this.$store.dispatch("setMessage", {
-      //       type: "warning",
-      //       text: "Вы вышли из аккаунта",
-      //     });
-      //   })
-      //   .then(() => {
-      //     this.$store.dispatch("clearAllPersData");
-      //   })
-      //   .catch((err) => {
-      //     this.$store.dispatch("setMessage", {
-      //       type: "error",
-      //       code: err.code,
-      //       text: err.message,
-      //     });
-      //   });
+      this.signOut()
     },
     onAccount() {
       if (this.$route.name == 'Account') return

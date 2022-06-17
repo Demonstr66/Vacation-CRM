@@ -31,10 +31,10 @@ export default {
   methods: {
     onSave(item) {
       const task = defTask(item);
-      this.mixSaveTask(!!!task.id, task);
+      this.saveTask(!!!task.id, task);
     },
     onDelete(id) {
-      this.mixDeleteTask(id);
+      this.deleteTask(id);
     },
   },
 };

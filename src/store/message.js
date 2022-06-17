@@ -14,10 +14,10 @@ export default {
   },
   actions: {
     setMessage({commit,getters}, data) {
+      console.log('setMessage', data)
       let obj = {}
-      console.log(data)
-      obj.message = dictionary[data.code] || data.text || "Неизвестная ошибка";
-      obj.color = data.type;
+      obj.message = dictionary[data.code] || data.text || "Неизвестное сообщение";
+      obj.color = data.type || 'info';
       obj.timeout = 2000 + 500 * getters.messages.length
       // obj.timeout = -1
       if (data.type === "error") obj.message = "[Ошибка]: " + obj.message

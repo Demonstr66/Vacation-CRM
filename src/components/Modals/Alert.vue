@@ -1,5 +1,5 @@
 <template>
-  <v-dialog v-model="isShow" persistent max-width="400" @keyup.esc="onCancel">
+  <v-dialog v-model="isShow" persistent max-width="400">
     <v-card>
       <v-card-title>Внимание</v-card-title>
       <v-card-text>
@@ -21,10 +21,7 @@ export default {
     show: {
       type: Boolean,
       required: true,
-    },
-    data: {
-      default: ''
-    },
+    }
   },
   computed: {
     isShow: {
@@ -39,7 +36,7 @@ export default {
       this.$emit("cancel");
     },
     onSubmit() {
-      this.$emit("submit", this.data);
+      this.$emit("submit");
     },
   },
 };

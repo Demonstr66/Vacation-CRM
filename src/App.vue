@@ -1,9 +1,9 @@
 <template>
   <v-app>
-    <component :is="layout" :title="title" :loading="loading">
+    <component :is="layout" :loading="!appReady" :title="title">
       <router-view></router-view>
     </component>
-    <Message />
+    <Message/>
   </v-app>
 </template>
 
@@ -11,8 +11,8 @@
 import MainLayout from "./layouts/Main.vue";
 import EmptyLayout from "./layouts/Empty.vue";
 import Message from "./components/Message.vue";
-import Loading from "@/layouts/Loading";
 import fullScreen from "@/layouts/fullScreen";
+import {appReady} from "@/mixins/ComputedData";
 
 let unsubscribe = null
 
@@ -21,36 +21,17 @@ export default {
     MainLayout,
     EmptyLayout,
     Message,
-    Loading,
     fullScreen
   },
-  data: () =>({
-    loading: true,
-    unsubscribe: null
-  }),
-  created() {
-    unsubscribe = this.$store.subscribe((mutation, state) => {
-      if (state.ready) this.appLoaded()
-    })
-  },
+  mixins: [appReady],
   computed: {
     layout() {
-      return this.$route.meta && this.$route.meta.layout
-        ? this.$route.meta.layout
-        : "";
+      return this.$route.meta && this.$route.meta.layout || ""
     },
     title() {
-      return this.$route.meta && this.$route.meta.title
-        ? this.$route.meta.title
-        : "";
+      return this.$route.meta && this.$route.meta.title || ""
     },
   },
-  methods: {
-    appLoaded() {
-      this.loading = false
-      if (unsubscribe) unsubscribe()
-    },
-  }
 };
 </script>
 

@@ -39,12 +39,11 @@ export default {
   },
   methods: {
     onSave(item) {
-      console.log(item)
       const team = defTeam(item);
-      this.mixSaveTeam(!!!team.id, team);
+      this.saveTeam(!!!team.id, team);
     },
     onDelete(id) {
-      this.mixDeleteTeam(id);
+      this.deleteTeam(id);
     },
   },
 };

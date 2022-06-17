@@ -61,7 +61,7 @@ export default {
     onSubmit() {
       if (this.disabled || this.noaction) return;
 
-      this.mixSaveUserDataToDb(false, this.user)
+      this.saveUser(false, this.user)
     },
     changed() {
       this.isChanged = true;
