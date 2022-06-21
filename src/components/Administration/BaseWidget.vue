@@ -22,7 +22,7 @@ export default {
   props: {
     title: {
       type:String,
-      dafault:"",
+      default:"",
     },
     outlined: {
       type: Boolean,

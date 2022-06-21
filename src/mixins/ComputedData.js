@@ -125,7 +125,16 @@ export const myVacations = {
     }
   }
 }
-
+export const getShortUserNameByUID = {
+  computed: {
+    ...mapGetters("users", ['getDisplayNameByUID'])
+  },
+  methods: {
+    getShortUserNameByUID(uid) {
+      return this.getDisplayNameByUID(uid)
+    }
+  }
+}
 export const allVacations = {
   computed: {
     ...mapGetters("vacations", {'allVacations': 'get'})

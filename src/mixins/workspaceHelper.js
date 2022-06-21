@@ -53,6 +53,14 @@ export const teamMethods = {
         msg: isNew ? 'Команда добавлена' : 'Команда обновлена'
       })
     },
+    silentSaveTeam(isNew, data) {
+      const method = isNew ? "teams/create" : 'teams/update';
+
+      return this.dispatchMethod({
+        method,
+        data
+      })
+    },
     deleteTeam(id) {
       return this.dispatchMethod({
         method: 'teams/delete',

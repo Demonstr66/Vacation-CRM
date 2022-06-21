@@ -44,7 +44,7 @@
           </v-col>
           <v-col :cols="12 / cols">
             <v-text-field
-                v-model.trim="workspace.name"
+                v-model.trim="workspace.title"
                 :disabled="disabled"
                 dense
                 label="Название организации"

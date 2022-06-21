@@ -1,6 +1,15 @@
 <template>
   <div>
     <v-btn @click="test">Success</v-btn>
+    <v-text-field>
+      <template v-slot:append="item">
+        <v-btn icon>
+          <v-icon>
+            mdi-minus-circle-outline
+          </v-icon>
+        </v-btn>
+      </template>
+    </v-text-field>
   </div>
 </template>
 

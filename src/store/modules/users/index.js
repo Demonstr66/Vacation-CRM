@@ -19,7 +19,7 @@ export default {
     getArchive: (s) => s.archive,
     getUserById: (s) => (uid) => s.users ? s.users[uid] : null,
     getUserByIdFromArchive: (s) => (uid) => s.archive ? s.archive[uid] : null,
-    getDisplayNameById: (s) => (uid) => s.users ? s.users[uid] ? s.users[uid].displayName : '' : '',
+    getDisplayNameByUID: (s) => (uid) => s.users ? s.users[uid] ? s.users[uid].displayName : '' : '',
     isReady: (s) => s.ready
   },
   mutations: {
