@@ -88,10 +88,10 @@ export default {
 
       })
     },
-    generate({dispatch, state}, data) {
+    downloadWithData({dispatch}, {fullPath, data}) {
       return asyncTryDecorator(async () => {
           const storage = getStorage();
-          const bytes = await getBytes(ref(storage, state.file.fullPath))
+          const bytes = await getBytes(ref(storage, fullPath))
 
           const zip = new JSZip();
 

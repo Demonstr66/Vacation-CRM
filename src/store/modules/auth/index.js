@@ -30,8 +30,11 @@ export default {
         try {
           if (!workspace.isNew) await dispatch('checkWorkspaceExisting', workspace)
 
-          await dispatch('currentUser/create', {user, wid: workspace.id}, {root: true})
-          if (workspace.isNew) dispatch('workspace/create', workspace.id, {root: true})
+          const uid = await dispatch('currentUser/create', {user, wid: workspace.id}, {root: true})
+          if (workspace.isNew) dispatch('workspace/create', {
+            wid: workspace.id,
+            owner: uid
+          }, {root: true})
 
           res()
         } catch (e) {
@@ -44,7 +47,7 @@ export default {
         const auth = getAuth();
         const data = await signInWithEmailAndPassword(auth, email, password)
 
-        if (!data.user.emailVerified) throw {code:'auth/email-not-verify'}
+        if (!data.user.emailVerified) throw {code: 'auth/email-not-verify'}
 
         return Promise.resolve('success')
       })

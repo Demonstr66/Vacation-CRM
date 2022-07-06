@@ -36,11 +36,11 @@ getAuth().onAuthStateChanged((user) => {
   if (DEBUG && !subscribe) {
     subscribe = true
     store.subscribe(mutation => {
-      console.log(`Mutation: ${mutation.type}: ${mutation.payload}`)
+      console.log(`Mutation: ${mutation.type}:`, mutation.payload)
     })
 
     store.subscribeAction(action => {
-      console.log(`Action: ${action.type}: ${action.payload}`)
+      console.log(`Action: ${action.type}:`, action.payload)
     })
   }
 

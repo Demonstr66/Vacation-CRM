@@ -1,4 +1,4 @@
-export const inputRules = {
+export const inputValidations = {
   data: () => ({
     blankCheck: v => !!v || 'Обязательное поле',
     emailCheck: (value) => {
@@ -7,5 +7,6 @@ export const inputRules = {
       return pattern.test(value) || "Некорректный e-mail.";
     },
     minChars: (n) => (value) => (value && value.length >= n) || `Минимум ${n} символов`,
+    fioCheck: v => !v || v.trim().split(' ').length > 2 || 'Введите ФИО полностью'
   })
 }

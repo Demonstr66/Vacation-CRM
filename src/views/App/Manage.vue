@@ -17,9 +17,9 @@
       <template v-slot:item.start="{item}">
         <div>
           <v-icon>mdi-calendar</v-icon>
-          {{ item.start | makeWeekDay | lowerCase }}
+          {{ item.start | getShortDayLabel | lowerCase }}
           <span class="font-weight-bold">{{ item.start | normalizeDate }}</span> -
-          {{ item.end | makeWeekDay | lowerCase }}
+          {{ item.end | getShortDayLabel | lowerCase }}
           <span class="font-weight-bold">{{ item.end | normalizeDate }}</span>
         </div>
       </template>
@@ -114,14 +114,14 @@
 
 <script>
 import {allVacations, currentUID, schedules, users} from "@/mixins/ComputedData";
-import {lowerCase, makeWeekDay, normalizeDate} from "@/mixins/Filters";
+import {lowerCase, getShortDayLabel, normalizeDate} from "@/mixins/Filters";
 import IconBtnWithTip from "@/components/IconBtnWithTip";
 import Alert from "@/components/Modals/Alert";
 import {defVacation} from "@/plugins/schema";
 
 export default {
   components: {Alert, IconBtnWithTip},
-  mixins: [schedules, allVacations, lowerCase, makeWeekDay, normalizeDate, users, currentUID],
+  mixins: [schedules, allVacations, lowerCase, getShortDayLabel, normalizeDate, users, currentUID],
   name: "Manage",
   data: () => ({
     items: [],

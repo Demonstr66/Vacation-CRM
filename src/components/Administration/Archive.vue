@@ -26,10 +26,10 @@
 import {archive} from "@/mixins/ComputedData";
 import UserItemArchiveTabDeportment from "@/components/Administration/ArchiveTabUserItem";
 import Alert from "@/components/Modals/Alert";
-import {userData} from "@/mixins/workspaceHelper";
+import {UserMethods} from "@/mixins/UserMethods";
 
 export default {
-  mixins: [archive, userData],
+  mixins: [archive, UserMethods],
   components: {Alert, UserItemArchiveTabDeportment},
   data: () => ({
     isAlertDelete: false,
@@ -65,7 +65,7 @@ export default {
     },
     onRestoreSubmit(uid) {
       console.log('onRestoreSubmit')
-      this.restoreUserFromArchive(uid)
+      this.restoreUser(uid)
     },
     onDeleteSubmit(uid) {
       console.log('onDeleteSubmit')

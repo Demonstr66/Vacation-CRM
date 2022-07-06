@@ -51,7 +51,7 @@ export default {
           commit('set', data)
           dispatch('DB/set', {path, key, data}, {root: true})
 
-          res()
+          res(uid)
         }catch (e) {
           rej(e)
         }

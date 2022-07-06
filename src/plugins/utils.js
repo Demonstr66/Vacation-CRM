@@ -34,6 +34,13 @@ export const dictionary = {
   "auth/network-request-failed": "Проверьте подключение к сети"
 }
 
+export function fullToDisplayName(fio) {
+  return fio
+    .split(/\s+/)
+    .map((w, i) => (i ? w.substring(0, 1).toUpperCase() + "." : w))
+    .join(" ");
+}
+
 export function excelToArray(file) {
   return new Promise((res, rej) => {
     try {
@@ -191,8 +198,12 @@ export function basePathFunction(base) {
   }
 }
 
-export function isUnique(item, items, key = 'title') {
-  return !items.some(i => i[key] == item[key])
+export function isUnique(item, items, key = 'title', uniqKey = 'id') {
+  return !items.some(i => i[key] === item[key] && i[uniqKey] !== item[uniqKey])
+}
+
+export function generateTestDataForTemplate() {
+
 }
 
 export function dateToFileFormat(val, format = '"DD" piping YYYYг.') {
@@ -208,5 +219,140 @@ export async function asyncTryDecorator(callback) {
     return await callback()
   } catch (e) {
     return Promise.reject(e)
+  }
+}
+
+
+export async function loadDisDates(year) {
+  return new Promise(async (res, rej) => {
+    try {
+      const api = require('isdayoff')()
+      const startDate = `${year}-01-01`
+      const endDate = `${year}-12-31`
+      const stateDays = await api.period({
+        start: new Date(startDate),
+        end: new Date(endDate)
+      })
+
+      let exceptions = []
+
+      let day = moment(new Date(startDate))
+      stateDays.map((state) => {
+        let type
+        if (!!state && day.weekday() !== 5 && day.weekday() !== 6)
+          type = 'holiday'
+
+        if (!!!state && (day.weekday() === 5 || day.weekday() === 6))
+          type = 'workday'
+
+        if (!!type) exceptions.push({
+          type,
+          date: moment(day).format('YYYY-MM-DD')
+        })
+
+        day.add(1, 'days')
+      })
+      console.log(exceptions)
+      res(exceptions)
+    } catch (e) {
+      rej([])
+    }
+  })
+}
+
+
+export function sortDateAsc(a, b) {
+  return a.start > b.start ? 1 : -1
+}
+
+export function mergeEvents(events) {
+  if (!events || !events.length) return []
+
+  let allDaysInEvents = {}
+  events.map(e => {
+    let day = moment(e.start)
+    const end = moment(e.end)
+
+    while (day <= end) {
+      const key = day.format('YYYY-MM-DD')
+      if (!allDaysInEvents[key]) allDaysInEvents[key] = {total: 0, vacations: []}
+      allDaysInEvents[key].total += 1
+      allDaysInEvents[key].vacations.push(e.id)
+
+      day.add(1, 'days')
+    }
+  })
+
+  const sortDays = Object.keys(allDaysInEvents).sort()
+
+  let mergeEvents = []
+  let start, end, curr, currDays
+
+  sortDays.map(day => {
+    if (start) {
+      if (curr.format('YYYY-MM-DD') == day) {
+        end = day
+        currDays.push(allDaysInEvents[day])
+        curr.add(1, 'days')
+        return
+      }
+      mergeEvents.push({start, end, days: currDays})
+      curr = undefined
+      start = undefined
+    }
+
+    if (!start) {
+      start = day
+      currDays = []
+      currDays.push(allDaysInEvents[day])
+      curr = moment(day)
+      curr.add(1, 'days')
+      return
+    }
+  })
+
+  mergeEvents.push({start, end, days: currDays})
+
+  return mergeEvents
+}
+
+export function convertUsersToTree(users, groupBy, headers) {
+  if (!headers) return users
+
+  const key = getKey(groupBy)
+  let tree = [...headers]
+
+  tree = tree.map(node => {
+    let children = users.filter(v => v.user[key] && v.user[key].indexOf(node.id) !== -1)
+    let events = []
+    node.children = children.map(c => {
+      c.title = c.user.displayName;
+      c.events = c.events.sort(sortDateAsc)
+      c.groupId = node.id
+
+      events.push(...c.events)
+      return {...c}
+    })
+
+    node.isHeader = true
+    node.events = events
+    node.events = mergeEvents(node.events)
+
+    return node
+  })
+
+  if (this.hideEmptyGroups) tree = tree.filter(node => node.children && node.children.length)
+
+  return tree
+}
+
+export function getKey(groupBy) {
+  switch (groupBy) {
+    case 'tasks':
+      return 'tasks'
+    case 'teams':
+      return 'team'
+    case 'posts':
+      return 'post'
   }
 }

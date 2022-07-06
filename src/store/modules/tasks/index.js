@@ -62,11 +62,12 @@ export default {
         return dispatch('DB/delete', {path, key}, {root: true})
       })
     },
-    update({rootGetters, dispatch}, task) {
+    update({rootGetters, dispatch, getters}, task) {
       return asyncTryDecorator(() => {
         const wid = rootGetters['app/getWID']
 
         if (!test(task, wid) || !task.id) throw new Error('Что-то пошло не так: tasks/update -> test')
+        if (!isUnique(task, Object.values(getters.get))) throw new Error('Задача уже существет')
 
         const path = basePath(wid)
         const key = task.id

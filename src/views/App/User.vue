@@ -1,35 +1,39 @@
 <template>
-<v-row no-gutters>
-  <v-col>
-  <personal-user-info
-    :user="user"
-    disabled
-  ></personal-user-info>
-  <account-user-info
-    :user="user"
-    disabled
-  ></account-user-info>
-  </v-col>
-  <v-col>
-    <TheVacations
-      :vacations="vacations"
-      :uid="user ? user.uid : null"
-    ></TheVacations>
-  </v-col>
-</v-row>
+  <v-row no-gutters>
+    <v-col>
+      <the-user-info
+        :user="user"
+        solo
+        disabled
+        hide-additional-fields
+      ></the-user-info>
+      <the-account-info
+        solo
+        :user="user"
+        disable-all
+      ></the-account-info>
+    </v-col>
+    <v-col>
+      <TheVacations
+        :uid="user ? user.uid : null"
+        :vacations="vacations"
+      ></TheVacations>
+    </v-col>
+  </v-row>
 </template>
 
 <script>
 import {users} from "@/mixins/ComputedData";
-import AccountUserInfo from "@/components/user/info/account";
-import PersonalUserInfo from "@/components/user/info/personal";
 import TheVacations from "@/components/TheVacations";
+
+import TheAccountInfo from "@/components/TheAccountInfo";
+import TheUserInfo from "@/components/TheUserInfo";
 
 export default {
   name: "User",
-  components: {TheVacations, PersonalUserInfo, AccountUserInfo},
-  mixins:[users],
-  data: () =>({
+  components: {TheVacations, TheUserInfo, TheAccountInfo},
+  mixins: [users],
+  data: () => ({
     user: null,
     vacations: []
   }),

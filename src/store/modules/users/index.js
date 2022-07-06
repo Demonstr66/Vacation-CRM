@@ -56,7 +56,7 @@ export default {
         const wid = rootGetters['app/getWID']
 
         if (!test(user, wid)) throw new Error('Что-то пошло не так: users/create -> test')
-        if (!isUnique(user, [...Object.values(getters.get), ...Object.values(getters.getArchive)], 'email')) {
+        if (!isUnique(user, [...Object.values(getters.get), ...Object.values(getters.getArchive)], 'email', 'uid')) {
           throw new Error('Email уже использован')
         }
 
@@ -81,12 +81,14 @@ export default {
         return dispatch('DB/delete', {path, key}, {root: true})
       })
     },
-    update({rootGetters, dispatch}, user) {
+    update({rootGetters, dispatch, getters}, user) {
       return asyncTryDecorator(() => {
         const wid = rootGetters['app/getWID']
 
         if (!test(user, wid) || !user.uid) throw new Error('Что-то пошло не так: users/update -> test')
-
+        if (!isUnique(user, [...Object.values(getters.get), ...Object.values(getters.getArchive)], 'email', 'uid')) {
+          throw new Error('Email уже использован')
+        }
         const path = basePath(wid)
         const key = user.uid
         const data = normalize(user)

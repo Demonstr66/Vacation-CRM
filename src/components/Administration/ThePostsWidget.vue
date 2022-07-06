@@ -1,9 +1,9 @@
 <template>
   <list-with-add
-      title="Должности"
-      :items="Object.values(posts)"
-      @save="onSave"
-      @delete="onDelete"
+    :items="Object.values(posts)"
+    title="Должности"
+    @delete="onDelete"
+    @save="onSave"
   >
     <template v-slot:alert="{item}">
       <span>
@@ -21,19 +21,21 @@
 
 import {defPost} from "../../plugins/schema";
 import {posts} from "../../mixins/ComputedData";
-import {postMethods} from "../../mixins/workspaceHelper";
 import ListWithAdd from "./BaseListWidget.vue";
+import {PostMethods} from "@/mixins/PostMethods";
 
 export default {
-  mixins: [posts, postMethods],
+  mixins: [posts, PostMethods],
   components: {
     ListWithAdd
   },
   methods: {
 
     onSave(item) {
+      console.log('try save', item)
       const post = defPost(item);
-      this.savePost(!!!post.id, post);
+      if (!post.id) this.createPost(post)
+      else this.updatePost(post)
     },
     onDelete(id) {
       this.deletePost(id);

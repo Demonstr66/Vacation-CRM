@@ -15,11 +15,15 @@ const Register = () => import('@/views/Auth/Register.vue')
 const ForgetPassword = () => import('@/views/Auth/ResetPassword.vue')
 const EmailSending = () => import('@/views/Auth/EmailSending')
 const Schedules = () => import('@/views/App/Schedules')
-const Schedule = () => import('@/views/App/Schedule')
+const Schedule = () => import('@/views/App/ScheduleViewer')
+const ScheduleEditor = () => import('@/views/App/ScheduleEditor')
 const User = () => import('@/views/App/User')
 const Tab1 = () => import('@/components/Administration/Users')
 const Tab2 = () => import('@/components/Administration/Structure')
 const Tab3 = () => import('@/components/Administration/Archive')
+const Viewer1 = () => import('@/components/ScheduleViewer/List'  )
+const Viewer2 = () => import('@/components/ScheduleViewer/TimeLine'  )
+const Viewer3 = () => import('@/components/ScheduleViewer/FullCalendar'  )
 const Manage = () => import('@/views/App/Manage')
 
 
@@ -138,6 +142,30 @@ const routes = [
       }
     }
   },
+  // {
+  //   path: '/schedules',
+  //   name: 'Schedules',
+  //   component: Schedules,
+  //   meta: {
+  //     layout: 'MainLayout',
+  //     title: 'Графики отпусков',
+  //     protected: {
+  //       accessLevel: [2]
+  //     }
+  //   }
+  // },
+  // {
+  //   path: '/schedule/:id',
+  //   name: 'Schedule',
+  //   component: Schedule,
+  //   meta: {
+  //     layout: 'MainLayout',
+  //     title: 'График отпусков',
+  //     protected: {
+  //       accessLevel: [2]
+  //     }
+  //   }
+  // },
   {
     path: '/schedules',
     name: 'Schedules',
@@ -151,12 +179,75 @@ const routes = [
     }
   },
   {
-    path: '/schedule/:id',
-    name: 'Schedule',
-    component: Schedule,
+    path: '/schedules/editor',
+    component: ScheduleEditor,
+    name: 'ScheduleCreate',
     meta: {
       layout: 'MainLayout',
-      title: 'График отпусков',
+      title: 'Новый график',
+      protected: {
+        accessLevel: [2]
+      }
+    }
+  },
+  {
+    path: '/schedules/editor/:id',
+    component: ScheduleEditor,
+    name: 'ScheduleEditor',
+    meta: {
+      layout: 'MainLayout',
+      title: 'Редактирование',
+      protected: {
+        accessLevel: [2]
+      }
+    }
+  },
+  {
+    path: '/schedules/view',
+    component: Schedule,
+    name: 'ScheduleViewer',
+    children: [
+      {
+        path: '/',
+        redirect: {name: 'Viewer1'}
+      },
+      {
+        path: 'list/:id',
+        component: Viewer1,
+        name: 'Viewer1',
+        meta: {
+          layout: 'MainLayout',
+          title: 'Управление',
+          protected: {
+            accessLevel: [2]
+          }
+        }
+      }, {
+        path: 'timeline/:id',
+        component: Viewer2,
+        name: 'Viewer2',
+        meta: {
+          layout: 'MainLayout',
+          title: 'Управление',
+          protected: {
+            accessLevel: [2]
+          }
+        }
+      }, {
+        path: 'fullcalendar/:id',
+        component: Viewer3,
+        name: 'Viewer3',
+        meta: {
+          layout: 'MainLayout',
+          title: 'Управление',
+          protected: {
+            accessLevel: [2]
+          }
+        }
+      }],
+    meta: {
+      layout: 'MainLayout',
+      title: 'Просмотр',
       protected: {
         accessLevel: [2]
       }

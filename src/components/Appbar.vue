@@ -9,7 +9,7 @@
     <v-spacer></v-spacer>
     <v-menu offset-y transition="slide-y-transition">
       <template v-slot:activator="{ on, attrs }">
-        <v-btn color="primary" text dark tile large v-bind="attrs" v-on="on">
+        <v-btn color="primary" dark large text tile v-bind="attrs" v-on="on">
           <v-icon large>mdi-account</v-icon>
           {{ user.displayName }}
         </v-btn>
@@ -33,11 +33,10 @@
 
 <script>
 import {appName, user} from "@/mixins/ComputedData";
-import {accountMethods} from "@/mixins/AccountMethods";
 import {signOut} from "@/mixins/AuthMethods";
 
 export default {
-  mixins: [user, appName, accountMethods, signOut],
+  mixins: [user, appName, signOut],
   props: {
     expand: {
       type: Boolean,

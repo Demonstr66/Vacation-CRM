@@ -129,11 +129,11 @@
 <script>
 import BaseModal from "./Base.vue";
 import {excelToArray, parseArrayData} from "@/plugins/utils";
-import {importHelper} from "@/mixins/importHelper";
+import {importMethods} from "@/mixins/ImportMethods";
 import {users} from "@/mixins/ComputedData"
 
 export default {
-  mixins: [importHelper, users],
+  mixins: [importMethods, users],
   components: {
     BaseModal,
   },

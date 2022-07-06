@@ -1,9 +1,9 @@
 import {parsePostsInArray, parseTeamsInArray} from "@/plugins/utils";
 import {posts, teams} from "@/mixins/ComputedData";
 import {dataMethods} from "@/mixins/dataHelper";
-import {messageHelper} from "@/mixins/messageHelper";
+import {messageHelper} from "@/mixins/MessageMethods";
 
-export const importHelper = {
+export const importMethods = {
   mixins: [teams, posts, dataMethods, messageHelper], data: () => ({
     newItems: {
       selectedTeams: [], selectedPosts: [], teams: [], posts: []

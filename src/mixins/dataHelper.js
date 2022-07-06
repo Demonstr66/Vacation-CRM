@@ -1,10 +1,9 @@
-import {messageHelper} from "@/mixins/messageHelper";
+import {messageHelper} from "@/mixins/MessageMethods";
 
 export const dataMethods = {
   mixins: [messageHelper],
   methods: {
     mixSaveData({saveMethod, isNew, data}) {
-      console.log('mixSaveData')
       return this.$store.dispatch(saveMethod, data)
         .then(() => this.mixSuccess(isNew
           ? "Данные сохранены"
@@ -12,24 +11,11 @@ export const dataMethods = {
         .catch((err) => this.mixError(err));
     },
     mixDeleteData({delMethod, id, msg = "Данные удалены"}) {
-      console.log('mixDeleteData')
       return this.$store.dispatch(delMethod, id)
         .then(() => this.mixSuccess(msg))
         .catch((err) => this.mixError(err));
     },
 
-    asyncDispatchWithMessage({method, data, msg}) {
-      return this.$store.dispatch(method, data)
-        .then((res) => {
-
-          console.log('asyncDispatchWithMessage -> then: ', res)
-          this.mixMessage({
-            type: res ? res.type ? res.type : 'success' : 'success',
-            text: res ? res.text ? res.text : msg : msg
-          })
-        })
-        .catch((err) => this.mixError(err));
-    },
     asyncDispatch({method, data}) {
       return this.$store.dispatch(method, data)
         .catch((err) => this.mixError(err));
@@ -85,17 +71,6 @@ export const copyToClipboard = {
         .catch((err) => {
           this.mixError(err)
         })
-    }
-  }
-}
-
-export const displayName = {
-  methods: {
-    displayName(val) {
-      return val
-        .split(/\s+/)
-        .map((w, i) => (i ? w.substring(0, 1).toUpperCase() + "." : w))
-        .join(" ");
     }
   }
 }

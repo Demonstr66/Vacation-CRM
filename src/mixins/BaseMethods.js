@@ -1,4 +1,4 @@
-import {messageHelper} from "@/mixins/messageHelper";
+import {messageHelper} from "@/mixins/MessageMethods";
 
 export const dispatchMethods = {
   mixins: [messageHelper],
@@ -7,14 +7,14 @@ export const dispatchMethods = {
       //method <String>: метод из корня vuex. Метод должен возвращать Promise;
       //isNew <Boolean>;
       //data <Any>;
-      //msg <String>;
+      //msg <String>; Default = isNew ? "Данные сохранены" : "Данные обновлены";
       if (msg === undefined) msg = isNew ? "Данные сохранены" : "Данные обновлены"
       return this.dispatchMethodWithMessage({method, data, msg})
     },
     dispatchDeleteData({method, data, msg}) {
       //method <String>: метод из корня vuex. Метод должен возвращать Promise;
       //data <Any>;
-      //msg <String>;
+      //msg <String>: Default = Данные удалены;
       if (msg === undefined) msg = "Данные удалены"
       return this.dispatchMethodWithMessage({method, data, msg})
     },
@@ -38,58 +38,24 @@ export const dispatchMethods = {
       return this.$store.dispatch(method, data)
     },
 
-    mixSaveData({saveMethod, isNew, data}) {
-      console.log('mixSaveData')
-      return this.$store.dispatch(saveMethod, data)
-        .then(() => this.mixSuccess(isNew
-          ? "Данные сохранены"
-          : "Данные обновлены"))
-        .catch((err) => this.mixError(err));
-    },
-    mixDeleteData({delMethod, id, msg = "Данные удалены"}) {
-      console.log('mixDeleteData')
-      return this.$store.dispatch(delMethod, id)
-        .then(() => this.mixSuccess(msg))
-        .catch((err) => this.mixError(err));
-    },
-
-    asyncDispatchWithMessage({method, data, msg}) {
-      return this.$store.dispatch(method, data)
-        .then((res) => {
-
-          console.log('asyncDispatchWithMessage -> then: ', res)
-          this.mixMessage({
-            type: res ? res.type ? res.type : 'success' : 'success',
-            text: res ? res.text ? res.text : msg : msg
-          })
-        })
-        .catch((err) => this.mixError(err));
-    },
-    asyncDispatch({method, data}) {
-      return this.$store.dispatch(method, data)
-        .catch((err) => this.mixError(err));
-    },
-    asyncCallbackWithMessage({method, data, msg}) {
-      return method(data)
-        .then(() => this.mixSuccess(msg))
-        .catch((err) => this.mixError(err));
-    },
-    asyncCallback({callback, data}) {
-      return new Promise(async (res, rej) => {
-        try {
-          await callback(data)
-          res()
-        } catch (e) {
-          this.mixError(e.message)
-          rej(e)
-        }
+    dispatchAllMethodsWithMessage({tasks, msg}) {
+      //tasks <Array> [<Object>: method, data]
+      //method <String>: метод из корня vuex. Метод должен возвращать Promise;
+      //data <Any>;
+      //msg <String>;
+      let promises = []
+      tasks.map(task => {
+        promises.push(this.$store.dispatch(task.method, task.data))
       })
-    },
-
-    promiseMessages({promise, msg}) {
-      return promise
-        .then(() => this.mixSuccess(msg))
-        .catch((err) => this.mixError(err));
+      return Promise.all(promises)
+        .then(response => {
+          this.successMessage(msg)
+          return Promise.resolve(response)
+        })
+        .catch(err => {
+          this.errorMessage(err)
+          return Promise.reject(err)
+        })
     },
   }
 }

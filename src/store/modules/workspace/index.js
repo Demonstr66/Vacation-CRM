@@ -12,7 +12,7 @@ export default {
     ready: false
   }),
   getters: {
-    get: (s) => s.workspace,
+    get: (s) => s.workspace || {},
     isReady: (s) => s.ready,
     domain: (s) => s.workspace ? s.workspace.domain : null
   },
@@ -20,7 +20,7 @@ export default {
     set: (s, v) => {
       if (!s.ready) s.ready = true
 
-      s.workspace = Object.freeze(v)
+      s.workspace = v
     },
     setReady: (s, v) => s.ready = v,
     clear: (s) => s.workspace = null
@@ -33,7 +33,7 @@ export default {
       dispatch('unsubscribe')
       commit('clear')
     },
-    create({dispatch, rootGetters, getters}, wid) {
+    create({dispatch, rootGetters, getters}, {wid, owner}) {
       return asyncTryDecorator(() => {
         // const wid = rootGetters['app/getWID']
 
@@ -41,7 +41,7 @@ export default {
 
         const path = basePath(wid)
         const key = wid
-        const data = normalize({id: key})
+        const data = normalize({id: key, owner})
 
         return dispatch('DB/set', {path, key, data}, {root: true})
       })

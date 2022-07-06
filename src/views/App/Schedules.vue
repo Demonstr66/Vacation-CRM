@@ -3,29 +3,15 @@
     <v-data-table
       :headers="headers"
       :items="Object.values(schedules)"
-      :loading="!schedulesReady"
       dense
       item-class="clickable"
-      item-key="id"
-      mobile-breakpoint="100"
       no-data-text="Графики ещё не добавлены"
-
     >
       <template v-slot:top>
         <v-toolbar dense flat>
           <v-spacer></v-spacer>
-          <v-btn color="primary" text @click="onAddNewSchedule">Создать</v-btn>
+          <v-btn color="primary" text @click="gotoEditor()">Создать</v-btn>
         </v-toolbar>
-      </template>
-      <template v-slot:item.isActive="{item}">
-        <v-switch
-          v-model="item.isActive"
-          :loading="item.isLoading"
-          :messages="item.isActive ? 'Утверждён' : 'Заполняется'"
-          color="success"
-          @click.prevent="onActivationChange(item.id)"
-        >
-        </v-switch>
       </template>
       <template v-slot:item.action="{item}">
         <v-menu
@@ -44,7 +30,7 @@
             <icon-btn-with-tip
               :disable="item.isActive || item.isLoading"
               :icon="item.isActive ? 'mdi-pencil-lock' : 'mdi-pencil'"
-              @click="onEdit(item)"
+              @click="gotoEditor(item)"
             >
               Редактировать
             </icon-btn-with-tip>
@@ -52,11 +38,11 @@
               :disable="item.isActive || item.isLoading"
               color="error"
               icon="mdi-delete"
-              @click="onDelete(item.id)"
+              @click="deleteAlertShow(item.id)"
             >
               Удалить
             </icon-btn-with-tip>
-            <icon-btn-with-tip color="info" icon="mdi-eye" @click="onShowSchedule(item.id)">
+            <icon-btn-with-tip color="info" icon="mdi-eye" @click="gotoViewer(item.id)">
               Просмотр
             </icon-btn-with-tip>
           </div>
@@ -65,7 +51,7 @@
           <icon-btn-with-tip
             :disable="item.isActive || item.isLoading"
             :icon="item.isActive ? 'mdi-pencil-lock' : 'mdi-pencil'"
-            @click="onEdit(item)"
+            @click="gotoEditor(item)"
           >
             Редактировать
           </icon-btn-with-tip>
@@ -73,173 +59,69 @@
             :disable="item.isActive || item.isLoading"
             color="error"
             icon="mdi-delete"
-            @click="onDelete(item.id)"
+            @click="deleteAlertShow(item.id)"
           >
             Удалить
           </icon-btn-with-tip>
-          <icon-btn-with-tip color="info" icon="mdi-eye" @click="onShowSchedule(item.id)">
+          <icon-btn-with-tip color="info" icon="mdi-eye" @click="gotoViewer(item.id)">
             Просмотр
           </icon-btn-with-tip>
         </div>
       </template>
     </v-data-table>
     <Alert
-      :show="activation.show"
-      @cancel="onActivationCancel"
-      @submit="onActivationSubmit"
-    >
-      {{ activation.text }}<br>Продолжить?
-    </Alert>
-    <Alert
-      :show="deleting.show"
-      @cancel="onDeletingCancel"
-      @submit="onDeletingSubmit"
+      :show="deleteAlert.show"
+      @cancel="deleteAlertCancel"
+      @submit="deleteAlertSubmit"
     >
       Вы хотите удалить график. Так же будут удалены все прикреплённые к нему отпуска<br>Продолжить?
     </Alert>
-    <ScheduleEditorModal
-      :data="editor.item"
-      :show="editor.show"
-      @close="onCloseModal"
-    />
   </div>
 </template>
 <script>
 import IconBtnWithTip from "@/components/IconBtnWithTip";
 import ScheduleEditorModal from "@/components/Modals/ScheduleEditorModal";
 import {schedules} from "@/mixins/ComputedData";
-import {mapGetters} from "vuex";
 import Alert from "@/components/Modals/Alert";
 import {dataMethods} from "@/mixins/dataHelper";
+import schedulesHeaders from "@/plugins/TableHeaders/Schedules";
+import {ScheduleMethods} from "@/mixins/ScheduleMethods";
 
 
 export default {
   name: 'ScheduleItem',
-  mixins: [schedules, dataMethods],
+  mixins: [schedules, dataMethods, ScheduleMethods],
   components: {Alert, IconBtnWithTip, ScheduleEditorModal},
   data: () => ({
-    headers: [
-      {
-        text: 'Название',
-        value: 'title',
-      },
-      {
-        text: 'Год',
-        value: 'year',
-      },
-      {
-        text: 'Статус',
-        value: 'isActive',
-        sortable: false,
-      },
-      {
-        text: 'Действия',
-        value: 'action',
-        align: 'end',
-        sortable: false
-      },
-    ],
-    editor: {
-      show: false,
-      item: null
-    },
-    activation: {
-      show: false,
-      item: null,
-      text: null,
-      msg: null
-    },
-    deleting: {
+    headers: schedulesHeaders,
+    deleteAlert: {
       show: false,
       id: null,
     }
   }),
-  computed: {
-    ...mapGetters('schedules', {schedulesReady: 'isReady'})
-  },
   methods: {
-    onActivationChange(id) {
-      const isActive = this.schedules[id].isActive
-      const text = isActive ? 'После активации вносить изменения сможет только Администратор.' :
-        'После деактивации график станет доступным для редактирования всеми пользователями'
-
-      const msg = isActive ? 'График активирован' : 'График деактивирован'
-      this.showActivationAlert(id, text, msg)
-      this.schedules[id].isLoading = true
-      this.schedules[id].isTemp = !isActive
+    deleteAlertShow(id) {
+      this.deleteAlert.id = id
+      this.deleteAlert.show = true
     },
-    showActivationAlert(id, text, msg) {
-      this.activation.item = this.schedules[id]
-      this.activation.text = text
-      this.activation.msg = msg
-
-      this.$nextTick(() => {
-        this.activation.show = true
-      })
+    deleteAlertCancel() {
+      this.deleteAlertClose()
     },
-    onActivationSubmit() {
-      this.asyncDispatchWithMessage({
-        method: 'schedules/update',
-        data: this.activation.item,
-        msg: this.activation.msg,
-      })
-
-      this.closeActivationAlert()
+    deleteAlertSubmit() {
+      this.deleteSchedule(this.deleteAlert.id)
+      this.deleteAlertClose()
     },
-    onActivationCancel() {
-      const id = this.activation.item.id
-      this.schedules[id].isLoading = false
-      this.schedules[id].isActive = !this.schedules[id].isActive
-      this.schedules[id].isTemp = !this.schedules[id].isTemp
-
-      this.closeActivationAlert()
+    deleteAlertClose() {
+      this.deleteAlert.id = null
+      this.deleteAlert.show = false
     },
-    closeActivationAlert() {
-      this.activation.show = false
-
-      this.$nextTick(() => {
-        this.activation.item = null
-        this.activation.text = null
-        this.activation.msg = null
-      })
+    gotoEditor(item) {
+      if (!!item) this.$router.push({name: 'ScheduleEditor', params: {id: item.id}})
+      else this.$router.push({name: 'ScheduleCreate'})
     },
-    onShowSchedule(id) {
-      this.$router.push({name: 'Schedule', params: {id: id}})
+    gotoViewer(id) {
+      this.$router.push({name: 'Viewer1', params: {id: id}})
     },
-    onDelete(id) {
-      this.deleting.id = id
-      this.deleting.show = true
-    },
-    onDeletingCancel() {
-      this.closeDeletingAlert()
-    },
-    onDeletingSubmit() {
-      this.asyncDispatchWithMessage({
-        method: 'schedules/delete',
-        data: this.deleting.id,
-        msg: 'График удалён'
-      })
-
-      this.closeDeletingAlert()
-    },
-    closeDeletingAlert() {
-      this.deleting.id = null
-      this.deleting.show = false
-    },
-    onEdit(item) {
-      this.editor.item = item
-      this.showEditorModal()
-    },
-    onAddNewSchedule() {
-      this.showEditorModal()
-    },
-    showEditorModal() {
-      this.editor.show = true
-    },
-    onCloseModal() {
-      this.editor.show = false
-      this.editor.item = null
-    }
   }
 }
 </script>

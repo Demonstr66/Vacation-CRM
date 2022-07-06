@@ -1,6 +1,6 @@
 <template>
   <v-card flat>
-    <v-card-title v-if="!notitle">Шаблон заявления</v-card-title>
+    <v-card-title v-if="!hideTitle">Шаблон заявления</v-card-title>
     <v-card-text>
       <v-row>
         <v-col :cols="12 / cols">
@@ -34,7 +34,7 @@
           </v-file-input>
           <v-expand-transition>
             <div v-if="!!newTempFile">
-              <v-btn block color="success" text @click="uploadFile">
+              <v-btn block color="success" text @click="onUploadFile">
                 Загрузить
               </v-btn>
             </div>
@@ -79,18 +79,18 @@
                         <icon-btn-with-tip btnClass="float-end" color="error"
                                            icon="mdi-close"
                                            small
-                                           @click="deleteFile">
+                                           @click="onDeleteFile">
                           Удалить
                         </icon-btn-with-tip>
                         <icon-btn-with-tip btnClass="float-end" color="primary" icon="mdi-download"
                                            small
-                                           @click="downloadFile(templateFile)">
+                                           @click="onDownloadFile(templateFile)">
                           Скачать
                         </icon-btn-with-tip>
                       </div>
                     </v-card>
                     <div :title="templateFile.name" class="font-italic">
-                      {{ templateFile.name | truncateFileName }}
+                      {{ templateFile.name | truncate30 }}
                     </div>
                   </v-sheet>
                 </v-col>
@@ -103,7 +103,8 @@
                   </span> - {{ tempKey.title }}
                       </li>
                     </ul>
-                    <v-btn :loading="isExampleLoading" block text @click="downloadExample">Скачать
+                    <v-btn :loading="isExampleLoading" block text
+                           @click="downloadExample(templateFile)">Скачать
                       пример
                     </v-btn>
                   </div>
@@ -122,18 +123,20 @@
 <script>
 import IconBtnWithTip from "@/components/IconBtnWithTip"
 import {templateFile} from "@/mixins/ComputedData";
-import {workspaceMethods} from "@/mixins/workspaceHelper";
+import {FileMethods} from "@/mixins/FileMethods";
+import {truncate30} from "@/mixins/Filters";
+import {templateFileData} from "@/plugins/schema";
 
 export default {
   name: 'TheTemplateVacationFile',
-  mixins: [templateFile, workspaceMethods],
+  mixins: [templateFile, FileMethods, truncate30],
   components: {IconBtnWithTip},
   props: {
     cols: {
       type: Number,
       default: 1,
     },
-    notitle: {
+    hideTitle: {
       type: Boolean,
       default: false,
     },
@@ -143,65 +146,52 @@ export default {
     isDeleting: false,
     isDownloading: false,
     isExampleLoading: false,
-    newTempFile: null,
-    templateKeys: [
-      {key: 'fullName', title: 'ФИО'},
-      {key: 'post', title: 'Должность'},
-      {key: 'date', title: 'Текущая дата'},
-      {key: 'vstart', title: 'Дата начала отпуска'},
-      {key: 'vend', title: 'Дата конца отпуска'},
-      {key: 'vdays', title: 'Дней отпуска'},
-    ]
+    newTempFile: null
   }),
+  computed: {
+    templateKeys() {
+      const data = templateFileData
+      const keys = Object.keys(data)
+      let values = Object.values(data)
+      values = values.map( (v, idx) => {v.key = keys[idx]; return v})
+      return values
+    }
+  },
   methods: {
-    async uploadFile() {
-      console.log('this.uploadFile')
+    async onUploadFile() {
       if (!!this.templateFile) await this.deleteFile(this.templateFile)
 
       this.isLoading = true
-      await this.mixUploadFile(this.newTempFile)
+      await this.uploadFile(this.newTempFile)
       this.newTempFile = null
       this.isLoading = false
     },
-    async downloadFile(file) {
+    async onDownloadFile(file) {
       this.isDownloading = true
-      console.log(file)
-      await this.mixDownloadFile(file)
+      await this.downloadFile(file)
       this.isDownloading = false
     },
-    async downloadExample() {
+    async downloadExample(file) {
       this.isExampleLoading = true
-      await this.$store.dispatch('templateFile/generate', {
-        fullName: 'Филиппов Дмитрий Олегович',
-        post: 'Старший специалист по программированию и обработке данных',
-        date: '"04" апреля 2022г.',
-        vstart: '"05" апреля 2022г.',
-        vend: '"06" апреля 2022г.',
-        vdays: '2',
+
+      let testData = templateFileData
+      for (key in testData) {
+        let test = testData[key].test
+        testData[key] = typeof test === 'function' ? test() : test
+      }
+
+      await this.downloadWithDataFile({
+        fullPath: file.fullPath,
+        data: testData
       })
 
       this.isExampleLoading = false
     },
-    async deleteFile() {
-      console.log('this.deleteFile')
+    async onDeleteFile() {
       this.isDeleting = true
-      await this.mixDeleteFile(this.templateFile)
+      await this.deleteFile(this.templateFile)
       this.isDeleting = false
     },
-  },
-  filters: {
-    truncateFileName(val) {
-      if (!val) return
-      const maxLength = 30
-      if (val.length <= maxLength) return val
-
-      const reverseArr = val.split('').reverse()
-      const format = reverseArr.slice(0, reverseArr.indexOf('.') + 4).reverse().join('')
-
-      const name = val.slice(0, maxLength - (format.length + 3))
-
-      return name + '...' + format
-    }
   }
 }
 </script>

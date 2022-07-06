@@ -128,15 +128,15 @@ import {dataMethods} from "@/mixins/dataHelper";
 import {myVacations} from "@/mixins/ComputedData";
 import {defVacation} from "@/plugins/schema";
 import PopoverRow from 'v-calendar/lib/components/popover-row.umd.min'
-import {vacationMethods} from "@/mixins/workspaceHelper";
 import {normalizeDate} from "@/mixins/Filters";
+import {VacationMethods} from "@/mixins/VacationMethods";
 
 export default {
   components: {
     BaseModal,
     PopoverRow
   },
-  mixins: [dataMethods, myVacations, vacationMethods, normalizeDate],
+  mixins: [dataMethods, myVacations, VacationMethods, normalizeDate],
   props: {
     show: {
       type: Boolean,
@@ -436,7 +436,8 @@ export default {
         status: 1
       })
 
-      this.mixSaveVacation(!!!vacation.id, vacation)
+      if (!vacation.id) this.createVacation(vacation)
+      else this.updateVacation(vacation)
 
       this.closeModal()
     },

@@ -14,7 +14,7 @@ export default {
   }),
   getters: {
     get: (s) => s.vacations || {},
-    getBySid: (s) => (sid) => s.vacations ? s.vacations[sid] : {},
+    getBySid: (s) => (sid) => s.vacations ? {...s.vacations[sid]} : null,
     getBySidByUid: (s) => (sid, uid) => {
       try {
         let res = {}

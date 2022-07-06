@@ -76,12 +76,12 @@
 </template>
 
 <script>
-import {inputRules} from "@/mixins/inputRules";
+import {inputValidations} from "@/mixins/InputValidations";
 import {logIn} from "@/mixins/AuthMethods";
 
 export default {
   name: 'Login',
-  mixins: [logIn, inputRules],
+  mixins: [logIn, inputValidations],
   data: () => ({
     visiblePassword: false,
     valid: false,

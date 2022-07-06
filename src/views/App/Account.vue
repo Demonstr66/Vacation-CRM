@@ -1,35 +1,35 @@
 <template>
   <v-row class="pa-0 ma-0">
     <v-col class="pa-0 ma-0" cols="12" md="6">
-      <pers-user-info :user="user"></pers-user-info>
+      <the-user-info :user="user" solo></the-user-info>
     </v-col>
     <v-col class="pa-0 ma-0" cols="12" md="6">
-      <account-user-info :user="user" disabled></account-user-info>
+      <the-account-info :user="user" disable-all></the-account-info>
     </v-col>
     <v-col class="pa-0 ma-0" cols="12" md="6">
-      <info></info>
+      <the-workspace-info :workspace="workspace" solo></the-workspace-info>
     </v-col>
     <v-col class="pa-0 ma-0" cols="12" md="6">
-      <TheTemplateVacationFile></TheTemplateVacationFile>
+      <the-template-vacation-file></the-template-vacation-file>
     </v-col>
   </v-row>
 </template>
 
 <script>
-import persUserInfo from "../../components/user/info/personal.vue";
-import accountUserInfo from "../../components/user/info/account.vue";
-import Info from "@/components/workspace/info";
+import TheWorkspaceInfo from "@/components/TheWorkspaceInfo";
 import TheTemplateVacationFile from "@/components/workspace/TheTemplateVacationFile";
-import {user} from "@/mixins/ComputedData";
+import {user, workspace} from "@/mixins/ComputedData";
+import TheAccountInfo from "@/components/TheAccountInfo";
+import TheUserInfo from "@/components/TheUserInfo";
 
 export default {
   name: 'Account',
-  mixins: [user],
+  mixins: [user, workspace],
   components: {
     TheTemplateVacationFile,
-    Info,
-    persUserInfo,
-    accountUserInfo,
+    TheWorkspaceInfo,
+    TheAccountInfo,
+    TheUserInfo
   },
 };
 </script>

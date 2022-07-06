@@ -61,11 +61,12 @@ export default {
         return dispatch('DB/delete', {path, key}, {root: true})
       })
     },
-    update({rootGetters, dispatch}, post) {
+    update({rootGetters, dispatch, getters}, post) {
       return asyncTryDecorator(() => {
         const wid = rootGetters['app/getWID']
 
         if (!test(post, wid) || !post.id) throw new Error('Что-то пошло не так: posts/update -> test')
+        if (!isUnique(post, Object.values(getters.get))) throw new Error('Должность уже существет')
 
         const path = basePath(wid)
         const key = post.id

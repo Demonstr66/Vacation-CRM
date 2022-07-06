@@ -18,22 +18,22 @@
               dense
             >
               <v-timeline-item
-                small
                 v-for="(historyItem, idx) in item.history"
                 :key="idx"
+                small
               >
                 <v-card
                   flat
 
                 >
                   <v-card-title>
-                    {{historyItem.statusChangeByUid}}
+                    {{ historyItem.statusChangeByUid }}
                   </v-card-title>
                   <v-card-subtitle>
-                    {{$moment(historyItem.statusChangeAt).format('YYYY-MM-DD hh:mm')}}
+                    {{ $moment(historyItem.statusChangeAt).format('YYYY-MM-DD hh:mm') }}
                   </v-card-subtitle>
                   <blockquote>
-                    {{historyItem.comment}}
+                    {{ historyItem.comment }}
                   </blockquote>
                 </v-card>
               </v-timeline-item>
@@ -66,9 +66,9 @@
       <template v-slot:item.start="{item}">
         <div>
           <v-icon>mdi-calendar</v-icon>
-          {{ item.start | makeWeekDay | lowerCase }}
+          {{ item.start | getShortDayLabel | lowerCase }}
           <span class="font-weight-bold">{{ item.start | normalizeDate }}</span> -
-          {{ item.end | makeWeekDay | lowerCase }}
+          {{ item.end | getShortDayLabel | lowerCase }}
           <span class="font-weight-bold">{{ item.end | normalizeDate }}</span>
         </div>
       </template>
@@ -198,14 +198,14 @@ import {posts, schedules, templateFile, vacationStatuses} from "@/mixins/Compute
 import AddVacation from "@/components/Modals/AddVacation";
 import IconBtnWithTip from "@/components/IconBtnWithTip";
 import {dataMethods} from "@/mixins/dataHelper";
-import {vacationMethods} from "@/mixins/workspaceHelper";
 import {dataToGenerateFile} from "@/plugins/schema";
-import {lowerCase, makeWeekDay, normalizeDate} from "@/mixins/Filters";
+import {getShortDayLabel, lowerCase, normalizeDate} from "@/mixins/Filters";
+import {VacationMethods} from "@/mixins/VacationMethods";
 
 export default {
   name: 'Vacation',
   components: {IconBtnWithTip, AddVacation},
-  mixins: [schedules, dataMethods, vacationMethods, posts, templateFile, makeWeekDay,
+  mixins: [schedules, dataMethods, VacationMethods, posts, templateFile, getShortDayLabel,
     lowerCase, normalizeDate, vacationStatuses],
   data: () => ({
     expanded: [],
@@ -318,7 +318,7 @@ export default {
       this.addModalEditItemId = null
     },
     onDelete(item) {
-      this.mixDeleteVacation(item)
+      this.deleteVacation(item)
     },
     redirect() {
       this.$router.replace({name: 'Vacations'})

@@ -1,8 +1,9 @@
 import {dispatchMethods} from '@/mixins/BaseMethods';
-import {messageHelper} from "@/mixins/messageHelper";
+import {messageHelper} from "@/mixins/MessageMethods";
 
 export const resetPassword = {
-  mixins: [dispatchMethods], methods: {
+  mixins: [dispatchMethods],
+  methods: {
     resetPassword(email) {
       return this.dispatchMethodWithMessage({
         method: 'auth/resetPassword',
@@ -14,7 +15,8 @@ export const resetPassword = {
 }
 
 export const logIn = {
-  mixins: [dispatchMethods], methods: {
+  mixins: [dispatchMethods],
+  methods: {
     sendEmailVerify() {
       return this.dispatchMethod({
         method: 'auth/sendEmailVerify'
@@ -22,7 +24,8 @@ export const logIn = {
         .catch((err) => {
           this.errorMessage(err)
         })
-    }, logIn(data) {
+    },
+    logIn(data) {
       return this.dispatchMethod({
         method: 'FB/remember', data
       })
@@ -45,7 +48,8 @@ export const logIn = {
 }
 
 export const signOut = {
-  mixins: [dispatchMethods], methods: {
+  mixins: [dispatchMethods],
+  methods: {
     signOut() {
       return this.dispatchMethod({
         method: 'auth/singOut'
@@ -72,7 +76,8 @@ export const signOut = {
 }
 
 export const register = {
-  mixins: [dispatchMethods, messageHelper], methods: {
+  mixins: [dispatchMethods, messageHelper],
+  methods: {
     register(data) {
       return this.dispatchMethod({
         method: 'auth/register', data

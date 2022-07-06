@@ -1,9 +1,9 @@
 <template>
   <list-with-add
-      title="Задачи"
-      :items="Object.values(tasks)"
-      @save="onSave"
-      @delete="onDelete"
+    :items="Object.values(tasks)"
+    title="Задачи"
+    @delete="onDelete"
+    @save="onSave"
   >
     <template v-slot:alert="{item}">
       <span>
@@ -20,18 +20,20 @@
 <script>
 import {defTask} from "@/plugins/schema";
 import {tasks} from "@/mixins/ComputedData";
-import {taskMethods} from "../../mixins/workspaceHelper";
 import ListWithAdd from "./BaseListWidget.vue";
+import {TaskMethods} from "@/mixins/TaskMethods";
 
 export default {
-  mixins: [tasks, taskMethods],
+  mixins: [tasks, TaskMethods],
   components: {
     ListWithAdd
   },
   methods: {
     onSave(item) {
       const task = defTask(item);
-      this.saveTask(!!!task.id, task);
+
+      if (!task.id) this.createTask(task).catch(err => {})
+      else this.updateTask(task).catch(err => {})
     },
     onDelete(id) {
       this.deleteTask(id);

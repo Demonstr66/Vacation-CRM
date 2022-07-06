@@ -1,22 +1,21 @@
 <template>
   <v-card flat>
-    <v-form ref="workspaceForm" @submit.prevent="onSubmit">
-      <v-card-title v-if="!notitle">Настройки Пространства</v-card-title>
+    <component :is="tag" ref="form" @submit.prevent="onSubmit">
+      <v-card-title v-if="!hideTitle">Настройки Пространства</v-card-title>
       <v-card-text>
-        <v-row v-if="!!workspace">
+        <v-row no-gutters>
           <v-col :cols="12 / cols">
             <div class="d-flex align-top">
               <v-text-field
-                  v-model.trim="workspace.id"
-                  dense
-                  disabled
-                  label="ID пространства"
-                  name="workspace"
-                  single-line
-                  @change.once="onChange"
+                v-model="workspace.id"
+                dense
+                disabled
+                label="ID пространства"
+                name="workspace"
+                single-line
               >
                 <template v-slot:prepend>
-                  <v-icon color="blue-grey lighten-1">mdi-identifier</v-icon>
+                  <input-icon>mdi-identifier</input-icon>
                 </template>
               </v-text-field>
               <icon-btn-with-tip icon="mdi-help-circle-outline">
@@ -25,17 +24,17 @@
               </icon-btn-with-tip>
               <v-fab-transition>
                 <icon-btn-with-tip
-                    v-if="!copiedSuccessful"
-                    icon="mdi-content-copy"
-                    @click="copyToClipboard(workspace.id)"
+                  v-if="!copiedSuccessful"
+                  icon="mdi-content-copy"
+                  @click="copyToClipboard(workspace.id)"
                 >
                   Копировать
                 </icon-btn-with-tip>
                 <icon-btn-with-tip
-                    v-if="copiedSuccessful"
-                    color="success"
-                    icon="mdi-check-all"
-                    tooltipcolor="success"
+                  v-if="copiedSuccessful"
+                  color="success"
+                  icon="mdi-check-all"
+                  tooltipcolor="success"
                 >
                   Успешно
                 </icon-btn-with-tip>
@@ -44,28 +43,28 @@
           </v-col>
           <v-col :cols="12 / cols">
             <v-text-field
-                v-model.trim="workspace.title"
-                :disabled="disabled"
-                dense
-                label="Название организации"
-                name="name"
-                single-line
-                @change.once="onChange"
+              v-model.trim="workspace.title"
+              :disabled="disabled"
+              dense
+              label="Название"
+              name="title"
+              single-line
+              @change.once="onChange"
             >
               <template v-slot:prepend>
-                <v-icon color="blue-grey lighten-1">mdi-sitemap</v-icon>
+                <input-icon>mdi-sitemap</input-icon>
               </template>
             </v-text-field>
           </v-col>
           <v-col :cols="12 / cols">
             <v-text-field
-                v-model.trim="domain"
-                :disabled="disabled"
-                dense
-                label="Домен для почты по умолчанию"
-                name="domain"
-                single-line
-                @change.once="onChange"
+              v-model.trim="domain"
+              :disabled="disabled"
+              dense
+              label="Домен для почты по умолчанию"
+              name="domain"
+              single-line
+              @change.once="onChange"
             >
               <template v-slot:prepend>
                 <v-icon color="blue-grey lighten-1">mdi-at</v-icon>
@@ -74,37 +73,46 @@
           </v-col>
         </v-row>
       </v-card-text>
-      <v-card-actions v-if="!noaction && !disabled">
+      <v-card-actions v-if="!hideAction && !disabled && solo">
         <v-spacer></v-spacer>
         <v-btn :disabled="!isChanged" color="success" text type="submit">
           Сохранить
         </v-btn>
         <v-spacer></v-spacer>
       </v-card-actions>
-    </v-form>
+    </component>
   </v-card>
 </template>
 
 <script>
 import IconBtnWithTip from "@/components/IconBtnWithTip";
-import {defWorkspace} from "@/plugins/schema";
-import {workspaceMethods} from "@/mixins/workspaceHelper";
-import {workspace} from "@/mixins/ComputedData";
 import {copyToClipboard} from "@/mixins/dataHelper";
+import {WorkspaceMethods} from "@/mixins/WorkspaceMethods";
+import InputIcon from "@/components/InputIcon";
+import {VForm} from "vuetify/lib/components";
 
 export default {
-  components: {IconBtnWithTip},
-  mixins: [workspaceMethods, workspace, copyToClipboard],
+  components: {InputIcon, IconBtnWithTip,VForm},
+  mixins: [WorkspaceMethods, copyToClipboard],
   props: {
+    solo: {
+      type: Boolean,
+      default: false
+    },
+    workspace: {
+      id: String,
+      domain: Array,
+      title: String
+    },
     disabled: {
       type: [Boolean],
       default: false,
     },
-    notitle: {
+    hideTitle: {
       type: Boolean,
       default: false,
     },
-    noaction: {
+    hideAction: {
       type: Boolean,
       default: false,
     },
@@ -126,33 +134,31 @@ export default {
         let needAt = val != ''
         this.workspace.domain = (!isAt && needAt ? '@' : '') + val
       }
+    },
+    tag() {
+      return this.solo ? 'VForm' : 'div'
     }
   },
   methods: {
     onSubmit() {
-      if (this.disabled || this.noaction) return;
-
-      this.mixSaveWorkspace(false, this.workspace)
-          .then(res => {
-            console.log("res", res)
-          })
-          .catch(err => {
-            console.log("err", err)
-          })
+      console.log('try update:', this.disabled, this.hideAction)
+      if (this.disabled || this.hideAction) return;
+      console.log('try update')
+      this.updateWorkspace(this.workspace)
+      this.isChanged = false
     },
     onChange() {
-      this.isChanged = true;
-      this.$emit("change");
+      if (this.isChanged) return
+      this.isChanged = true
     },
     reset() {
-      this.$refs.workspaceForm.reset();
-      this.user = defWorkspace();
+      this.$refs.form.reset();
     },
     getData() {
       return this.workspace
     },
     validate() {
-      return this.$refs.workspaceForm.validate()
+      return this.$refs.form.validate()
     }
   },
 };

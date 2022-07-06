@@ -5,10 +5,9 @@
     :title="title"
     large
     @cancel="onCancel"
-    @reset="reset"
     @submit="onSubmit"
   >
-    <v-form ref="mainForm" v-model="valid">
+    <v-form ref="form" v-model="valid">
       <v-row align="end" dense>
         <v-col>
           <v-text-field
@@ -34,108 +33,117 @@
       </v-row>
       <v-expand-transition>
         <v-row v-if="!!schedule.year">
-          <v-col cols="auto">
-            <vc-date-picker
-              ref="datePicker"
-              v-model="selectedDate"
-              :attributes="attributes"
-              :max-date="new Date(`${schedule.year}-12-31`)"
-              :min-date="new Date(`${schedule.year}-01-01`)"
-            >
-              <template v-slot:day-popover="{day, attributes, dayTitle }">
-                <div>
-                  {{ dayTitle }}
-                </div>
-                <div>
-                  <v-btn
-                    v-if="!!day.attributesMap.workdays || !!day.attributesMap.holidays"
-                    color="info"
-                    small
-                    text
-                    @click="deleteException(day.attributesMap.holidays ? 'holidays':'workdays',
-                      day.date)"
-                  >
-                    Удалить из исключений
-                  </v-btn>
-                  <v-btn v-else color="info" small text
-                         @click="addToException(day.attributesMap.weekends ? 'workdays'
-                           : 'holidays', day.date)">
-                    Добавить в исключения
-                  </v-btn>
-                </div>
-              </template>
-            </vc-date-picker>
-          </v-col>
-          <v-col>
+          <v-col cols="12">
             <v-card-title class="justify-center">
               Исключения
-              <div>
-                <icon-btn-with-tip icon="mdi-refresh" @click="loadDisDates(schedule.year)">
-                  Загрузить данные по умолчанию
-                </icon-btn-with-tip>
-              </div>
             </v-card-title>
-            <v-chip
-              v-for="(holiday, index) in schedule.exception.holidays"
-              :key="'h'+index"
-              class="ma-1"
-              close
-              color="info"
-              label
-              outlined
-              @click="goto(holiday)"
-              @click:close="deleteException('holidays', holiday)"
-            >
-                <span class="font-weight-bold mr-2">
-                  {{ holiday | weekDayFilter }}
-                </span>
-              {{ holiday | dateFilter }}
-            </v-chip>
             <v-divider></v-divider>
-            <v-chip
-              v-for="(workday, index) in schedule.exception.workdays"
-              :key="'w'+index"
-              class="ma-1"
-              close
-              color="warning"
-              label
-              link
-              outlined
-              @click="goto(workday)"
-              @click:close="deleteException('workdays', workday)"
-            >
-              <span class="font-weight-bold mr-2">
-                {{ workday | weekDayFilter }}
-              </span>
-              {{ workday | dateFilter }}
-            </v-chip>
+            <div class="text-right">
+              <icon-btn-with-tip
+                icon="mdi-refresh"
+                @click="updateExceptions(schedule.year)"
+              >
+                Загрузить даты по умолчанию
+              </icon-btn-with-tip>
+              <icon-btn-with-tip
+                color="primary"
+                icon="mdi-calendar-remove-outline"
+                @click="deleteExceptionByType('holiday')"
+              >
+                Удалить все праздничные дни
+              </icon-btn-with-tip>
+              <icon-btn-with-tip
+                color="warning"
+                icon="mdi-calendar-remove-outline"
+                @click="deleteExceptionByType('workday')"
+              >
+                Удалить все рабочие выхоные дни
+              </icon-btn-with-tip>
+              <icon-btn-with-tip
+                color="error"
+                icon="mdi-calendar-remove-outline"
+                @click="deleteException()"
+              >
+                Удалить все исключения
+              </icon-btn-with-tip>
+            </div>
+            <v-divider></v-divider>
           </v-col>
-          <v-col cols="12">
-            <v-row justify="space-between">
-              <v-col cols="auto">
+          <v-row>
+            <v-col cols="auto">
+              <vc-date-picker
+                ref="datePicker"
+                v-model="selectedDate"
+                :attributes="attributes"
+                :max-date="new Date(`${schedule.year}-12-31`)"
+                :min-date="new Date(`${schedule.year}-01-01`)"
+              >
+                <template v-slot:day-popover="{day, attributes, dayTitle }">
+                  <div>
+                    {{ dayTitle }}
+                  </div>
+                  <div>
+                    <v-btn
+                      v-if="!!day.attributesMap.workdays || !!day.attributesMap.holidays"
+                      color="info"
+                      small
+                      text
+                      @click="deleteException(day.attributesMap.holidays ? 'holidays':'workdays',
+                      day.date)"
+                    >
+                      Удалить из исключений
+                    </v-btn>
+                    <v-btn v-else color="info" small text
+                           @click="addToException(day.attributesMap.weekends ? 'workday'
+                           : 'holiday', day.date)">
+                      Добавить в исключения
+                    </v-btn>
+                  </div>
+                </template>
+
+              </vc-date-picker>
+              <div class="d-flex flex-column align-start mt-2">
                 <v-badge color="black" dot inline left>
                   <span class="subtitle-1"> Рабочие дни </span>
                 </v-badge>
-              </v-col>
-              <v-col cols="auto">
                 <v-badge color="error" dot inline left>
                   <span class="subtitle-1"> Выходные дни </span>
                 </v-badge>
-              </v-col>
-              <v-col cols="auto">
                 <v-badge color="#2196f3" dot inline left>
                   <span class="subtitle-1"> Праздничные дни </span>
                 </v-badge>
-              </v-col>
-              <v-col cols="auto">
                 <v-badge color="warning" dot inline left>
                   <span class="subtitle-1"> Рабочие выходные дни </span>
                 </v-badge>
-              </v-col>
-            </v-row>
-          </v-col>
+              </div>
+            </v-col>
+            <v-col style="position: relative">
+              <v-overlay v-if="exceptionLoading" absolute color="info" opacity="0.2">
+                <v-progress-circular indeterminate size="32" width="4"></v-progress-circular>
+              </v-overlay>
+              <div
+                v-if="!holidays.length && !workdays.length"
+                class="text-center"
+              >
+                Нет исключений
+              </div>
+              <div v-else>
+                <schedule-chips
+                  :items="holidays"
+                  color="info"
+                  @click="goto"
+                  @close="deleteException"
+                />
+                <schedule-chips
+                  :items="workdays"
+                  color="warning"
+                  @click="goto"
+                  @close="deleteException"
+                />
+              </div>
+            </v-col>
+          </v-row>
         </v-row>
-
       </v-expand-transition>
     </v-form>
   </BaseModal>
@@ -144,15 +152,18 @@
 <script>
 import BaseModal from "./Base.vue";
 import {defSchedule} from "@/plugins/schema";
-import {inputRules} from "@/mixins/inputRules";
-import {dataMethods} from "@/mixins/dataHelper";
+import {inputValidations} from "@/mixins/InputValidations";
 import IconBtnWithTip from "@/components/IconBtnWithTip";
+import {getShortDayLabel, normalizeDate} from "@/mixins/Filters";
+import {loadDisDates} from "@/plugins/utils";
+import ScheduleChips from "@/components/Modals/ScheduleChips";
+import {ScheduleMethods} from "@/mixins/ScheduleMethods";
 
-const api = require('isdayoff')();
 
 export default {
-  mixins: [inputRules, dataMethods],
+  mixins: [inputValidations, getShortDayLabel, normalizeDate, ScheduleMethods],
   components: {
+    ScheduleChips,
     IconBtnWithTip,
     BaseModal,
   },
@@ -169,8 +180,10 @@ export default {
   },
   data: () => ({
     schedule: defSchedule(),
+    exception: [],
     valid: false,
-    selectedDate: null
+    selectedDate: null,
+    exceptionLoading: false
   }),
   computed: {
     attributes() {
@@ -208,7 +221,7 @@ export default {
               color: '#2196f3'
             }
           },
-          dates: this.schedule.exception.holidays ? this.schedule.exception.holidays.map(d => new Date(d)) : []
+          dates: this.holidays
         },
         {
           key: 'workdays',
@@ -221,125 +234,114 @@ export default {
               color: '#fb8c00'
             }
           },
-          dates: this.schedule.exception.workdays ? this.schedule.exception.workdays.map(d => new Date(d)) : []
+          dates: this.workdays
         },
       ]
     },
     defaultName() {
-      return `График отпусков на ${this.schedule.year || (new Date()).getFullYear()} год`
+      return `График отпусков на ${this.schedule && this.schedule.year ||
+      (new Date()).getFullYear()} год`
     },
     years() {
       const d = 4
-      const today = new Date()
-      const year = today.getFullYear()
       let years = []
-
-      for (let i = -1 * d; i <= d; i++) years.push('' + (year + i))
-
+      for (let i = -1 * d; i <= d; i++) years.push('' + ((new Date()).getFullYear() + i))
       return years
+    },
+    holidays() {
+      let exception = this.exception
+      exception = exception.filter(x => x.type === 'holiday')
+      exception = exception.map(x => x.date)
+      exception = exception.sort()
+
+      return exception
+    },
+    workdays() {
+      let exception = this.exception
+      exception = exception.filter(x => x.type === 'workday')
+      exception = exception.map(x => x.date)
+      exception = exception.sort()
+
+      return exception
     }
   },
   methods: {
-    deleteException(type, data) {
-      data = this.$moment(data).format('YYYY-MM-DD')
-      this.schedule.exception[type] = this.schedule.exception[type].filter(x => x !== data)
+    deleteException(exception) {
+      if (exception === undefined) {
+        this.exception = []
+        return
+      }
+      const date = this.$moment(exception).format('YYYY-MM-DD')
+      const exceptions = this.exception.filter(x => x.date !== date)
+      this.exception = [...exceptions]
     },
-    addToException(type, data) {
-      data = this.$moment(data).format('YYYY-MM-DD')
-      this.schedule.exception[type].push(data)
+    deleteExceptionByType(type) {
+      this.exception = this.schedule.exception.filter(x => x.type !== type)
+    },
+    addToException(type, date) {
+      date = this.$moment(date).format('YYYY-MM-DD')
+      this.exception.push({date, type})
     },
     async onYearChange() {
       const year = this.schedule.year
-      if (!year) return
-
-      await this.loadDisDates(year)
+      await this.updateExceptions(year)
 
       this.$nextTick(() => {
         this.goto(`${year}-01-01`)
       })
     },
-    async loadDisDates(year) {
-      const startDate = `${year}-01-01`
-      const endDate = `${year}-12-31`
-      const stateDays = await api.period({
-        start: new Date(startDate),
-        end: new Date(endDate)
-      })
-
-      let holidays = []
-      let workdays = []
-      let day = this.$moment(new Date(startDate))
-      stateDays.map((state) => {
-        if (!!state && day.weekday() !== 5 && day.weekday() !== 6)
-          holidays.push(this.$moment(day).format('YYYY-MM-DD'))
-
-        if (!!!state && (day.weekday() === 5 || day.weekday() === 6))
-          workdays.push(this.$moment(day).format('YYYY-MM-DD'))
-
-        day.add(1, 'days')
-      })
-      this.schedule.exception = {holidays, workdays}
+    async updateExceptions(year) {
+      this.exceptionLoading = true
+      this.exception = await loadDisDates(year)
+      this.exceptionLoading = false
     },
     goto(date) {
-      const dp = this.$refs.datePicker
-      const to = new Date(date)
-
-      dp.focusDate(to)
-    },
-    reset() {
-      this.$refs.mainForm.reset()
-      this.schedule = defSchedule()
+      this.$refs.datePicker.focusDate(new Date(date))
     },
     onSubmit() {
       let schedule = {...this.schedule}
-      schedule.exception = {...this.schedule.exception}
       if (!schedule.title) schedule.title = this.defaultName
-
-      schedule.exception.holidays = [...schedule.exception.holidays]
-      schedule.exception.workdays = [...schedule.exception.workdays]
 
       schedule.endDate = `${schedule.year}-12-31`
       schedule.startDate = `${schedule.year}-01-01`
+      schedule.exception = [...this.exception]
 
-      this.asyncCallback({
-        callback: (data) => this.$store.dispatch(!!schedule.id ? 'schedules/update' :
-          'schedules/create', data),
-        data: schedule
-      })
+      const method = !!!schedule.id ? this.createSchedule : this.updateSchedule
+
+      method(schedule)
         .then(() => this.closeModal())
+        .catch(er => {
+        })
     },
     onCancel() {
       this.closeModal();
     },
     closeModal() {
       this.$emit("close");
+
+      this.$nextTick(() => {
+        this.$refs.form.reset()
+        this.selectedDate = null
+        this.exception = []
+        this.exceptionLoading = false
+        this.schedule = defSchedule()
+      })
     },
   },
   watch: {
     show(val) {
       if (val) {
-        if (this.data && this.data.id) {
-          this.schedule = defSchedule(this.data)
-        }
-        let root = document.documentElement;
-        root.style.setProperty('--min-h-day', "32px");
+        this.schedule = {...this.data}
+        this.exception = [...this.data.exception || []]
+
+        this.$refs.form.reset()
+        this.$nextTick(() => {
+          if (this.data.year) this.goto(`${this.data.year}-01-01`)
+        })
+        //установка высоты трок календаря
+        document.documentElement.style.setProperty('--min-h-day', "32px");
       }
-    }
-  },
-  filters: {
-    weekDayFilter(val) {
-      const weekDay = ['ВС', 'ПН', 'ВТ', 'СР', 'ЧТ', 'ПТ', 'СБ']
-      return weekDay[new Date(val).getDay()]
-    },
-    dateFilter(val) {
-      return val.split('-').reverse().join('.')
     }
   }
 };
 </script>
-
-<style lang="scss">
-//.vc-day {
-//  min-height: 32px !important;
-//}
-</style>

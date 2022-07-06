@@ -1,4 +1,5 @@
 import {dateToFileFormat} from "@/plugins/utils";
+const moment = require('moment')
 
 export function defUser(...data) {
   let res = {
@@ -7,6 +8,7 @@ export function defUser(...data) {
     emailVerified: false,
     displayName: '',
     fullName: '',
+    templateName: '',
     post: null,
     tasks: [],
     team: null,
@@ -24,6 +26,15 @@ export function defUser(...data) {
     })
   }
   return res
+}
+
+export const templateFileData = {
+  fullName: { test: 'Иванов Иван Иванович', description: '', title: 'ФИО'},
+  post: { test: 'Менеджер по продажам', description: '' , title: 'Должность'},
+  date: { test: () => dateToFileFormat(moment()), description: '' , title: 'Дата подписания'},
+  start: { test: () => dateToFileFormat(moment().add(5, 'days')), description: '' , title: 'Дата начала отпуска'},
+  finish: { test: () => dateToFileFormat(moment().add(10, 'days')), description: '' , title: 'Дата конца отпуска'},
+  days: { test: '6', description: '' , title: 'Дней отпуска'},
 }
 
 export function defWorkspace(...data) {
@@ -52,12 +63,12 @@ export function defSchedule(...data) {
     startDate: '',
     endDate: '',
     year: '',
-    isTemp: true,
     isActive: false,
-    exception: {
-      holidays: [],
-      workdays: []
-    }
+    activation: {
+      timestamp: null,
+      by: null
+    },
+    exception: []
   }
 
   if (data) {

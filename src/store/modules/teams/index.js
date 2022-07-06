@@ -61,12 +61,13 @@ export default {
         return dispatch('DB/delete', {path, key}, {root: true})
       })
     },
-    update({rootGetters, dispatch}, team) {
+    update({rootGetters, dispatch, getters}, team) {
       return asyncTryDecorator(() => {
         const wid = rootGetters['app/getWID']
 
         if (!test(team, wid) || !team.id) throw new Error('Что-то пошло не так: teams/update ->' +
           ' test')
+        if (!isUnique(team, Object.values(getters.get))) throw new Error('Команда уже существет')
 
         const path = basePath(wid)
         const key = team.id

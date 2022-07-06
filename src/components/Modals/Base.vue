@@ -1,6 +1,9 @@
 <template>
-  <v-dialog :max-width="large ? 1000 : 700" v-model="isShow" persistent>
-    <template v-slot:default="">
+  <v-dialog :fullscreen="$vuetify.breakpoint.smAndDown" transition="dialog-top-transition"
+            :max-width="large ? 1000 :
+  700"
+            v-model="isShow" persistent>
+    <template v-slot:default>
       <v-card style="z-index: 10000 !important">
         <v-toolbar
           color="accent"
@@ -54,7 +57,7 @@ export default {
     },
     cancelDisable: {
       type: Boolean,
-      dafault: false,
+      default: false,
     },
     submitText: {
       type: String,
@@ -62,7 +65,7 @@ export default {
     },
     submitDisable: {
       type: Boolean,
-      dafault: false,
+      default: false,
     },
     title: {
       type: String,

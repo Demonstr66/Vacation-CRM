@@ -162,9 +162,9 @@
       <v-col v-if="$vuetify.breakpoint.mdAndUp" cols="3" lg="2">
         <div class="d-flex flex-column fill-height ml-2">
           <v-btn
-            text
+            color="primary"
             outlined
-                 color="primary"
+            text
             @click="onAddUser"
           >
             Добавить
@@ -250,9 +250,9 @@
       Пользователь будет перемещён в архив. Все его данные будут сохранены.<br>Продолжить?
     </AlertModal>
     <PersonEditorModal
-      :options="editor.options"
       :show="editor.show"
-      @close="editor.show = false"
+      :user="editor.user"
+      @close="editor = {user: {}, show: false}"
     />
   </div>
 </template>
@@ -262,14 +262,15 @@ import {currentUID, posts, tasks, teams, user, users} from "@/mixins/ComputedDat
 import UserItem from "@/components/Administration/UsersTabUserItem";
 import IconBtnWithTip from "@/components/IconBtnWithTip";
 import AlertModal from "@/components/Modals/Alert"
-import {userData} from "@/mixins/workspaceHelper";
-import PersonEditorModal from "@/components/Modals/PersonEditorModal";
+import PersonEditorModal from "@/components/Modals/UserEditor";
 import {mapGetters} from "vuex";
 import MainTools from "@/components/user/tools/main";
+import {UserMethods} from "@/mixins/UserMethods";
+import {defUser} from "@/plugins/schema";
 
 export default {
   name: 'UserTab',
-  mixins: [users, tasks, teams, posts, user, userData, currentUID],
+  mixins: [users, tasks, teams, posts, user, UserMethods, currentUID],
   components: {
     IconBtnWithTip,
     UserItem,
@@ -278,6 +279,7 @@ export default {
     MainTools
   },
   data: () => ({
+    testUser: {},
     defaultHeaders: [
       {
         text: 'Имя',
@@ -331,7 +333,7 @@ export default {
     groupBy: null,
     editor: {
       show: false,
-      options: {},
+      user: {},
     },
     selectedTeam: 'all',
     selectedTask: 'all',
@@ -467,7 +469,9 @@ export default {
 
 
     showEditor(user) {
-      if (!!user) this.editor.options.user = user;
+      if (!!user) this.editor.user = {...user}
+      else this.editor.user = defUser()
+
       this.editor.show = true;
     },
     onDataIteratorUpdateOptions(val) {
@@ -486,9 +490,6 @@ export default {
       this.userEditor.show = false;
       this.isAlertShow = false;
     },
-    showEditorModal() {
-      this.userEditor.show = true;
-    },
     showAlert() {
       this.isAlertShow = true;
     },
@@ -502,7 +503,7 @@ export default {
       this.deleatingUser = null;
     },
     removeUser(uid) {
-      this.moveUserToArchive(uid)
+      this.archiveUser(uid)
     },
     onAddUser() {
       this.showEditor();

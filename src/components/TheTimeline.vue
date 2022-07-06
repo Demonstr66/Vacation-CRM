@@ -159,9 +159,6 @@ export default {
     schedule: {
       required: true
     },
-    year: {
-      required: true
-    },
     groupBy: {
       type: String,
       default: 'none'
@@ -181,7 +178,7 @@ export default {
     fill: false,
     type: 'trend',
     autoLineWidth: true,
-
+    year: null,
 
 
     headers: [],
@@ -189,6 +186,10 @@ export default {
     opened: [],
     vacations: []
   }),
+  created() {
+    this.year = this.schedule.year
+    console.log('YEEEER', this.year)
+  },
   methods: {
     initialize(groupBy) {
       let mt = 0

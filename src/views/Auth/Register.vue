@@ -39,7 +39,7 @@
     <v-text-field
       v-if="!predefineUser"
       v-model.trim="authData.fullName"
-      :rules="[blankCheck]"
+      :rules="[blankCheck, fioCheck]"
       autocomplete="name"
       class="mx-3"
       hide-details="auto"
@@ -117,17 +117,17 @@
 </template>
 
 <script>
-import {inputRules} from "@/mixins/inputRules";
+import {inputValidations} from "@/mixins/InputValidations";
 import IconBtnWithTip from "@/components/IconBtnWithTip";
-import {displayName} from "@/mixins/dataHelper";
 import {register} from "@/mixins/AuthMethods";
+import {fullToDisplayName} from "@/plugins/utils";
 
 const short = require("short-uuid");
 
 export default {
   name: 'Register',
   components: {IconBtnWithTip},
-  mixins: [inputRules, register, displayName],
+  mixins: [inputValidations, register],
   data: () => ({
     isPassVisible: false,
     predefineUser: false,
@@ -159,17 +159,20 @@ export default {
   methods: {
     async onSubmit() {
       this.loading = true;
+      const {fullName, workspace: wid} = this.authData
+      const isNewWS = this.isNewWS
 
       const user = {
         ...this.authData,
-        displayName: this.displayName(this.authData.fullName),
-        role: this.isNewWS ? "owner" : "user",
-        level: this.isNewWS ? 0 : 1,
+        displayName: fullToDisplayName(fullName),
+        templateName: fullName,
+        role: isNewWS ? "owner" : "user",
+        level: isNewWS ? 0 : 1,
         parent: ''
       };
       const workspace = {
-        id: this.isNewWS ? short().new() : this.authData.workspace,
-        isNew: this.isNewWS,
+        id: isNewWS ? short().new() : wid,
+        isNew: isNewWS,
       }
 
       await this.register({user, workspace})

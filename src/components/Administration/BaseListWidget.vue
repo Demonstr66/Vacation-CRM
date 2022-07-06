@@ -1,8 +1,19 @@
 <template>
   <widget :title="title">
+    <v-divider></v-divider>
+    <div class="text-right">
+      <icon-btn-with-tip
+        :color="sort !== 0 ? 'primary' : ''"
+        :icon="'mdi-sort-alphabetical-' + (sort !== 2 ? 'ascending' : 'descending')"
+        @click="toggleSort"
+      >
+        Сортировка
+      </icon-btn-with-tip>
+    </div>
+    <v-divider></v-divider>
     <v-list v-if="items && items.length > 0" class="pa-0 ma-0">
       <v-list-item
-        v-for="(item, id) in items"
+        v-for="(item, id) in sortedItems"
         :key="id"
         :class="{ editing: item.id === newItemId }"
         class="pa-0 border-bottom"
@@ -40,8 +51,8 @@
       @submit.prevent="saveItem"
     >
       <v-text-field
-        v-model="newItemTitle"
         ref="inputTitle"
+        v-model="newItemTitle"
         :rules="[blankCheck]"
         hint="Введите название"
         placeholder="Добавить новый элемент"
@@ -57,10 +68,11 @@
             Отмена
           </icon-btn-with-tip>
           <icon-btn-with-tip
+            :disable="!valid"
             color="primary"
             icon="mdi-send"
             type="submit"
-            :disable="!valid"
+            @click="saveItem"
           >
             Добавить
           </icon-btn-with-tip>
@@ -82,11 +94,11 @@
 import Widget from "./BaseWidget.vue";
 import IconBtnWithTip from "../IconBtnWithTip.vue";
 import Alert from "../Modals/Alert.vue";
-import {inputRules} from "@/mixins/inputRules";
-import {messageHelper} from "@/mixins/messageHelper";
+import {inputValidations} from "@/mixins/InputValidations";
+import {messageHelper} from "@/mixins/MessageMethods";
 
 export default {
-  mixins: [inputRules, messageHelper],
+  mixins: [inputValidations, messageHelper],
   components: {
     Widget,
     IconBtnWithTip,
@@ -104,13 +116,32 @@ export default {
     },
   },
   data: () => ({
+    sort: 0,
     newItemTitle: null,
     newItemId: null,
     deletingId: null,
     valid: false,
     showAlert: false
   }),
+  computed: {
+    sortedItems() {
+      const temp = [...this.items]
+      if (this.sort === 0) return temp
+
+      return temp.sort((a, b) =>
+        this.compare(a.title, b.title)
+          ? 0
+          : -1
+      )
+    }
+  },
   methods: {
+    compare(a, b) {
+      return this.sort == 1 ? a > b : a < b
+    },
+    toggleSort() {
+      this.sort = (this.sort + 1) % 3
+    },
     onEditItem(item) {
       this.newItemTitle = item.title
       this.newItemId = item.id

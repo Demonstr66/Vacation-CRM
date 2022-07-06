@@ -39,12 +39,12 @@
 </template>
 
 <script>
-import {inputRules} from "@/mixins/inputRules";
+import {inputValidations} from "@/mixins/InputValidations";
 import {resetPassword} from "@/mixins/AuthMethods";
 
 export default {
   name: 'ForgetPassword',
-  mixins: [inputRules, resetPassword],
+  mixins: [inputValidations, resetPassword],
   data: () => ({
     loading: false,
     valid: false,

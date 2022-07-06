@@ -14,6 +14,7 @@ export default {
   }),
   getters: {
     get: (s) => s.schedules || {},
+    getById: (s) => (id) => s.schedules && s.schedules[id] || null,
     isReady: (s) => s.ready
   },
   mutations: {
@@ -61,11 +62,12 @@ export default {
         return dispatch('DB/delete', {path, key}, {root: true})
       })
     },
-    update({rootGetters, dispatch}, schedule) {
+    update({rootGetters, dispatch, getters}, schedule) {
       return asyncTryDecorator(() => {
         const wid = rootGetters['app/getWID']
 
         if (!test(schedule, wid) || !schedule.id) throw new Error('Что-то пошло не так: schedules/update -> test')
+        if (!isUnique(schedule, Object.values(getters.get))) throw new Error('График уже существет')
 
         const path = basePath(wid)
         const key = schedule.id
