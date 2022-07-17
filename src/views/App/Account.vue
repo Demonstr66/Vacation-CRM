@@ -12,6 +12,9 @@
     <v-col class="pa-0 ma-0" cols="12" md="6">
       <the-template-vacation-file></the-template-vacation-file>
     </v-col>
+    <v-col class="pa-0 ma-0" cols="12" md="6">
+      <workspace-setting></workspace-setting>
+    </v-col>
   </v-row>
 </template>
 
@@ -21,11 +24,13 @@ import TheTemplateVacationFile from "@/components/workspace/TheTemplateVacationF
 import {user, workspace} from "@/mixins/ComputedData";
 import TheAccountInfo from "@/components/TheAccountInfo";
 import TheUserInfo from "@/components/TheUserInfo";
+import WorkspaceSetting from "@/components/workspace/Setting";
 
 export default {
   name: 'Account',
   mixins: [user, workspace],
   components: {
+    WorkspaceSetting,
     TheTemplateVacationFile,
     TheWorkspaceInfo,
     TheAccountInfo,

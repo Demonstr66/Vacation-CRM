@@ -32,6 +32,11 @@ export default {
       return this.$route.meta && this.$route.meta.title || ""
     },
   },
+  watch: {
+    appReady(val) {
+      if (val) this.$store.dispatch('initAbilities')
+    }
+  }
 };
 </script>
 

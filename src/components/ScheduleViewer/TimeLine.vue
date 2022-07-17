@@ -7,8 +7,8 @@
       </div>
       <div v-else>
         <TheTimelineBase
-          :tree="tree"
           :schedule="schedule"
+          :items="tree"
         />
       </div>
     </div>
@@ -57,8 +57,14 @@ export default {
       this.isNoItems = false
       this.vacations = Object.values(vacations)
       this.users = [...this.groupVacationsByUser(this.vacations)]
-      this.tree = [...convertUsersToTree(this.users, this.groupBy, this.getHeaders(this.groupBy))]
-
+      this.treeInitial()
+    },
+    treeInitial() {
+      let tree = [...convertUsersToTree(this.users, this.groupBy, this.getHeaders(this.groupBy))]
+      if (this.hideEmptyGroups && this.groupBy !== 'none') tree = tree.filter(node => node.children
+        &&
+        node.children.length)
+      this.tree = tree
     },
     groupVacationsByUser(vacations) {
       let users = {}
@@ -84,7 +90,7 @@ export default {
   },
   watch: {
     groupBy() {
-      this.tree = [...convertUsersToTree(this.users, this.groupBy, this.getHeaders(this.groupBy))]
+      this.treeInitial()
     }
   }
 

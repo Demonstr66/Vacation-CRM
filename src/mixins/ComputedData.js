@@ -1,4 +1,4 @@
-import {mapGetters, mapState} from "vuex";
+import {mapGetters} from "vuex";
 
 export const appReady = {
   computed: {
@@ -140,6 +140,11 @@ export const allVacations = {
     ...mapGetters("vacations", {'allVacations': 'get'})
   }
 }
+export const vacationsBySid = {
+  computed: {
+    ...mapGetters("vacations", {'vacationsBySid': 'getBySid'})
+  }
+}
 
 export const calendar = {
   computed: {
@@ -179,11 +184,11 @@ export const calendar = {
 
 export const vacationStatuses = {
   data: () => ({
-    vacationStatuses: Object.freeze({
-      0: 'Черновик',
-      1: 'Ожидает подтверждения',
-      2: 'Утверждено',
-      3: 'Отклонено'
-    })
+    vacationStatuses: {
+      0: {title: 'Черновик', color: ''},
+      1: {title: 'Ожидает подтверждения', color: 'warning'},
+      2: {title: 'Утверждено', color: 'success'},
+      99: {title: 'Отклонено', color: 'error'},
+    }
   })
 }

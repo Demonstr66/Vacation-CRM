@@ -252,7 +252,7 @@ export async function loadDisDates(year) {
 
         day.add(1, 'days')
       })
-      console.log(exceptions)
+
       res(exceptions)
     } catch (e) {
       rej([])
@@ -299,10 +299,12 @@ export function mergeEvents(events) {
       mergeEvents.push({start, end, days: currDays})
       curr = undefined
       start = undefined
+      end = undefined
     }
 
     if (!start) {
       start = day
+      end = day
       currDays = []
       currDays.push(allDaysInEvents[day])
       curr = moment(day)
@@ -316,7 +318,7 @@ export function mergeEvents(events) {
   return mergeEvents
 }
 
-export function convertUsersToTree(users, groupBy, headers) {
+export function convertUsersToTree(users, groupBy, headers, hideEmptyGroups) {
   if (!headers) return users
 
   const key = getKey(groupBy)
@@ -337,12 +339,8 @@ export function convertUsersToTree(users, groupBy, headers) {
     node.isHeader = true
     node.events = events
     node.events = mergeEvents(node.events)
-
     return node
   })
-
-  if (this.hideEmptyGroups) tree = tree.filter(node => node.children && node.children.length)
-
   return tree
 }
 

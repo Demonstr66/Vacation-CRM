@@ -28,10 +28,9 @@
                 :key="index"
                 :to="{name: item.to}"
                 link
+                @click="viewer = item.value"
               >
-                <v-list-item-title
-                  @click="viewer = item.value"
-                >
+                <v-list-item-title>
                   {{ item.text }}
                 </v-list-item-title>
               </v-list-item>
@@ -82,20 +81,19 @@ import {
   tasksCount,
   teamsCount
 } from "@/mixins/ComputedData";
-import TheTimeline from "@/components/TheTimeline"
 
 export default {
   name: 'ScheduleViewer',
-  components: {TheTimeline, TheCalendar},
+  components: {TheCalendar},
   mixins: [schedules, allVacations, tasksCount, teamsCount, postsCount, appReady],
   data: () => ({
     schedule: null,
     groupBy: 'none',
     viewer: 'list',
     viewerTypes: [
+      {text: 'Список', value: 'list', to: 'Viewer1'},
       {text: 'Таймлайн', value: 'tl', to: 'Viewer2'},
       {text: 'Календарь', value: 'fullCalendar', to: 'Viewer3'},
-      {text: 'Список', value: 'list', to: 'Viewer1'},
     ],
     groupItems: [
       {text: 'Команда', value: 'teams'},
@@ -106,6 +104,9 @@ export default {
   }),
   created() {
     if (this.appReady) this.initialize()
+    let routeName = this.$route.name
+    let viewer = this.viewerTypes.find(v => v.to === routeName)
+    if (viewer) this.viewer = viewer.value
   },
   computed: {
     selectedViewerTitle() {

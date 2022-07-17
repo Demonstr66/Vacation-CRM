@@ -24,7 +24,6 @@ const Tab3 = () => import('@/components/Administration/Archive')
 const Viewer1 = () => import('@/components/ScheduleViewer/List'  )
 const Viewer2 = () => import('@/components/ScheduleViewer/TimeLine'  )
 const Viewer3 = () => import('@/components/ScheduleViewer/FullCalendar'  )
-const Manage = () => import('@/views/App/Manage')
 
 
 Vue.use(VueRouter)
@@ -67,18 +66,18 @@ const routes = [
       }
     }
   },
-  {
-    path: '/manage',
-    name: 'Manage',
-    component: Manage,
-    meta: {
-      layout: 'MainLayout',
-      title: 'Управление',
-      protected: {
-        accessLevel: [2]
-      }
-    }
-  },
+  // {
+  //   path: '/manage',
+  //   name: 'Manage',
+  //   component: Manage,
+  //   meta: {
+  //     layout: 'MainLayout',
+  //     title: 'Управление',
+  //     protected: {
+  //       accessLevel: [2]
+  //     }
+  //   }
+  // },
   {
     path: '/administration',
     name: 'Administration',

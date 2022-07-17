@@ -1,6 +1,6 @@
 <template>
   <div>
-    <v-progress-linear v-if="!dataIsReady" indeterminate></v-progress-linear>
+    <v-progress-linear v-if="!appReady" indeterminate></v-progress-linear>
     <v-data-table
       v-else
       :expanded="expanded"
@@ -12,49 +12,19 @@
       show-expand
     >
       <template v-slot:expanded-item="{ headers, item }">
-        <td :colspan="headers.length">
-          <div v-if="!!item.history">
-            <v-timeline
-              dense
-            >
-              <v-timeline-item
-                v-for="(historyItem, idx) in item.history"
-                :key="idx"
-                small
-              >
-                <v-card
-                  flat
-
-                >
-                  <v-card-title>
-                    {{ historyItem.statusChangeByUid }}
-                  </v-card-title>
-                  <v-card-subtitle>
-                    {{ $moment(historyItem.statusChangeAt).format('YYYY-MM-DD hh:mm') }}
-                  </v-card-subtitle>
-                  <blockquote>
-                    {{ historyItem.comment }}
-                  </blockquote>
-                </v-card>
-              </v-timeline-item>
-            </v-timeline>
-          </div>
-          <div v-else>
-            История отсутсвует
-          </div>
-        </td>
+        <VacationEventsDetails :headers="headers" :item="item"/>
       </template>
       <template v-slot:top="item">
         <v-toolbar dense flat>
           <v-toolbar-title class="d-flex flex-column">
-            <span>{{ schedule ? schedule.title : '' }}</span>
-            <span :class="schedule && schedule.isActive ? 'error--text' : 'info--text'"
-                  class="caption">
-            {{
-                schedule && schedule.isActive
+            <span>{{ schedule.title }}</span>
+            <span
+              :class="schedule.isActive ? 'error--text' : 'info--text'"
+              class="caption"
+              v-text="schedule.isActive
                   ? 'Редактирование не доступно'
-                  : 'Доступно для редактирования'
-              }}
+                  : 'Доступно для редактирования'"
+            >
           </span>
           </v-toolbar-title>
           <v-spacer></v-spacer>
@@ -74,18 +44,19 @@
       </template>
       <template v-slot:item.status="{item}">
         <v-chip
-          :id="item.id"
-          :color="getStatusColor(item.status)"
+          :id="'state_' + item.id"
+          :color="vacationStatuses[item.status].color"
           label
           outlined
           small
         >
-          {{ vacationStatuses[item.status] }}
+          {{ vacationStatuses[item.status].title }}
         </v-chip>
-        <v-tooltip v-if="item.statusChangeByUid" :activator="'#'+item.id" bottom>
+
+        <v-tooltip v-if="item.statusChangeByUid" :activator="'#state_'+item.id" bottom>
           <span>
-              {{ getUserShortName(item.statusChangeByUid) }}:
-              {{ $moment(item.statusChangeAt).format('YYYY-MM-DD hh:mm') }}
+              {{ getUserDisplayName(item.statusChangeByUid) }}:
+              {{ $moment(item.statusChangeAt).format('YYYY-MM-DD HH:mm') }}
           </span>
           <br/>
           <span v-if="item.comment" class="font-italic">
@@ -95,96 +66,79 @@
       </template>
       <template v-slot:item.actually="{value}">
         <icon-btn-with-tip
-          :color="!value ? 'success': 'error'"
-          :icon="!value ? 'mdi-text-box-check' : 'mdi-text-box-remove'"
+          :color="!value ? 'info': 'secondary'"
+          :icon="'mdi-file-document-' + (!value ? 'check' : 'minus')"
         >
           {{ !value ? 'Отпуск по заявлению' : 'Фактический отпуск (без заявления)' }}
         </icon-btn-with-tip>
       </template>
       <template v-slot:item.action="{item}">
-        <v-menu
-          v-if="$vuetify.breakpoint.smAndDown"
-          content-class="no-sheet"
-          offset-y
-          top
-
-        >
-          <template v-slot:activator="{ on, attrs }">
-            <v-btn icon v-bind="attrs" v-on="on">
-              <v-icon>mdi-dots-vertical</v-icon>
-            </v-btn>
-          </template>
-          <div class="d-flex flex-column white">
-            <icon-btn-with-tip
-              v-if="item.status === 3"
-              icon="mdi-content-copy"
-              @click="onCopy(item.id)"
-            >
-              Предложить исправление
-            </icon-btn-with-tip>
-            <icon-btn-with-tip
-              :disable="item.approved || schedule.isActive"
-              :icon="item.approved || schedule.isActive ? 'mdi-pencil-lock' : 'mdi-pencil'"
-              @click="onEdit(item.id)"
-            >
-              Редактировать
-            </icon-btn-with-tip>
-            <icon-btn-with-tip
-              :disable="item.approved || schedule.isActive"
-              color="error"
-              icon="mdi-delete"
-              @click="onDelete(item)"
-            >
-              Удалить
-            </icon-btn-with-tip>
-            <icon-btn-with-tip
-              v-if="!!templateFile"
-              :disable="item.actually"
-              :loading="item.id == downloadingItemId"
-              color="info"
-              icon="mdi-download"
-              @click="downloadVacation(item.id)"
-            >
-              Скачать заявление
-            </icon-btn-with-tip>
-          </div>
-        </v-menu>
-        <div v-else>
-          <icon-btn-with-tip
-            v-if="item.status === 3"
-            icon="mdi-content-copy"
-            @click="onCopy(item.id)"
-          >
-            Предложить исправление
-          </icon-btn-with-tip>
-          <icon-btn-with-tip
-            :disable="item.approved || schedule.isActive"
-            :icon="item.approved || schedule.isActive ? 'mdi-pencil-lock' : 'mdi-pencil'"
-            @click="onEdit(item.id)"
-          >
-            Редактировать
-          </icon-btn-with-tip>
-          <icon-btn-with-tip
-            :disable="item.approved || schedule.isActive"
-            color="error"
-            icon="mdi-delete"
-            @click="onDelete(item)"
-          >
-            Удалить
-          </icon-btn-with-tip>
-          <icon-btn-with-tip
-            v-if="!!templateFile"
-            :disable="item.actually"
-            :loading="item.id == downloadingItemId"
-            color="info"
-            icon="mdi-download"
-            @click="downloadVacation(item.id)"
-          >
-            Скачать заявление
-          </icon-btn-with-tip>
-        </div>
+        <RowActions>
+          <v-slide-group>
+            <div>
+              <icon-btn-with-tip
+                v-if="!!templateFile"
+                :disable="item.actually"
+                :loading="item.id == downloadingItemId"
+                color="info"
+                icon="mdi-download"
+                @click="downloadApplication(item.id)"
+              >
+                Скачать заявление
+              </icon-btn-with-tip>
+              <icon-btn-with-tip
+                v-if="item.status === 99"
+                icon="mdi-content-copy"
+                @click="onCopy(item.id)"
+              >
+                Предложить исправление
+              </icon-btn-with-tip>
+              <icon-btn-with-tip
+                v-if="item.status === 0"
+                :disable="item.approved || schedule.isActive"
+                :icon="item.approved || schedule.isActive ? 'mdi-pencil-lock' : 'mdi-pencil'"
+                @click="onEdit(item.id)"
+              >
+                Редактировать
+              </icon-btn-with-tip>
+              <icon-btn-with-tip
+                v-if="item.status === 0"
+                color="error"
+                icon="mdi-delete"
+                @click="onDelete(item.id)"
+              >
+                Удалить
+              </icon-btn-with-tip>
+            </div>
+            <div>
+              <icon-btn-with-tip
+                v-if="item.status === 0"
+                color="info"
+                icon="mdi-send"
+                @click="onSendToApprove(item.id)"
+              >
+                Отправить на утверждение
+              </icon-btn-with-tip>
+              <icon-btn-with-tip
+                v-if="item.status === 1"
+                color="warning"
+                icon="mdi-cancel"
+                @click="onCancelApprove(item.id)"
+              >
+                Отозвать
+              </icon-btn-with-tip>
+            </div>
+          </v-slide-group>
+        </RowActions>
       </template>
     </v-data-table>
+    <Alert
+      :show="deleteAlert"
+      @cancel="deleteAlertClose"
+      @submit="deleteAlertSubmit"
+    >
+      Отпуск будет удалён. Продолжить?
+    </Alert>
     <add-vacation
       :show="addModalVisible"
       :vacation-id="addModalEditItemId"
@@ -194,88 +148,70 @@
 </template>
 
 <script>
-import {posts, schedules, templateFile, vacationStatuses} from "@/mixins/ComputedData";
+import {appReady, posts, templateFile, vacationStatuses} from "@/mixins/ComputedData";
 import AddVacation from "@/components/Modals/AddVacation";
 import IconBtnWithTip from "@/components/IconBtnWithTip";
 import {dataMethods} from "@/mixins/dataHelper";
 import {dataToGenerateFile} from "@/plugins/schema";
 import {getShortDayLabel, lowerCase, normalizeDate} from "@/mixins/Filters";
 import {VacationMethods} from "@/mixins/VacationMethods";
+import Vacations from "@/plugins/TableHeaders/Vacations";
+import {FileMethods} from "@/mixins/FileMethods";
+import Alert from "@/components/Modals/Alert";
+import VacationEventsDetails from "@/components/VacationEventsDetails";
+import RowActions from "@/components/RowActions";
 
 export default {
   name: 'Vacation',
-  components: {IconBtnWithTip, AddVacation},
-  mixins: [schedules, dataMethods, VacationMethods, posts, templateFile, getShortDayLabel,
-    lowerCase, normalizeDate, vacationStatuses],
+  components: {RowActions, VacationEventsDetails, Alert, IconBtnWithTip, AddVacation},
+  mixins: [dataMethods, VacationMethods, posts, templateFile, getShortDayLabel,
+    lowerCase, normalizeDate, vacationStatuses, appReady, FileMethods],
   data: () => ({
-    expanded: [],
     schedule: null,
+    user: null,
+
     uid: null,
-    vacations: {},
+    sid: null,
+
+    deleteAlert: false,
+    deleteId: null,
+
     addModalVisible: false,
     addModalEditItemId: null,
-    headers: [
-      {text: 'Даты', value: 'start', align: 'start'},
-      {text: 'Дней', value: 'days', align: 'start'},
-      {text: 'Статус', value: 'status', align: 'center'},
-      {text: 'Тип', value: 'actually', align: 'center'},
-      {
-        text: '',
-        value: 'action',
-        align: 'end',
-        sortable: false,
-      },
-    ],
-    downloadingItemId: null
+    headers: Vacations,
+    downloadingItemId: null,
+    expanded: [],
   }),
   created() {
-    this.$nextTick(() => {
-      if (this.dataIsReady) this.initialize()
-    })
+    if (this.appReady) this.initialize()
   },
   computed: {
-    dataIsReady() {
-      return this.$store.getters['vacations/isReady'] &&
-        this.$store.getters["schedules/isReady"] &&
-        this.$store.getters["users/isReady"]
-    },
+    vacations() {
+      if (!this.sid || !this.uid) return {}
+
+      return this.$store.getters['vacations/getBySidByUid'](this.sid, this.uid)
+    }
   },
   methods: {
     initialize() {
-      const id = this.$route.params.id
+      const sid = this.$route.params.id
       const uid = this.$route.params.uid
-      if (!uid || !id) return
+      if (!uid || !sid) return
 
-      const vacations = this.$store.getters['vacations/getByUid'](uid)
       const user = this.$store.getters['users/getUserById'](uid)
-      const schedule = this.schedules[id]
+      const schedule = this.$store.getters['schedules/getById'](sid)
 
       if (!user || !schedule) this.redirect()
 
       this.schedule = schedule
-      this.vacations = vacations[id] || {}
-      this.uid = uid
       this.user = user
-
-
+      this.uid = uid
+      this.sid = sid
     },
-    getStatusColor(status) {
-      switch (status) {
-        case 0:
-          return '';
-        case 1:
-          return 'warning';
-        case 2:
-          return 'success';
-        case 3:
-          return 'error';
-      }
+    getUserDisplayName(uid) {
+      return this.$store.getters['users/getDisplayNameByUID'](uid)
     },
-    getUserShortName(uid) {
-      return this.$store.getters['users/getUserById'](uid).displayName
-    },
-
-    async downloadVacation(id) {
+    async downloadApplication(id) {
       this.downloadingItemId = id
 
       const {start, end, days} = this.vacations[id]
@@ -287,14 +223,32 @@ export default {
       let data = dataToGenerateFile(this.user, {
         post,
         date: this.$moment().format('YYYY-MM-DD'),
-        vstart: start,
-        vend: end,
-        vdays: days
+        start: start,
+        finish: end,
+        days: days
       })
 
-      await this.$store.dispatch('templateFile/generate', data)
+      await this.downloadWithDataFile({
+        fullPath: this.templateFile.fullPath,
+        data
+      })
       this.downloadingItemId = null
     },
+
+    onDelete(item) {
+      this.deleteId = item.id
+      this.deleteAlert = true
+    },
+    deleteAlertClose() {
+      this.deleteId = null
+      this.deleteAlert = false
+    },
+    deleteAlertSubmit() {
+      this.deleteVacation({id: this.deleteId, sid: this.sid})
+      this.deleteAlertClose()
+    },
+
+
     onEdit(id) {
       this.addModalEditItemId = id
       this.$nextTick(() => {
@@ -307,6 +261,16 @@ export default {
         this.showModal()
       })
     },
+    onSendToApprove(id) {
+      let data = {...this.vacations[id]}
+      data.status = 1
+      this.updateVacation(data, {type: 'sendToApprove'})
+    },
+    onCancelApprove(id) {
+      let data = {...this.vacations[id]}
+      data.status = 0
+      this.updateVacation(data, {type: 'cancelApproval'})
+    },
     onAddVocation() {
       this.showModal();
     },
@@ -317,16 +281,13 @@ export default {
       this.addModalVisible = false;
       this.addModalEditItemId = null
     },
-    onDelete(item) {
-      this.deleteVacation(item)
-    },
     redirect() {
       this.$router.replace({name: 'Vacations'})
     }
   },
   watch: {
-    dataIsReady(val) {
-      if (val) this.initialize()
+    appReady() {
+      this.initialize()
     }
   }
 }

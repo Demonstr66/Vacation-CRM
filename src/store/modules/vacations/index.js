@@ -78,13 +78,13 @@ export default {
         return dispatch('DB/set', {path, key, data}, {root: true})
       })
     },
-    delete({rootGetters, dispatch}, vacation) {
+    delete({rootGetters, dispatch}, {id, sid}) {
       return asyncTryDecorator(() => {
         const wid = rootGetters['app/getWID']
-        if (!vacation.id || !wid) throw new Error('Что-то пошло не так: vacations/delete -> test')
+        if (!id || !sid || !wid) throw new Error('Что-то пошло не так: vacations/delete -> test')
 
-        const path = basePath(wid, vacation.sid)
-        const key = vacation.id
+        const path = basePath(wid, sid)
+        const key = id
 
         return dispatch('DB/delete', {path, key}, {root: true})
       })

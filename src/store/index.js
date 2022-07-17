@@ -66,7 +66,9 @@ export default new Vuex.Store({
       }
     },
 
-
+    initAbilities() {
+      console.log('abilities is initial')
+    },
     createAndDownloadXLSX() {
       const wb = XLSX.utils.book_new()
       wb.SheetNames.push('testSheet')

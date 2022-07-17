@@ -16,8 +16,8 @@
           :attributes="attributes"
           :columns="2"
           :disabled-dates="disableDates"
-          :max-date="minDate"
-          :min-date="maxDate"
+          :max-date="maxDate"
+          :min-date="minDate"
           :select-attribute="{highlight: {fillMode: 'light'}}"
           is-range
         >
@@ -49,20 +49,23 @@
               <span class="font-weight-bold"> {{ rangeLength }}</span>
             </v-chip>
           </div>
-          <v-text-field
-            v-model="dateRangeText"
-            hide-details
-            label="Даты"
-            prepend-icon="mdi-calendar"
-            readonly
-          ></v-text-field>
-          <v-checkbox
-            v-model="isActually"
-            hide-details
-            label="Фактический отпуск (без заявления)"
-          >
+          <v-form v-model="valid">
+            <v-text-field
+              v-model="dateRangeText"
+              :rules="[blankCheck]"
+              hide-details
+              label="Даты"
+              prepend-icon="mdi-calendar"
+              readonly
+            ></v-text-field>
+            <v-checkbox
+              v-model="isActually"
+              hide-details
+              label="Фактический отпуск (без заявления)"
+            >
 
-          </v-checkbox>
+            </v-checkbox>
+          </v-form>
         </div>
         <div>
           <small>
@@ -130,13 +133,14 @@ import {defVacation} from "@/plugins/schema";
 import PopoverRow from 'v-calendar/lib/components/popover-row.umd.min'
 import {normalizeDate} from "@/mixins/Filters";
 import {VacationMethods} from "@/mixins/VacationMethods";
+import {inputValidations} from "@/mixins/InputValidations";
 
 export default {
   components: {
     BaseModal,
     PopoverRow
   },
-  mixins: [dataMethods, myVacations, VacationMethods, normalizeDate],
+  mixins: [dataMethods, myVacations, VacationMethods, normalizeDate, inputValidations],
   props: {
     show: {
       type: Boolean,
@@ -148,6 +152,8 @@ export default {
     },
   },
   data: () => ({
+    valid: false,
+
     minDate: null,
     maxDate: null,
     dates: null,
@@ -181,9 +187,6 @@ export default {
     ],
   }),
   computed: {
-    valid() {
-      return this.dates != null
-    },
     dateRangeText() {
       if (!this.dates) return ""
       const start = this.$moment(this.dates.start).format('DD.MM.YYYY')
@@ -211,12 +214,17 @@ export default {
     initialize() {
       const scheduleId = this.$route.params.id
       const uid = this.$route.params.uid
-      const vacationId = this.vacationId
-      const schedule = this.$store.getters['schedules/get'][scheduleId]
-      const exception = schedule.exception
 
-      this.holidays = exception ? exception.holidays : []
-      this.workdays = exception ? exception.workdays : []
+      const vacationId = this.vacationId
+      const schedule = this.$store.getters['schedules/getById'](scheduleId)
+      const exception = schedule.exception
+      const year = schedule.year
+
+      this.minDate = new Date(`${year}-01-01`)
+      this.maxDate = new Date(`${year}-12-31`)
+
+      this.holidays = exception ? exception.filter(x => x.type === 'holiday') : []
+      this.workdays = exception ? exception.filter(x => x.type === 'workday') : []
 
       let vacations = this.$store.getters['vacations/getBySid'](scheduleId)
 
@@ -232,9 +240,9 @@ export default {
       }
 
       this.uid = uid
-      this.vacations = Object.values(vacations).filter(v => v.id !== vacationId)
+      this.vacations = Object.values(vacations || {}).filter(v => v.id !== vacationId)
 
-      this.existVacations = Object.values(vacations).filter(v => v.id !== vacationId && v.uid === uid)
+      this.existVacations = Object.values(vacations || {}).filter(v => v.id !== vacationId && v.uid === uid)
 
       this.updateDisableDates()
       this.updateAttributes()
@@ -283,7 +291,6 @@ export default {
 
         return v
       }).filter(v => v.lvl.length !== 0)
-
 
       let levels = this.levels.map(level => {
         level.dates = []
@@ -391,7 +398,7 @@ export default {
               color: '#2196f3'
             }
           },
-          dates: this.holidays.map(d => new Date(d))
+          dates: this.holidays.map(d => new Date(d.date))
         },
         {
           key: 'workdays',
@@ -404,7 +411,7 @@ export default {
               color: '#fb8c00'
             }
           },
-          dates: this.workdays.map(d => new Date(d))
+          dates: this.workdays.map(d => new Date(d.date))
         },
       ]
     },
@@ -413,31 +420,46 @@ export default {
       root.style.setProperty('--min-h-day', "47px");
     },
     onSubmit() {
-      const old = {...this.vacation}
-      let history = []
-      if (!!old.id && old.status === 3) {
-        if (!!old.history) {
-          history = [...old.history]
-          delete old.history
-        }
-        old.isCurrent = false
-        history.push({...old})
+      const item = {...this.vacation}
+      let events = []
+      let versions = []
+
+      if (!!item.id && item.status == 99) {
+        versions = [...item.versions || []]
+        versions.push(item)
       }
-      console.log(history)
+
+      const now = this.$moment().toISOString()
+      events = [...item.events || []]
+
+      let event = {}
+      switch (true) {
+        case(!item.id):
+          event = {type: 'create'};
+          break;
+        case(item.status == 99):
+          event = {type: 'correct'};
+          break;
+        case(item.status == 0):
+          event = {type: 'edit'};
+          break;
+      }
+
       const vacation = defVacation({
-        id: this.vacationId,
-        createdAt: this.$moment().toISOString(),
+        id: item.id,
+        createdAt: now,
         start: this.$moment(this.dates.start).format('YYYY-MM-DD'),
         end: this.$moment(this.dates.end).format('YYYY-MM-DD'),
         days: this.rangeLength,
         sid: this.$route.params.id,
         uid: this.uid,
-        history: history.length !== 0 ? history : null,
-        status: 1
+        versions: versions.length !== 0 ? versions : null,
+        events: item.events,
+        status: 0
       })
 
       if (!vacation.id) this.createVacation(vacation)
-      else this.updateVacation(vacation)
+      else this.updateVacation(vacation, event)
 
       this.closeModal()
     },
