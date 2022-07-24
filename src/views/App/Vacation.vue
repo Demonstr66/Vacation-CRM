@@ -5,7 +5,7 @@
       v-else
       :expanded="expanded"
       :headers="headers"
-      :items="Object.values(vacations)"
+      :items="classedV"
       :items-per-page="-1"
       hide-default-footer
       no-data-text="Отпуска ещё не добавлены"
@@ -101,14 +101,16 @@
               >
                 Редактировать
               </icon-btn-with-tip>
-              <icon-btn-with-tip
-                v-if="item.status === 0"
-                color="error"
-                icon="mdi-delete"
-                @click="onDelete(item.id)"
-              >
-                Удалить
-              </icon-btn-with-tip>
+              <Can I='delete' :on="item">
+                <icon-btn-with-tip
+                  v-if="item.status === 0"
+                  color="error"
+                  icon="mdi-delete"
+                  @click="onDelete(item.id)"
+                >
+                  Удалить
+                </icon-btn-with-tip>
+              </Can>
             </div>
             <div>
               <icon-btn-with-tip
@@ -161,6 +163,12 @@ import Alert from "@/components/Modals/Alert";
 import VacationEventsDetails from "@/components/VacationEventsDetails";
 import RowActions from "@/components/RowActions";
 
+class Vacation {
+  constructor(args) {
+    for(let key in args) this[key] = args[key]
+  }
+}
+
 export default {
   name: 'Vacation',
   components: {RowActions, VacationEventsDetails, Alert, IconBtnWithTip, AddVacation},
@@ -183,6 +191,7 @@ export default {
     expanded: [],
   }),
   created() {
+    console.log('6516237166263786128631627637816273618762')
     if (this.appReady) this.initialize()
   },
   computed: {
@@ -190,6 +199,13 @@ export default {
       if (!this.sid || !this.uid) return {}
 
       return this.$store.getters['vacations/getBySidByUid'](this.sid, this.uid)
+    },
+    classedV() {
+      let vs = Object.values(this.vacations)
+
+      vs = vs.map(v => new Vacation(v))
+      console.log(vs)
+      return vs
     }
   },
   methods: {

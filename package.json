@@ -9,6 +9,8 @@
     "buildAndDeploy": "npm run build && npm run deploy"
   },
   "dependencies": {
+    "@casl/ability": "^5.4.4",
+    "@casl/vue": "^1.2.3",
     "@mdi/js": "^6.6.96",
     "axios": "^0.26.1",
     "core-js": "^3.6.5",

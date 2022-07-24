@@ -16,6 +16,7 @@ import vacations from './modules/vacations'
 import schedules from './modules/schedules'
 import templateFile from './modules/templateFile'
 import * as XLSX from "xlsx/xlsx.mjs";
+import defineAbilitiesFor from "@/plugins/defineAbilities";
 
 const modules = {
   message,
@@ -65,9 +66,17 @@ export default new Vuex.Store({
         }
       }
     },
+    initAbilities({rootGetters}) {
+      const ws = rootGetters['workspace/get']
+      const user = rootGetters['currentUser/get']
+      let privacy
 
-    initAbilities() {
-      console.log('abilities is initial')
+      if (ws.id) {
+        privacy  = ws.privacy
+      }
+      console.log(user, privacy)
+      return defineAbilitiesFor(user, privacy)
+
     },
     createAndDownloadXLSX() {
       const wb = XLSX.utils.book_new()

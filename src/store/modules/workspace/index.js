@@ -14,7 +14,7 @@ export default {
   getters: {
     get: (s) => s.workspace || {},
     isReady: (s) => s.ready,
-    domain: (s) => s.workspace ? s.workspace.domain : null
+    domain: (s) => s.workspace.domain
   },
   mutations: {
     set: (s, v) => {

@@ -33,8 +33,11 @@ export default {
     },
   },
   watch: {
-    appReady(val) {
-      if (val) this.$store.dispatch('initAbilities')
+    async appReady(val) {
+      if (val) {
+        const rules = await this.$store.dispatch('initAbilities')
+        this.$ability.update(rules)
+      }
     }
   }
 };

@@ -9,6 +9,15 @@ import {getDatabase} from "firebase/database";
 import {firebaseConfig} from './plugins/secure'
 import VCalendar from 'v-calendar';
 
+import { abilitiesPlugin } from '@casl/vue';
+import ability from '@/plugins/ability';
+
+Vue.use(abilitiesPlugin, ability);
+
+import { Can } from '@casl/vue';
+
+Vue.component('Can', Can);
+
 const DEBUG = process.env.VUE_APP_DEBUG;
 const start = new Date()
 

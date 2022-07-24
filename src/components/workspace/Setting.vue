@@ -178,9 +178,9 @@ export default {
       {text: "Лидеры команд", value: 2},
     ],
     crudOptions: [
-      {text: 'Редактирование', value: 0},
-      {text: 'Создание', value: 1},
-      {text: 'Удаление', value: 2},
+      {text: 'Редактирование', value: 'update'},
+      {text: 'Создание', value: 'create'},
+      {text: 'Удаление', value: 'delete'},
     ],
 
     manageVacations: [],
