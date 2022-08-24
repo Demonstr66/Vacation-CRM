@@ -57,7 +57,7 @@ function defineRulesForUser(user, privacy) {
   can('read', 'all')
 
   can(manageUsers, 'User')
-  can('manage', 'User', {uid: user.uid})
+  // can('manage', 'User', {uid: user.uid})
 
   if (manageVacations && manageVacations.length) {
     can('manage', 'Vacation', {team: user.team})
@@ -70,6 +70,9 @@ function defineRulesForUser(user, privacy) {
     can('manage', 'Workspace', {id: user.workspace})
   }
 
+  cannot('mange', 'Task')
+  cannot('mange', 'Post')
+  cannot('mange', 'Team')
 
   return rules
 
@@ -84,9 +87,9 @@ export default function defineAbilitiesFor(user, privacy) {
   }
 
   switch (user.role) {
-    case "owner": return defineRulesForUser(user, opt);
+    // case "owner": return defineRulesForUser(user, opt);
 
-    // case "owner": return defineRulesForOwner(user, opt);
+    case "owner": return defineRulesForOwner(user, opt);
     case "admin": return defineRulesForAdmin(user, opt);
     case "leader": return defineRulesForLeader(user, opt);
     case "user": return defineRulesForUser(user, opt);

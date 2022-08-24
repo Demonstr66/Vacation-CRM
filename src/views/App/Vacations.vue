@@ -1,10 +1,8 @@
 <template>
-  <div>
     <the-vacations
       :vacations="myVacations"
       :uid="currentUID"
     ></the-vacations>
-  </div>
 </template>
 
 <script>

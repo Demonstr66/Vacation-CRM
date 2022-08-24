@@ -49,9 +49,9 @@
               <span class="font-weight-bold"> {{ rangeLength }}</span>
             </v-chip>
           </div>
-          <v-form v-model="valid">
+          <v-form v-model="valid" ref="datesForm">
             <v-text-field
-              v-model="dateRangeText"
+              v-model="rangeLabel"
               :rules="[blankCheck]"
               hide-details
               label="Даты"
@@ -63,7 +63,6 @@
               hide-details
               label="Фактический отпуск (без заявления)"
             >
-
             </v-checkbox>
           </v-form>
         </div>
@@ -126,9 +125,9 @@
 
 <script>
 import BaseModal from "./Base.vue";
-import {dateDiff} from "@/plugins/utils";
+import {dateDiff, getCalendarAttributes} from "@/plugins/utils";
 import {dataMethods} from "@/mixins/dataHelper";
-import {myVacations} from "@/mixins/ComputedData";
+import {getChiefOf, myVacations} from "@/mixins/ComputedData";
 import {defVacation} from "@/plugins/schema";
 import PopoverRow from 'v-calendar/lib/components/popover-row.umd.min'
 import {normalizeDate} from "@/mixins/Filters";
@@ -140,7 +139,7 @@ export default {
     BaseModal,
     PopoverRow
   },
-  mixins: [dataMethods, myVacations, VacationMethods, normalizeDate, inputValidations],
+  mixins: [getChiefOf, dataMethods, myVacations, VacationMethods, normalizeDate, inputValidations],
   props: {
     show: {
       type: Boolean,
@@ -154,25 +153,25 @@ export default {
   data: () => ({
     valid: false,
 
+    vacation: null,
     minDate: null,
     maxDate: null,
     dates: null,
-    disableDates: [],
     isActually: false,
-    existVacations: [],
+
     holidays: [],
     workdays: [],
     uid: null,
 
+    userVacations: [],
+    colleaguesVacations: [],
+
     attributes: [],
 
     levels: [
-      {id: 0, hidden: true},
-      {id: 0, hidden: false, title: 'Руководители'},
-      {id: 1, hidden: true},
-      {id: 1, hidden: false, title: 'Коллеги по команде'},
-      {id: 2, hidden: true},
-      {id: 2, hidden: false, title: 'Коллеги по задачам'},
+      {id: 0, hidden: false, title: 'Руководители', key: 'chief'},
+      {id: 1, hidden: false, title: 'Коллеги по команде', key: 'team'},
+      {id: 2, hidden: false, title: 'Коллеги по задачам', key: 'task'},
     ],
     colors: [
       'gray',
@@ -187,164 +186,174 @@ export default {
     ],
   }),
   computed: {
-    dateRangeText() {
+    rangeLabel() {
       if (!this.dates) return ""
-      const start = this.$moment(this.dates.start).format('DD.MM.YYYY')
+      const {start, end} = this.dates
+      const formattedStart = this.$moment(start).format('DD.MM.YYYY')
+      const formattedEnd = this.$moment(end).format('DD.MM.YYYY')
 
-      const end = this.$moment(this.dates.end).format('DD.MM.YYYY')
-      return `C ${start} по ${end}`
+      return `C ${formattedStart} по ${formattedEnd}`
     },
     rangeLength() {
       if (!this.dates) return 0;
+      const {start, end} = this.dates
 
-      return dateDiff(this.dates);
+      return dateDiff(start, end);
+    },
+    disableDates() {
+      const {isActually, userVacations} = this
+      const filteredVacations = userVacations.filter(x => x.actually === isActually)
+
+      if (filteredVacations.length === 0) {
+        return null
+      }
+
+      return filteredVacations.map(x => ({
+          start: new Date(x.start),
+          end: new Date(x.end)
+        }))
     },
   },
   methods: {
+    initialize() {
+      const {id, uid} = this.$route.params
+      const schedule = this.$store.getters['schedules/getById'](id)
+      const existingVacations = this.$store.getters['vacations/getBySid'](id)
+
+      if (!schedule || !uid) {
+        return
+      }
+
+      const {exception, year} = schedule
+
+
+      if (!!this.vacationId) {
+        const currentVacation = existingVacations[this.vacationId]
+
+        this.dates = {
+          start: new Date(currentVacation.start),
+          end: new Date(currentVacation.end),
+        }
+
+        this.isActually = currentVacation.actually
+        this.vacation = currentVacation
+      }
+
+      this.minDate = new Date(`${year}-01-01`)
+      this.maxDate = new Date(`${year}-12-31`)
+
+      this.holidays = exception?.filter(x => x.type === 'holiday') || []
+      this.workdays = exception?.filter(x => x.type === 'workday') || []
+
+      this.uid = uid
+
+      const allOtherVacations = Object.values(existingVacations || {})//.filter(v => v.id !== id)
+
+      this.colleaguesVacations = allOtherVacations.filter(v =>  v.uid !== uid)
+      this.userVacations = allOtherVacations.filter(v =>  v.uid === uid && v.id !== this.vacationId)
+
+      this.updateAttributes()
+    },
     clear() {
       this.minDate = null
       this.maxDate = null
-      this.disableDates = []
       this.isActually = false
       this.clearSelection()
     },
     clearSelection() {
       this.dates = null
     },
-    initialize() {
-      const scheduleId = this.$route.params.id
-      const uid = this.$route.params.uid
-
-      const vacationId = this.vacationId
-      const schedule = this.$store.getters['schedules/getById'](scheduleId)
-      const exception = schedule.exception
-      const year = schedule.year
-
-      this.minDate = new Date(`${year}-01-01`)
-      this.maxDate = new Date(`${year}-12-31`)
-
-      this.holidays = exception ? exception.filter(x => x.type === 'holiday') : []
-      this.workdays = exception ? exception.filter(x => x.type === 'workday') : []
-
-      let vacations = this.$store.getters['vacations/getBySid'](scheduleId)
-
-      if (!!vacationId) {
-        const vacation = vacations[vacationId]
-
-        this.dates = {
-          start: new Date(vacation.start),
-          end: new Date(vacation.end),
-        }
-        this.vacation = vacation
-        this.isActually = vacation.actually
-      }
-
-      this.uid = uid
-      this.vacations = Object.values(vacations || {}).filter(v => v.id !== vacationId)
-
-      this.existVacations = Object.values(vacations || {}).filter(v => v.id !== vacationId && v.uid === uid)
-
-      this.updateDisableDates()
-      this.updateAttributes()
-      this.setCssVariable()
-    },
-    updateDisableDates() {
-      const actually = this.isActually
-      const existVacations = this.existVacations
-
-      this.disableDates = existVacations
-        .filter(x => x.actually === actually)
-        .map(x => ({
-          start: new Date(x.start),
-          end: new Date(x.end)
-        }))
-    },
     updateAttributes() {
-      let vacations = [...this.vacations]
+      const {colleaguesVacations, userVacations, holidays, workdays} = this
 
-      const uid = this.uid
-      const user = {...this.$store.getters['users/getUserById'](uid)}
+      const user = this.$store.getters['users/getUserById'](this.uid)
+      let attributes = []
 
-      vacations = vacations.filter(v => v.uid !== uid)
+      let chiefs = this.getChiefOf(this.uid)
 
-      vacations = vacations.map(v => {
+      let normalizedUsersVacations = colleaguesVacations.map(v => {
         v.lvl = []
-        v.tasks = []
-        const vUser = {...this.$store.getters['users/getUserById'](v.uid)}
 
-        v.displayName = vUser.displayName
+        const vacationOwner = this.$store.getters['users/getUserById'](v.uid)
+        v.displayName = vacationOwner.displayName
 
-        if (!!vUser.team && vUser.team === user.team) v.lvl.push(1)
+
+        if (chiefs.indexOf(vacationOwner.uid))
+          v.lvl.push(this.levels.find(lvl => lvl.key === 'chief')['id'])
+        else if (!!vacationOwner.team && vacationOwner.team === user.team)
+          v.lvl.push(this.levels.find(lvl => lvl.key === 'team')['id'])
 
         if (!user.tasks || user.tasks.length === 0) return v
-        if (!vUser.tasks || vUser.tasks.length === 0) return v
+        if (!vacationOwner.tasks || vacationOwner.tasks.length === 0) return v
 
+        v.tasks = []
         user.tasks.map(taskId => {
-          const task = vUser.tasks.find(t => t == taskId)
+          const task = vacationOwner.tasks.find(t => t == taskId)
           if (!task) return
 
-          v.lvl.push(2)
+          v.lvl.push(this.levels.find(lvl => lvl.key === 'task')['id'])
           v.tasks.push(
             this.$store.getters['tasks/getTitle'](taskId)
           )
         })
 
         return v
-      }).filter(v => v.lvl.length !== 0)
+      })
+      let relevantUsersVacations = normalizedUsersVacations.filter(v => v.lvl.length !== 0)
 
-      let levels = this.levels.map(level => {
-        level.dates = []
-        const temp = vacations.filter(v => v.lvl.some(lvl => lvl === level.id))
-        temp.map(v => level.dates.push({start: new Date(v.start), end: new Date(v.end)}))
+      let normalizedLevels = this.levels.map(level => {
+        level.dates = relevantUsersVacations
+            .filter(v => v.lvl.some(lvl => lvl === level.id))
+            .map(v => ({
+                start: new Date(v.start),
+                end: new Date(v.end)
+            }))
+
         return level
       })
 
-      this.attributes = [
-        //Отпуска коллег
-        ...levels.map(({id, hidden, dates}) => ({
-          key: `vacation${hidden ? '-hidden' : ''}-${id}`,
-          bar: {
-            color: this.colors[id],
-            style: {
-              width: '100%'
-            },
-            class: hidden ? 'hiddenBar' : ``
+      //Отпуска коллег
+      const colleaguesAttr = normalizedLevels.map(({id, dates}) => ({
+        key: `vacation-${id}`,
+        bar: {
+          color: this.colors[id],
+          style: {
+            width: '100%'
           },
-          dates: hidden ? null : dates,
-          excludeDates: !hidden ? null : dates
-        })),
+          class: ''
+        },
+        dates: dates,
+      }))
 
+      //Отпуска коллег popover
+      const colleaguesPopover = relevantUsersVacations.map(v => {
+        const dates = {
+          start: v.start,
+          end: v.end
+        }
 
-        //Отпуска коллег popover
-        ...vacations.map(v => {
-
-          const dates = {
-            start: v.start,
-            end: v.end
-          }
-
-          return {
-            key: `popover-${v.id}`,
-            highlight: {
-              color: this.colors[Math.min(v.lvl)],
-              style: {
-                display: 'none'
-              },
+        return {
+          key: `popover-${v.id}`,
+          highlight: {
+            color: this.colors[Math.min(v.lvl)],
+            style: {
+              display: 'none'
             },
-            popover: {
-              visibility: 'hover'
-            },
-            customData: {
-              name: v.displayName,
-              tasks: v.tasks.length ? ' [' + v.tasks.join(', ') + ']' : '',
-              dates
-            },
+          },
+          popover: {
+            visibility: 'hover'
+          },
+          customData: {
+            name: v.displayName,
+            tasks: v.tasks?.length ? ' [' + v.tasks.join(', ') + ']' : '',
             dates
-          }
-        }),
+          },
+          dates
+        }
+      })
 
-        //Мои отпуска
-        ...this.existVacations
+      //Мои отпуска
+      const userAttr = this.userVacations
           .filter(v => v.actually === this.isActually)
           .map(v => {
             return {
@@ -370,7 +379,9 @@ export default {
                 end: v.end
               }
             }
-          }),
+          })
+
+      let exceptionAttr = [
         {
           key: 'weekends',
           highlight: {
@@ -398,7 +409,7 @@ export default {
               color: '#2196f3'
             }
           },
-          dates: this.holidays.map(d => new Date(d.date))
+          dates: holidays.map(d => new Date(d.date))
         },
         {
           key: 'workdays',
@@ -411,9 +422,16 @@ export default {
               color: '#fb8c00'
             }
           },
-          dates: this.workdays.map(d => new Date(d.date))
+          dates: workdays.map(d => new Date(d.date))
         },
       ]
+
+      attributes.push(...userAttr)
+      attributes.push(...colleaguesAttr)
+      attributes.push(...colleaguesPopover)
+      attributes.push(...exceptionAttr)
+
+      this.attributes = attributes
     },
     setCssVariable() {
       let root = document.documentElement;
@@ -447,6 +465,7 @@ export default {
 
       const vacation = defVacation({
         id: item.id,
+        actually: this.isActually,
         createdAt: now,
         start: this.$moment(this.dates.start).format('YYYY-MM-DD'),
         end: this.$moment(this.dates.end).format('YYYY-MM-DD'),
@@ -472,10 +491,13 @@ export default {
   },
   watch: {
     show(val) {
-      if (val) this.$nextTick(() => this.initialize())
+      if (val) this.$nextTick(() => {
+        this.initialize()
+        this.setCssVariable()
+      })
     },
     isActually() {
-      this.updateDisableDates()
+      this.updateAttributes()
     }
   }
 };

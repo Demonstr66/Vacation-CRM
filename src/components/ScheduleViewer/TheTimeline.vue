@@ -1,5 +1,6 @@
 <template>
   <div class="calendar-wrapper">
+    <slot name="top"></slot>
     <table
       ref="calendar"
       class="calendar"
@@ -17,6 +18,7 @@
           {{ month.title }}
         </td>
       </tr>
+
       <!--      dates-->
       <tr>
         <td class="calendar-event-header">
@@ -35,12 +37,13 @@
         </td>
       </tr>
 
-      <!--      events-->
       <div id="today-marker" class="today-marker">
         <span class="today-marker-dot today-marker-dot-top"></span>
         <span class="today-marker-line"></span>
         <span class="today-marker-dot today-marker-dot-bottom"></span>
       </div>
+
+      <!--      events-->
       <tr
         v-for="(node, nodeIndex) in tree"
         :key="'root-row-'+nodeIndex"
@@ -72,23 +75,16 @@
           class="calendar-event-cell"
         >
         </td>
-        <div
+        <TheTimelineBaseEvent
           v-for="(event, eIndex) in node.events"
           :id="'row-'+nodeIndex+'-event-'+eIndex"
           :key="'row-'+nodeIndex+'-event-'+eIndex"
-          class="calendar-event"
-          tabindex="-1"
-        >
-          <div v-if="node.root" class="event-workload-wrapper">
-            <div
-              v-for="(day, dayIndex) in event.days"
-              :key="'row-'+nodeIndex+'-event-'+eIndex+'-day-'+dayIndex"
-              :class="'event-workload--' + (day.total > 4 ? 'max': day.total)"
-              :data-count="day.total"
-              class="event-workload"
-            ></div>
-          </div>
-        </div>
+
+          :event="event"
+          :root="node.root"
+
+          @click="(data) => $emit('click', data)"
+        />
       </tr>
     </table>
   </div>
@@ -96,18 +92,24 @@
 
 <script>
 import {getShortDayLabel} from "@/mixins/Filters";
+import TheTimelineBaseEvent from "@/components/ScheduleViewer/TheTimelineBaseEvent";
 
 export default {
-  name: 'TheTimelineBase',
+  name: 'TheTimeline',
+  components: {TheTimelineBaseEvent},
   mixins: [getShortDayLabel],
   props: {
     items: {},
-    schedule: {}
+    year: {
+      type: Number
+    },
+    exception: {
+      type: Array
+    }
   },
   data: () => ({
     calendar: {},
-    open: [],
-    tree: []
+    open: []
   }),
   created() {
     this.initialize()
@@ -115,11 +117,33 @@ export default {
   mounted() {
     this.placementEvents()
     this.placementTodayMarker()
+
+    document.getElementById('today-marker').scrollIntoView()
+  },
+  computed: {
+    tree() {
+      let tree = []
+      const {items, open} = this
+      items.map(node => {
+        let currentNode = {...node, root: true}
+
+        if (!node.children || !node.children.length) {
+          currentNode.root = false
+        }
+
+        tree.push(currentNode)
+
+        if (open.indexOf(node.id) !== -1 && node.children && node.children.length) {
+          tree.push(...node.children)
+        }
+      })
+      return tree
+    }
   },
   methods: {
     initialize() {
-      const year = this.schedule.year
-      const exception = [...this.schedule.exception || []]
+      const {year, exception} = this
+
       const holidays = exception.filter(x => x.type === 'holiday')
       const workdays = exception.filter(x => x.type === 'workday')
 
@@ -150,8 +174,8 @@ export default {
       }
       calendar.months = Object.values(calendar.months)
       this.calendar = {...calendar}
-      this.tree = [...this.items]
     },
+
     placementEvents() {
       this.tree.map((node, nodeIndex) => {
         node.events.map((event, eIndex) => {
@@ -164,17 +188,22 @@ export default {
       })
     },
     placementTodayMarker() {
+      const marker = document.getElementById('today-marker')
+      if (this.year !== this.$moment().year()) {
+        marker.style.display = 'none'
+        return
+      }
+
       const wrap = this.$refs.calendar
       const wrapX = wrap.getBoundingClientRect().x
       const todayEl = document.getElementsByClassName('calendar-header-day__today')[0]
-      const marker = document.getElementById('today-marker')
+
 
       const startToday = todayEl.getBoundingClientRect().x
       const widthToday = todayEl.offsetWidth
       const widthMarker = marker.offsetWidth
       const left = startToday + widthToday / 2 - widthMarker / 2 - wrapX - 1
 
-      console.log(left)
       marker.style.left = left + 'px'
     },
     calculateEventStyle(e) {
@@ -195,26 +224,13 @@ export default {
       if (this.open.indexOf(id) === -1) this.open.push(id)
       else this.open = this.open.filter(x => x !== id)
     },
-    reCalculateTree() {
-      let tree = []
-      this.items.map(node => {
-        tree.push({...node, root: true})
-        if (this.open.indexOf(node.id) !== -1 && node.children && node.children.length)
-          tree.push(...node.children)
-      })
-      this.tree = tree
-
-      this.$nextTick(() => {
-        this.placementEvents()
-      })
-    }
   },
   watch: {
-    open() {
-      this.reCalculateTree()
-    },
-    items() {
-      this.reCalculateTree()
+    tree() {
+      this.$nextTick(() => {
+        this.placementEvents()
+        this.placementTodayMarker()
+      })
     }
   }
 }
@@ -225,6 +241,7 @@ $day-width: 25px;
 .today-marker {
   $marker-color: rgba(255, 0, 0, 0.94);
   $marker-dot-size: 5.5px;
+  pointer-events: none;
 
   position: absolute;
   width: $marker-dot-size * 2 + 3px;
@@ -263,77 +280,6 @@ $day-width: 25px;
   transition: 0.3s cubic-bezier(0.25, 0.8, 0.5, 1), visibility 0s;
 }
 
-.event {
-  &-workload-wrapper {
-    display: flex;
-    width: calc(100% + 3px);
-    height: 100%;
-    position: absolute;
-    left: -1px;
-
-    flex-direction: row;
-    justify-content: space-around;
-    align-items: flex-end;
-
-
-    &:hover {
-      .event-workload {
-        &--1 {
-          height: 15%;
-        }
-
-        &--2 {
-          height: 35%;
-        }
-
-        &--3 {
-          height: 50%;
-        }
-
-        &--4 {
-          height: 65%;
-        }
-
-        &--max {
-          height: 80%;
-        }
-      }
-    }
-  }
-
-  &-workload {
-    display: block;
-    width: 100%;
-    height: 15%;
-    transition: height .17s ease-in-out;
-    border: thin solid #848484;
-
-    &--1 {
-      background-color: #B2FF59;
-    }
-
-    &--2 {
-      transition: height .204s ease-in-out;
-      background-color: #EEFF41;
-    }
-
-    &--3 {
-      transition: height .238s ease-in-out;
-      background-color: #FFEA00;
-    }
-
-    &--4 {
-      transition: height .272s ease-in-out;
-      background-color: #FFC400;
-    }
-
-    &--max {
-      transition: height .306s ease-in-out;
-      background-color: #F57C00;
-    }
-  }
-}
-
 .calendar {
   border-spacing: 0;
   border-collapse: separate;
@@ -345,16 +291,6 @@ $day-width: 25px;
   }
 
   &-event {
-    position: absolute;
-    display: block;
-    top: 1px;
-    bottom: 2px;
-    background-color: rgb(33, 150, 243);
-    background: linear-gradient(45deg, #2196f3, #6ebfff);
-    border-radius: 3px;
-
-    overflow: hidden;
-
     &-row {
       position: relative;
     }
@@ -366,7 +302,7 @@ $day-width: 25px;
       border-bottom: 1px solid black;
       background-color: #d0d0d0;
       white-space: nowrap;
-      z-index: 2;
+      z-index: 5;
 
       &-item {
         padding: 4px;

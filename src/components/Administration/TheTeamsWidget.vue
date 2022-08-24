@@ -43,7 +43,7 @@
       </template>
       <template v-slot:append="{item}">
         <div
-          v-if="item.children"
+          v-if="item.children && $can('mange', 'Task')"
           style="z-index: 1000"
         >
           <v-btn v-if="!item.root" color="error" icon small @click.stop="onDelete(item)">

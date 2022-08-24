@@ -1,23 +1,24 @@
 <template>
   <div>
     <v-progress-linear v-if="!appReady" indeterminate></v-progress-linear>
-    <v-data-table
-      v-else
-      :expanded="expanded"
-      :headers="headers"
-      :items="classedV"
-      :items-per-page="-1"
-      hide-default-footer
-      no-data-text="Отпуска ещё не добавлены"
-      show-expand
-    >
-      <template v-slot:expanded-item="{ headers, item }">
-        <VacationEventsDetails :headers="headers" :item="item"/>
-      </template>
-      <template v-slot:top="item">
-        <v-toolbar dense flat>
-          <v-toolbar-title class="d-flex flex-column">
-            <span>{{ schedule.title }}</span>
+    <template v-else>
+
+
+      <v-data-table
+        :expanded="expanded"
+        :headers="headers"
+        :items="classedV"
+        :items-per-page="-1"
+        hide-default-footer
+        no-data-text="Отпуска ещё не добавлены"
+        show-expand
+      >
+        <template v-slot:expanded-item="{ headers, item }">
+          <VacationEventsDetails :cols="headers.length" :events="item.events"/>
+        </template>
+        <template v-slot:top="item">
+          <div class="d-flex flex-column">
+            <span class="headline">{{ schedule.title }}</span>
             <span
               :class="schedule.isActive ? 'error--text' : 'info--text'"
               class="caption"
@@ -26,114 +27,118 @@
                   : 'Доступно для редактирования'"
             >
           </span>
-          </v-toolbar-title>
-          <v-spacer></v-spacer>
-          <v-btn color="primary" text @click="onAddVocation">
-            добавить отпуск
-          </v-btn>
-        </v-toolbar>
-      </template>
-      <template v-slot:item.start="{item}">
-        <div>
-          <v-icon>mdi-calendar</v-icon>
-          {{ item.start | getShortDayLabel | lowerCase }}
-          <span class="font-weight-bold">{{ item.start | normalizeDate }}</span> -
-          {{ item.end | getShortDayLabel | lowerCase }}
-          <span class="font-weight-bold">{{ item.end | normalizeDate }}</span>
-        </div>
-      </template>
-      <template v-slot:item.status="{item}">
-        <v-chip
-          :id="'state_' + item.id"
-          :color="vacationStatuses[item.status].color"
-          label
-          outlined
-          small
-        >
-          {{ vacationStatuses[item.status].title }}
-        </v-chip>
+          </div>
+          <div class="d-flex flex-row mt-2 align-end">
+            <app-shield
+              :text="daysApproved"
+              footer="дней одобрено"
+              header="Всего"
+              icon="mdi-calendar"
+              icon-color="success"
+            />
+            <app-shield
+              :text="daysWithDoc"
+              footer="отпуска по заявлению"
+              header="Всего"
+              icon="mdi-calendar"
+            />
+            <app-shield
+              :text="daysWithoutDoc"
+              footer="отпуска без заявления"
+              header="Всего"
+              icon="mdi-calendar"
+            />
+            <v-spacer/>
+            <v-btn class="ma-2" color="primary" text @click="onAddVocation">
+              добавить отпуск
+            </v-btn>
+          </div>
+        </template>
+        <template v-slot:item.start="{item}">
+          <VacationRangeLabel :end="item.end" :start="item.start"/>
+        </template>
+        <template v-slot:item.status="{item}">
+          <VacationStatusChip
+            :id="'state_' + item.id"
+            :status="item.status"
+          />
 
-        <v-tooltip v-if="item.statusChangeByUid" :activator="'#state_'+item.id" bottom>
+          <v-tooltip v-if="item.statusChangeByUid" :activator="'#state_'+item.id" bottom>
           <span>
-              {{ getUserDisplayName(item.statusChangeByUid) }}:
+              {{ getShortUserNameByUID(item.statusChangeByUid) }}:
               {{ $moment(item.statusChangeAt).format('YYYY-MM-DD HH:mm') }}
           </span>
-          <br/>
-          <span v-if="item.comment" class="font-italic">
+            <br/>
+            <span v-if="item.comment" class="font-italic">
             {{ item.comment }}
           </span>
-        </v-tooltip>
-      </template>
-      <template v-slot:item.actually="{value}">
-        <icon-btn-with-tip
-          :color="!value ? 'info': 'secondary'"
-          :icon="'mdi-file-document-' + (!value ? 'check' : 'minus')"
-        >
-          {{ !value ? 'Отпуск по заявлению' : 'Фактический отпуск (без заявления)' }}
-        </icon-btn-with-tip>
-      </template>
-      <template v-slot:item.action="{item}">
-        <RowActions>
-          <v-slide-group>
-            <div>
-              <icon-btn-with-tip
-                v-if="!!templateFile"
-                :disable="item.actually"
-                :loading="item.id == downloadingItemId"
-                color="info"
-                icon="mdi-download"
-                @click="downloadApplication(item.id)"
-              >
-                Скачать заявление
-              </icon-btn-with-tip>
-              <icon-btn-with-tip
-                v-if="item.status === 99"
-                icon="mdi-content-copy"
-                @click="onCopy(item.id)"
-              >
-                Предложить исправление
-              </icon-btn-with-tip>
-              <icon-btn-with-tip
-                v-if="item.status === 0"
-                :disable="item.approved || schedule.isActive"
-                :icon="item.approved || schedule.isActive ? 'mdi-pencil-lock' : 'mdi-pencil'"
-                @click="onEdit(item.id)"
-              >
-                Редактировать
-              </icon-btn-with-tip>
-              <Can I='delete' :on="item">
-                <icon-btn-with-tip
-                  v-if="item.status === 0"
-                  color="error"
-                  icon="mdi-delete"
-                  @click="onDelete(item.id)"
-                >
-                  Удалить
-                </icon-btn-with-tip>
-              </Can>
-            </div>
-            <div>
+          </v-tooltip>
+        </template>
+        <template v-slot:item.actually="{value}">
+          <icon-btn-with-tip
+            :color="!value ? 'info': 'secondary'"
+            :icon="'mdi-file-document-' + (!value ? 'check' : 'minus')"
+          >
+            {{ !value ? 'Отпуск по заявлению' : 'Фактический отпуск (без заявления)' }}
+          </icon-btn-with-tip>
+        </template>
+        <template v-slot:item.action="{item}">
+          <RowActions>
+            <icon-btn-with-tip
+              v-if="!!templateFile"
+              :disable="item.actually"
+              :loading="item.id == downloadingItemId"
+              color="info"
+              icon="mdi-download"
+              @click="downloadApplication(item.id)"
+            >
+              Скачать заявление
+            </icon-btn-with-tip>
+            <icon-btn-with-tip
+              v-if="item.status === 99"
+              icon="mdi-content-copy"
+              @click="onCopy(item.id)"
+            >
+              Предложить исправление
+            </icon-btn-with-tip>
+            <icon-btn-with-tip
+              v-if="item.status === 0"
+              :disable="item.approved || schedule.isActive"
+              :icon="item.approved || schedule.isActive ? 'mdi-pencil-lock' : 'mdi-pencil'"
+              @click="onEdit(item.id)"
+            >
+              Редактировать
+            </icon-btn-with-tip>
+            <Can :on="item" I='delete'>
               <icon-btn-with-tip
                 v-if="item.status === 0"
-                color="info"
-                icon="mdi-send"
-                @click="onSendToApprove(item.id)"
+                color="error"
+                icon="mdi-delete"
+                @click="onDelete(item.id)"
               >
-                Отправить на утверждение
+                Удалить
               </icon-btn-with-tip>
-              <icon-btn-with-tip
-                v-if="item.status === 1"
-                color="warning"
-                icon="mdi-cancel"
-                @click="onCancelApprove(item.id)"
-              >
-                Отозвать
-              </icon-btn-with-tip>
-            </div>
-          </v-slide-group>
-        </RowActions>
-      </template>
-    </v-data-table>
+            </Can>
+            <icon-btn-with-tip
+              v-if="item.status === 0"
+              color="info"
+              icon="mdi-send"
+              @click="onSendToApprove(item.id)"
+            >
+              Отправить на утверждение
+            </icon-btn-with-tip>
+            <icon-btn-with-tip
+              v-if="item.status === 1"
+              color="warning"
+              icon="mdi-cancel"
+              @click="onCancelApprove(item.id)"
+            >
+              Отозвать
+            </icon-btn-with-tip>
+          </RowActions>
+        </template>
+      </v-data-table>
+    </template>
     <Alert
       :show="deleteAlert"
       @cancel="deleteAlertClose"
@@ -150,30 +155,48 @@
 </template>
 
 <script>
-import {appReady, posts, templateFile, vacationStatuses} from "@/mixins/ComputedData";
+import {
+  appReady,
+  getShortUserNameByUID,
+  posts,
+  templateFile,
+  vacationStatuses
+} from "@/mixins/ComputedData";
 import AddVacation from "@/components/Modals/AddVacation";
-import IconBtnWithTip from "@/components/IconBtnWithTip";
 import {dataMethods} from "@/mixins/dataHelper";
 import {dataToGenerateFile} from "@/plugins/schema";
 import {getShortDayLabel, lowerCase, normalizeDate} from "@/mixins/Filters";
 import {VacationMethods} from "@/mixins/VacationMethods";
 import Vacations from "@/plugins/TableHeaders/Vacations";
+
 import {FileMethods} from "@/mixins/FileMethods";
 import Alert from "@/components/Modals/Alert";
-import VacationEventsDetails from "@/components/VacationEventsDetails";
+import AppShield from "@/views/App/AppShield";
+import VacationEventsDetails from "@/components/VacationEventsDetails"
+import iconBtnWithTip from "@/components/IconBtnWithTip";
+import VacationRangeLabel from "@/views/App/VacationRangeLabel";
+import VacationStatusChip from "@/views/App/VacationStatusChip";
 import RowActions from "@/components/RowActions";
 
 class Vacation {
   constructor(args) {
-    for(let key in args) this[key] = args[key]
+    for (let key in args) this[key] = args[key]
   }
 }
 
 export default {
   name: 'Vacation',
-  components: {RowActions, VacationEventsDetails, Alert, IconBtnWithTip, AddVacation},
+  components: {
+    AppShield,
+    Alert, AddVacation,
+    VacationEventsDetails,
+    iconBtnWithTip,
+    VacationRangeLabel,
+    RowActions,
+    VacationStatusChip
+  },
   mixins: [dataMethods, VacationMethods, posts, templateFile, getShortDayLabel,
-    lowerCase, normalizeDate, vacationStatuses, appReady, FileMethods],
+    lowerCase, normalizeDate, vacationStatuses, appReady, FileMethods, getShortUserNameByUID],
   data: () => ({
     schedule: null,
     user: null,
@@ -191,7 +214,6 @@ export default {
     expanded: [],
   }),
   created() {
-    console.log('6516237166263786128631627637816273618762')
     if (this.appReady) this.initialize()
   },
   computed: {
@@ -204,11 +226,53 @@ export default {
       let vs = Object.values(this.vacations)
 
       vs = vs.map(v => new Vacation(v))
-      console.log(vs)
       return vs
-    }
+    },
+    daysWithDoc() {
+      const vacations = Object.values(this.vacations)
+      let days = 0
+
+      vacations.map(v => {
+        if (!v.actually) {
+          days += v.days
+        }
+      })
+
+      return this.addDayLabel(days)
+    },
+    daysWithoutDoc() {
+      const vacations = Object.values(this.vacations)
+      let days = 0
+
+      vacations.map(v => {
+        if (v.actually) {
+          days += v.days
+        }
+      })
+
+      return this.addDayLabel(days)
+    },
+    daysApproved() {
+      const vacations = Object.values(this.vacations)
+      let days = 0
+
+      vacations.map(v => {
+        if (v.approved) {
+          days += v.days
+        }
+      })
+
+      return this.addDayLabel(days)
+    },
   },
   methods: {
+    addDayLabel(days) {
+      if (days % 100 >= 10 && days % 100 <= 20 || days % 10 === 0) return days + ' дней'
+      if (days % 10 === 1) return days + ' день'
+      if (days % 10 <= 3) return days + ' дня'
+
+      return days + ' дней'
+    },
     initialize() {
       const sid = this.$route.params.id
       const uid = this.$route.params.uid
@@ -223,9 +287,6 @@ export default {
       this.user = user
       this.uid = uid
       this.sid = sid
-    },
-    getUserDisplayName(uid) {
-      return this.$store.getters['users/getDisplayNameByUID'](uid)
     },
     async downloadApplication(id) {
       this.downloadingItemId = id
@@ -246,13 +307,15 @@ export default {
 
       await this.downloadWithDataFile({
         fullPath: this.templateFile.fullPath,
-        data
+        data,
+        fileName: 'Заявление на очередной оплачиваемый отпуск ' +
+          this.getShortUserNameByUID(this.uid)
       })
       this.downloadingItemId = null
     },
 
-    onDelete(item) {
-      this.deleteId = item.id
+    onDelete(id) {
+      this.deleteId = id
       this.deleteAlert = true
     },
     deleteAlertClose() {

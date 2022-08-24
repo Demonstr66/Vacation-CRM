@@ -88,7 +88,7 @@ export default {
 
       })
     },
-    downloadWithData({dispatch}, {fullPath, data}) {
+    downloadWithData({dispatch}, {fullPath, data, fileName}) {
       return asyncTryDecorator(async () => {
           const storage = getStorage();
           const bytes = await getBytes(ref(storage, fullPath))
@@ -109,7 +109,8 @@ export default {
           await zip2.file("word/document.xml", newXML);
 
           const blob = await zip2.generateAsync({type: "blob"})
-          return FileDownload(blob, "example.docx");
+
+          return FileDownload(blob, fileName + ".docx");
       })
     },
   }

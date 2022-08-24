@@ -146,6 +146,30 @@ export const vacationsBySid = {
   }
 }
 
+export const getChiefOf = {
+  methods: {
+    getChiefOf(uid) {
+      let res = []
+      let lvl = 0
+      const user = this.$store.getters['users/getUserById'](uid)
+      const teams = this.$store.getters['teams/get']
+      const team = user.team ? teams[user.team] : null
+
+      if (team) {
+        if (team.leaderId !== uid) res.push({lvl, uid: team.leaderId})
+
+        while (team.parent) {
+          lvl++
+          let nextTeam = teams[team.parent]
+          if (nextTeam.leaderId !== uid) res.push({lvl, uid: nextTeam.leaderId})
+        }
+      }
+
+      return res
+    }
+  }
+}
+
 export const calendar = {
   computed: {
     calendar() {
@@ -185,10 +209,10 @@ export const calendar = {
 export const vacationStatuses = {
   data: () => ({
     vacationStatuses: {
-      0: {title: 'Черновик', color: ''},
-      1: {title: 'Ожидает подтверждения', color: 'warning'},
-      2: {title: 'Утверждено', color: 'success'},
-      99: {title: 'Отклонено', color: 'error'},
+      0: {title: 'Черновик', color: 'secondary', icon: 'mdi-pencil'},
+      1: {title: 'Ожидает подтверждения', color: 'warning', icon: 'mdi-help'},
+      2: {title: 'Утверждено', color: 'success', icon: 'mdi-check'},
+      99: {title: 'Отклонено', color: 'error', icon: 'mdi-close'},
     }
   })
 }

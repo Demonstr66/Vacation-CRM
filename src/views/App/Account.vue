@@ -7,10 +7,16 @@
       <the-account-info :user="user" disable-all></the-account-info>
     </v-col>
     <v-col class="pa-0 ma-0" cols="12" md="6">
-      <the-workspace-info :workspace="workspace" solo></the-workspace-info>
+      <the-workspace-info
+        :workspace="workspace"
+        solo
+        :disabled="$can('manage', 'Workspace')"
+      ></the-workspace-info>
     </v-col>
     <v-col class="pa-0 ma-0" cols="12" md="6">
-      <the-template-vacation-file></the-template-vacation-file>
+      <the-template-vacation-file
+        :disabled="$can('manage', 'Workspace')"
+      ></the-template-vacation-file>
     </v-col>
     <Can I="mange" a="Workspace">
       <v-col class="pa-0 ma-0" cols="12" md="6">

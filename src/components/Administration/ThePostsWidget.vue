@@ -2,6 +2,7 @@
   <list-with-add
     :items="Object.values(posts)"
     title="Должности"
+    :action="$can('mange', 'Post')"
     @delete="onDelete"
     @save="onSave"
   >

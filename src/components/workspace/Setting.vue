@@ -2,53 +2,6 @@
   <v-card flat>
     <v-form v-model="valid" @submit.prevent="onSave">
 
-      <v-card-title>Область видимости</v-card-title>
-      <v-card-text>
-        <v-row no-gutters>
-          <v-col align-self="end" class="text-right">
-            <span class="mr-4 mb-2">Лидеры команд</span>
-          </v-col>
-          <v-col cols="8">
-            <v-select
-              v-model="teamLeader.visibility"
-              :items="fieldsOfView"
-              hide-details
-              @change.once="isChanged = true"
-            >
-              <template v-slot:selection="{item}">
-                <v-chip
-                  label
-                  small
-                >
-                  {{ item.text }}
-                </v-chip>
-              </template>
-            </v-select>
-          </v-col>
-        </v-row>
-        <v-row no-gutters>
-          <v-col align-self="end" class="text-right">
-            <span class="mr-4 mb-2">Пользователи</span>
-          </v-col>
-          <v-col cols="8">
-            <v-select
-              v-model="users.visibility"
-              :items="fieldsOfView"
-              hide-details
-              @change.once="isChanged = true"
-            >
-              <template v-slot:selection="{item}">
-                <v-chip
-                  label
-                  small
-                >
-                  {{ item.text }}
-                </v-chip>
-              </template>
-            </v-select>
-          </v-col>
-        </v-row>
-      </v-card-text>
       <v-card-title>Кто может управлять отпусками</v-card-title>
       <v-card-text>
         <v-select

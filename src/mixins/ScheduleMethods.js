@@ -11,7 +11,15 @@ export const ScheduleMethods = {
         msg: 'График создан'
       })
     },
-    updateSchedule(data) {
+    updateSchedule(data, event) {
+      if (!!event) {
+        event.at = this.$moment().toISOString()
+        event.by = this.currentUID
+
+        if (!data.events) data.events = []
+        data.events.push({...event})
+      }
+
       return this.dispatchSaveData({
         method: 'schedules/update',
         isNew: false,

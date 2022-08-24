@@ -10,24 +10,15 @@
       <template v-slot:top>
         <v-toolbar dense flat>
           <v-spacer></v-spacer>
-          <v-btn color="primary" text @click="gotoEditor()">Создать</v-btn>
+          <v-btn v-if="$can('create', 'Shcedule')" color="primary" text
+                 @click="gotoEditor()">Создать
+          </v-btn>
         </v-toolbar>
       </template>
       <template v-slot:item.action="{item}">
-        <v-menu
-          v-if="$vuetify.breakpoint.smAndDown"
-          content-class="no-sheet"
-          offset-y
-          top
-
-        >
-          <template v-slot:activator="{ on, attrs }">
-            <v-btn icon v-bind="attrs" v-on="on">
-              <v-icon>mdi-dots-vertical</v-icon>
-            </v-btn>
-          </template>
-          <div class="d-flex flex-column white">
+        <RowActions>
             <icon-btn-with-tip
+              v-if="$can('update', 'Schedule')"
               :disable="item.isActive || item.isLoading"
               :icon="item.isActive ? 'mdi-pencil-lock' : 'mdi-pencil'"
               @click="gotoEditor(item)"
@@ -35,6 +26,7 @@
               Редактировать
             </icon-btn-with-tip>
             <icon-btn-with-tip
+              v-if="$can('delete', 'Schedule')"
               :disable="item.isActive || item.isLoading"
               color="error"
               icon="mdi-delete"
@@ -45,28 +37,7 @@
             <icon-btn-with-tip color="info" icon="mdi-eye" @click="gotoViewer(item.id)">
               Просмотр
             </icon-btn-with-tip>
-          </div>
-        </v-menu>
-        <div v-else>
-          <icon-btn-with-tip
-            :disable="item.isActive || item.isLoading"
-            :icon="item.isActive ? 'mdi-pencil-lock' : 'mdi-pencil'"
-            @click="gotoEditor(item)"
-          >
-            Редактировать
-          </icon-btn-with-tip>
-          <icon-btn-with-tip
-            :disable="item.isActive || item.isLoading"
-            color="error"
-            icon="mdi-delete"
-            @click="deleteAlertShow(item.id)"
-          >
-            Удалить
-          </icon-btn-with-tip>
-          <icon-btn-with-tip color="info" icon="mdi-eye" @click="gotoViewer(item.id)">
-            Просмотр
-          </icon-btn-with-tip>
-        </div>
+        </RowActions>
       </template>
     </v-data-table>
     <Alert
@@ -86,12 +57,13 @@ import Alert from "@/components/Modals/Alert";
 import {dataMethods} from "@/mixins/dataHelper";
 import schedulesHeaders from "@/plugins/TableHeaders/Schedules";
 import {ScheduleMethods} from "@/mixins/ScheduleMethods";
+import RowActions from "@/components/RowActions";
 
 
 export default {
   name: 'ScheduleItem',
   mixins: [schedules, dataMethods, ScheduleMethods],
-  components: {Alert, IconBtnWithTip, ScheduleEditorModal},
+  components: {RowActions, Alert, IconBtnWithTip, ScheduleEditorModal},
   data: () => ({
     headers: schedulesHeaders,
     deleteAlert: {

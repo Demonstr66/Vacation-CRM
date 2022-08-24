@@ -21,15 +21,28 @@ const User = () => import('@/views/App/User')
 const Tab1 = () => import('@/components/Administration/Users')
 const Tab2 = () => import('@/components/Administration/Structure')
 const Tab3 = () => import('@/components/Administration/Archive')
-const Viewer1 = () => import('@/components/ScheduleViewer/List'  )
-const Viewer2 = () => import('@/components/ScheduleViewer/TimeLine'  )
-const Viewer3 = () => import('@/components/ScheduleViewer/FullCalendar'  )
+const Viewer1 = () => import('@/components/ScheduleViewer/ListView'  )
+const Viewer2 = () => import('@/components/ScheduleViewer/TimelineView'  )
+const Viewer3 = () => import('@/components/ScheduleViewer/FullCalendarView'  )
 
+const test = () => import('@/views/test'  )
 
 Vue.use(VueRouter)
 
 
 const routes = [
+  {
+    path: '/test',
+    name: 'Test',
+    component: test,
+    meta: {
+      layout: 'MainLayout',
+      title: 'С 7 по 8 февраля на двоих',
+      protected: {
+        accessLevel: [2]
+      }
+    }
+  },
   {
     path: '/',
     name: 'Home',

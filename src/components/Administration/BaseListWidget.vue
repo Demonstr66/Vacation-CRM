@@ -23,7 +23,7 @@
           <slot :item="item" name="subtitle">
           </slot>
         </v-list-item-content>
-        <v-list-item-action class="d-flex flex-row">
+        <v-list-item-action class="d-flex flex-row" v-if="action">
           <icon-btn-with-tip
             color="primary"
             icon="mdi-pencil"
@@ -45,6 +45,7 @@
       {{ noDataText }}
     </span>
     <v-form
+      v-if="action"
       ref="addItem"
       v-model="valid"
       class="mt-4"
@@ -114,6 +115,10 @@ export default {
       type: String,
       default: "Данные ещё не добавлены"
     },
+    action: {
+      type: Boolean,
+      default: false
+    }
   },
   data: () => ({
     sort: 0,

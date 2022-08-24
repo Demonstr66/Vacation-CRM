@@ -20,13 +20,13 @@
                 :key="idx"
                 :class="{'text--secondary': gh.value !== groupBy}"
                 class="ml-2"
-                @click.prevent="toogleGroup(gh.value)"
+                @click.prevent="toggleGroup(gh.value)"
               >
                 <small>{{ gh.text }}</small>
               </a>
             </div>
           </template>
-          <template v-slot:group.header="{toggle, isOpen,groupBy, group, remove}">
+          <template v-slot:group.header="{toggle, isOpen,groupBy, group, remove, headers}">
             <td :colspan="headers.length">
               <v-btn icon small @click="toggle">
                 <v-icon v-if="isOpen">mdi-minus</v-icon>
@@ -35,7 +35,7 @@
               <span>
                 {{ getGroupHeaderText(group, groupBy) }}
               </span>
-              <v-btn icon small @click="remove && toogleGroup(groupBy[0])">
+              <v-btn icon small @click="remove && toggleGroup(groupBy[0])">
                 <v-icon>mdi-close</v-icon>
               </v-btn>
             </td>
@@ -93,8 +93,8 @@
                 <v-chip
                   v-for="(task, index) in item.tasks"
                   :key="index"
+                  :close="$can('update', 'User')"
                   class="mb-1 mr-1"
-                  close
                   label
                   small
                   @click:close="onDeleteTask(item.uid, task)"
@@ -117,6 +117,7 @@
             </icon-btn-with-tip>
             <icon-btn-with-tip
               v-else
+              :disable="!$can('update', 'User')"
               color="primary"
               icon="mdi-account-plus"
               @click="$emit('invite')"
@@ -140,6 +141,7 @@
               <main-tools
                 :active="item.active"
                 :disable="{'delete': item.uid === currentUID}"
+                :disable-all="!$can('update', 'User')"
                 :fab="true"
                 :vertical="true"
                 @delete="onDeleteUser(item.uid)"
@@ -152,6 +154,7 @@
               v-else
               :active="item.active"
               :disable="{'delete': item.uid === currentUID}"
+              :disable-all="!$can('update', 'User')"
               @delete="onDeleteUser(item.uid)"
               @edit="onEdit(item.uid)"
               @goto="gotoUser(item.uid)"
@@ -161,14 +164,16 @@
       </v-col>
       <v-col v-if="$vuetify.breakpoint.mdAndUp" cols="3" lg="2">
         <div class="d-flex flex-column fill-height ml-2">
-          <v-btn
-            color="primary"
-            outlined
-            text
-            @click="onAddUser"
-          >
-            Добавить
-          </v-btn>
+          <Can I="create" a="User">
+            <v-btn
+              color="primary"
+              outlined
+              text
+              @click="onAddUser"
+            >
+              Добавить
+            </v-btn>
+          </Can>
           <div>
             <icon-btn-with-tip
               :icon="filterIcon"
@@ -226,18 +231,20 @@
             </div>
           </v-expand-transition>
           <div class="mt-4">
-            <v-chip
-              v-for="(task, id) in tasks"
-              :key="id"
-              :small="$vuetify.breakpoint.mdAndDown"
-              class="ma-1 v-chip--clickable"
-              draggable
-              label
-              @dragend="onDragEnd"
-              @dragstart="onDragStart(task.id, $event)"
-            >
-              {{ task.title }}
-            </v-chip>
+            <Can I="ipdate" a="User">
+              <v-chip
+                v-for="(task, id) in tasks"
+                :key="id"
+                :small="$vuetify.breakpoint.mdAndDown"
+                class="ma-1 v-chip--clickable"
+                draggable
+                label
+                @dragend="onDragEnd"
+                @dragstart="onDragStart(task.id, $event)"
+              >
+                {{ task.title }}
+              </v-chip>
+            </Can>
           </div>
         </div>
       </v-col>
@@ -354,6 +361,9 @@ export default {
     },
     dataIterator: {}
   }),
+  created() {
+    console.log(this.$can('update', 'User'))
+  },
   computed: {
     headers() {
       let h = this.defaultHeaders
@@ -380,21 +390,22 @@ export default {
       console.log(v);
       return 'myClassName'
     },
-    toogleGroup(val) {
+    toggleGroup(val) {
       let gby = this.groupBy
 
       this.groupBy = gby === val ? null : val
     },
-    getGroupHeaderText(val, groupBy) {
-      const gby = groupBy[0]
-
-      switch (gby) {
+    getGroupHeaderText(val, [groupBy]) {
+      switch (groupBy) {
         case 'active':
           return val ? 'Зарегистрирован' : 'Не зарегистрирован';
         case 'team':
           return this.teamTitle(val);
         case 'post':
           return this.postTitle(val);
+
+        default:
+          return groupBy
       }
     },
     taskTitle(id) {

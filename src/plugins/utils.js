@@ -4,7 +4,7 @@ import shortUUID from "short-uuid";
 
 const moment = require('moment')
 
-export function dateDiff({start, end}) {
+export function dateDiff(start, end) {
   return moment(end).diff(moment(start), 'days') + 1
 }
 
@@ -353,4 +353,83 @@ export function getKey(groupBy) {
     case 'posts':
       return 'post'
   }
+}
+
+export function getCalendarAttributes({holidays, workdays, currentUserVacations, usersVacations, levels, isActually}) {
+  const uid = this.uid
+  const user = {...this.$store.getters['users/getUserById'](uid)}
+  let exceptionAttr = [
+    {
+      key: 'weekends',
+      dates: {
+        weekdays: [1, 7]
+      }
+    },
+    {
+      key: 'holidays',
+      dates: holidays.map(d => new Date(d.date))
+    },
+    {
+      key: 'workdays',
+      dates: workdays.map(d => new Date(d.date))
+    },
+  ]
+
+
+  let normalizedUsersVacations = usersVacations.map(v => {
+    v.lvl = []
+
+    const vacationOwner = this.$store.getters['users/getUserById'](v.uid)
+    v.displayName = vacationOwner.displayName
+
+
+    if (!!vacationOwner.team && vacationOwner.team === user.team)
+      v.lvl.push(this.levels.find(lvl => lvl.key === 'team')['id'])
+
+    if (!user.tasks || user.tasks.length === 0) return v
+    if (!vacationOwner.tasks || vacationOwner.tasks.length === 0) return v
+
+    v.tasks = []
+    user.tasks.map(taskId => {
+      const task = vacationOwner.tasks.find(t => t == taskId)
+      if (!task) return
+
+      v.lvl.push(this.levels.find(lvl => lvl.key === 'task')['id'])
+      v.tasks.push(
+        this.$store.getters['tasks/getTitle'](taskId)
+      )
+    })
+
+    return v
+  }).filter(v => v.lvl.length !== 0)
+
+  let normalizedLevels = this.levels.map(level => {
+    level.dates = []
+    const temp = normalizedUsersVacations.filter(v => v.lvl.some(lvl => lvl === level.id))
+    temp.map(v => level.dates.push({start: new Date(v.start), end: new Date(v.end)}))
+    return level
+  })
+
+  this.attributes = [
+    //Отпуска коллег
+    ...normalizedLevels.map(({id, dates}) => ({
+      key: `vacation-${id}`,
+      dates: dates,
+    })),
+
+    //Мои отпуска
+    ...this.currentUserVacations
+      .filter(v => v.actually === isActually)
+      .map(v => {
+        return {
+          key: `currentUserVacation-${v.id}`,
+          dates: {
+            start: v.start,
+            end: v.end
+          }
+        }
+      }),
+  ]
+
+  return attributes
 }

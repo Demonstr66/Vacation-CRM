@@ -3,7 +3,7 @@
     <v-card-title v-if="!hideTitle">Шаблон заявления</v-card-title>
     <v-card-text>
       <v-row>
-        <v-col :cols="12 / cols">
+        <v-col v-if="!disabled" :cols="12 / cols">
           <v-file-input
             v-model="newTempFile"
             :color="!!templateFile ? 'warning' : ''"
@@ -76,10 +76,12 @@
                         </v-fade-transition>
                       </v-img>
                       <div class="d-flex flex-column">
-                        <icon-btn-with-tip btnClass="float-end" color="error"
-                                           icon="mdi-close"
-                                           small
-                                           @click="onDeleteFile">
+                        <icon-btn-with-tip
+                          v-if="!disabled"
+                          btnClass="float-end" color="error"
+                          icon="mdi-close"
+                          small
+                          @click="onDeleteFile">
                           Удалить
                         </icon-btn-with-tip>
                         <icon-btn-with-tip btnClass="float-end" color="primary" icon="mdi-download"
@@ -140,6 +142,10 @@ export default {
       type: Boolean,
       default: false,
     },
+    disabled: {
+      type: Boolean,
+      default: false,
+    }
   },
   data: () => ({
     isLoading: false,
@@ -153,7 +159,10 @@ export default {
       const data = templateFileData
       const keys = Object.keys(data)
       let values = Object.values(data)
-      values = values.map( (v, idx) => {v.key = keys[idx]; return v})
+      values = values.map((v, idx) => {
+        v.key = keys[idx];
+        return v
+      })
       return values
     }
   },

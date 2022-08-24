@@ -4,6 +4,8 @@
     :class="{ 'flex-column': vertical }"
   >
     <icon-btn-with-tip
+      v-if="!disableAll"
+      :disable="disableAll"
       :fab="fab"
       icon="mdi-account-edit"
       color="primary"
@@ -12,11 +14,11 @@
       Редактировать
     </icon-btn-with-tip>
     <icon-btn-with-tip
-      v-if="!vertical || !deleteDisable"
+      v-if="!deleteDisable && !disableAll"
       icon="mdi-delete"
       color="error"
       :fab="fab"
-      :disable="deleteDisable"
+      :disable="deleteDisable || disableAll"
       @click="$emit('delete')"
     >
       Удалить
@@ -53,11 +55,15 @@ export default {
       type: Boolean,
       default: false,
     },
+    disableAll: {
+      type: Boolean,
+      default: false,
+    },
     disable: {}
   },
   computed: {
     deleteDisable() {
-      return this.disable ? !!this.disable.delete : false
+      return this.disable ? !!this.disable.delete : this.disableAll
     }
   }
 };

@@ -8,118 +8,186 @@
         </div>
         <v-spacer/>
       </div>
-      <div class="mt-2">
-        <v-divider></v-divider>
-        <div class="d-flex px-3">
-          <span>Вид: </span>
-          <v-menu offset-y>
-            <template v-slot:activator="{ on, attrs }">
-              <a
-                class="px-1"
-                v-bind="attrs"
-                v-on="on"
-              >
-                {{ selectedViewerTitle }}
-              </a>
-            </template>
-            <v-list dense>
-              <v-list-item
-                v-for="(item, index) in viewerTypes"
-                :key="index"
-                :to="{name: item.to}"
-                link
-                @click="viewer = item.value"
-              >
-                <v-list-item-title>
-                  {{ item.text }}
-                </v-list-item-title>
-              </v-list-item>
-            </v-list>
-          </v-menu>
-          <span>Группировать: </span>
-          <v-menu offset-y>
-            <template v-slot:activator="{ on, attrs }">
-              <a
-                class="px-1"
-                v-bind="attrs"
-                v-on="on"
-              >
-                {{ selectedGroupByTitle }}
-              </a>
-            </template>
-            <v-list dense>
-              <v-list-item
-                v-for="(item, index) in groupItems"
-                :key="index"
-                link
-              >
-                <v-list-item-title
-                  @click="groupBy = item.value"
-                >
-                  {{ item.text }}
-                </v-list-item-title>
-              </v-list-item>
-            </v-list>
-          </v-menu>
-        </div>
-        <v-divider></v-divider>
-      </div>
+      <v-tabs v-model="activeTab">
+        <v-tab
+          v-for="(item, index) in viewers"
+          :key="index"
+          :to="{name: item.to}"
+        >
+          {{ item.text }}
+        </v-tab>
+      </v-tabs>
     </div>
-    <keep-alive>
-      <router-view v-if="!!schedule" :group-by="groupBy" :schedule="schedule"/>
-    </keep-alive>
+
+
+    <app-block-with-right-navbar
+      :showBar.sync="showFiltersBar"
+    >
+      <template v-slot:main>
+        <keep-alive>
+          <router-view
+            v-if="!!schedule"
+            :exception="schedule.exception"
+            :vacations="vacations"
+
+            :year="schedule.year"
+
+            @click="ask"
+
+            @showFiltersBar="showFiltersBar = true"
+          />
+        </keep-alive>
+      </template>
+      <template v-slot:navbar>
+        <v-card>
+          <v-card-title>Фильтры</v-card-title>
+          <v-card-text>
+            <v-radio-group
+              v-model="filters.type"
+              label="Тип"
+            >
+              <v-radio
+                v-for="(type, idx) in types"
+                :key="idx"
+                :label="type.text"
+                :value="type.value"
+              ></v-radio>
+            </v-radio-group>
+            <v-radio-group
+              v-model="filters.status"
+              label="Статус"
+            >
+              <v-radio
+                v-for="(status, idx) in statuses"
+                :key="idx"
+                :label="status.text"
+                :value="status.value"
+              ></v-radio>
+            </v-radio-group>
+          </v-card-text>
+        </v-card>
+      </template>
+    </app-block-with-right-navbar>
+
+
+    <app-ask
+      :show.sync="showAsk.reject"
+      @submit="onReject"
+    >
+      Отпуск будет отклонён. Продолжить?
+    </app-ask>
+    <app-ask
+      :show.sync="showAsk.accept"
+      no-comment
+      @submit="onAccept"
+    >
+      Утвердить отпуск?
+    </app-ask>
+    <app-ask
+      :show.sync="showAsk.cancel"
+      @submit="onCancel"
+    >
+      Отозвать решение?
+    </app-ask>
+
   </div>
 </template>
 
 <script>
-import TheCalendar from "@/components/TheCalendar";
 import {
   allVacations,
   appReady,
+  posts,
   postsCount,
   schedules,
+  tasks,
   tasksCount,
+  teams,
   teamsCount
 } from "@/mixins/ComputedData";
+import Alert from "@/components/Modals/Alert";
+import {VacationMethods} from "@/mixins/VacationMethods";
+import AppBlockWithRightNavbar from "@/views/App/AppBlockWithRightNavbar";
+import AppAsk from "@/views/App/AppAsk";
+
 
 export default {
   name: 'ScheduleViewer',
-  components: {TheCalendar},
-  mixins: [schedules, allVacations, tasksCount, teamsCount, postsCount, appReady],
+  components: {AppAsk, AppBlockWithRightNavbar, Alert},
+  mixins: [schedules, allVacations, tasksCount, teamsCount, postsCount, appReady,
+    VacationMethods, teams, tasks, posts],
   data: () => ({
+    showFiltersBar: false,
+    activeTab: null,
+
+    showAsk: {
+      reject: false,
+      accept: false,
+      cancel: false
+    },
+
+    selectedItem: null,
+
     schedule: null,
-    groupBy: 'none',
     viewer: 'list',
-    viewerTypes: [
+    filters: {
+      type: 'all',
+      status: 'all'
+    },
+
+    viewers: [
       {text: 'Список', value: 'list', to: 'Viewer1'},
       {text: 'Таймлайн', value: 'tl', to: 'Viewer2'},
-      {text: 'Календарь', value: 'fullCalendar', to: 'Viewer3'},
+      // {text: 'Календарь', value: 'fullCalendar', to: 'Viewer3'},
     ],
-    groupItems: [
-      {text: 'Команда', value: 'teams'},
-      {text: 'Задачи', value: 'tasks'},
-      {text: 'Должность', value: 'posts'},
-      {text: 'Не группировать', value: 'none'},
+    types: [
+      {text: 'Все', value: 'all'},
+      {text: 'По заявлению', value: 'actually:false'},
+      {text: 'Фактический', value: 'actually:true'}
+    ],
+    statuses: [
+      {text: 'Все', value: 'all'},
+      {text: 'На утверждении', value: 'status:1'},
+      {text: 'Утверждённые', value: 'status:2'},
+      {text: 'Отклонено', value: 'status:99'},
     ]
   }),
   created() {
     if (this.appReady) this.initialize()
     let routeName = this.$route.name
-    let viewer = this.viewerTypes.find(v => v.to === routeName)
+    let viewer = this.viewers.find(v => v.to === routeName)
     if (viewer) this.viewer = viewer.value
   },
   computed: {
     selectedViewerTitle() {
       const type = this.viewer
-      const types = this.viewerTypes
+      const types = this.viewers
 
       return types.find(x => x.value === type).text
     },
-    selectedGroupByTitle() {
-      const type = this.groupBy
-      const types = this.groupItems
+    filtersFunctions() {
+      const {filters} = this
 
-      return types.find(x => x.value === type).text
+      let functions = Object.values(filters).filter(filter => filter !== 'all')
+
+      functions = functions.map(filter => {
+        let [key, val] = filter.split(':')
+        return (item) => item[key] !== undefined ? String(item[key]) === val : false
+      })
+
+      return functions
+    },
+    vacations() {
+      const scheduleId = this.$route.params.id
+      const filters = this.filtersFunctions
+
+      let vacations = Object.values(this.$store.getters['vacations/getBySid'](scheduleId))
+
+      if (filters.length) {
+        vacations = vacations.filter(vacation => filters.every(f => f(vacation)))
+      }
+
+      return vacations
     }
   },
   methods: {
@@ -127,11 +195,36 @@ export default {
       const id = this.$route.params.id
       this.schedule = this.schedules[id]
       if (!this.schedule) this.$router.push({name: 'Schedules'})
-
-      if (this.tasksCount === 0) this.groupItems = this.groupItems.filter(g => g.value !== 'tasks')
-      if (this.teamsCount === 0) this.groupItems = this.groupItems.filter(g => g.value !== 'teams')
-      if (this.postsCount === 0) this.groupItems = this.groupItems.filter(g => g.value !== 'posts')
     },
+
+    ask({item, type}) {
+      this.selectedItem = {...item}
+      this.showAsk[type] = true
+    },
+    closeAllAsk() {
+      this.selectedItem = null
+      for (let key in this.showAsk) {
+        this.showAsk[key] = false
+      }
+    },
+    onReject(comment) {
+      this.rejectVacation(this.selectedItem, this.currentUID, comment)
+        .then(() => {
+          this.closeAllAsk()
+        })
+    },
+    onAccept() {
+      this.acceptVacation(this.selectedItem, this.currentUID)
+        .then(() => {
+          this.closeAllAsk()
+        })
+    },
+    onCancel(comment) {
+      this.cancelAcceptVacation(this.selectedItem, this.currentUID, comment)
+        .then(() => {
+          this.closeAllAsk()
+        })
+    }
     // mergeByAlex(data) {
     //   let n = data.length
     //
