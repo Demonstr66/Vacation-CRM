@@ -13,6 +13,7 @@
       </a>
     </div>
     <v-btn
+      v-if="$vuetify.breakpoint.mdAndDown"
       icon
       @click.stop="$emit('clickFilter')"
     >

@@ -28,12 +28,11 @@
       </v-col>
       <v-col>
         <v-select
-          v-model="schedule.year"
+          v-model="year"
           :items="years"
           :rules="[blankCheck]"
           label="Год"
           name="year"
-          @change="onYearChange"
         >
           <template v-slot:prepend>
             <input-icon>mdi-calendar</input-icon>
@@ -49,14 +48,14 @@
         <v-divider></v-divider>
         <div class="text-right">
           <icon-btn-with-tip
-            :disable="!!!schedule.year"
+            :disable="!!!year"
             icon="mdi-refresh"
-            @click="updateExceptions(schedule.year)"
+            @click="updateExceptions(year)"
           >
             Загрузить даты по умолчанию
           </icon-btn-with-tip>
           <icon-btn-with-tip
-            :disable="!!!schedule.year"
+            :disable="!!!year"
             color="primary"
             icon="mdi-calendar-remove-outline"
             @click="deleteExceptionByType('holiday')"
@@ -64,7 +63,7 @@
             Удалить все праздничные дни
           </icon-btn-with-tip>
           <icon-btn-with-tip
-            :disable="!!!schedule.year"
+            :disable="!!!year"
             color="warning"
             icon="mdi-calendar-remove-outline"
             @click="deleteExceptionByType('workday')"
@@ -72,7 +71,7 @@
             Удалить все рабочие выхоные дни
           </icon-btn-with-tip>
           <icon-btn-with-tip
-            :disable="!!!schedule.year"
+            :disable="!!!year"
             color="error"
             icon="mdi-calendar-remove-outline"
             @click="deleteException()"
@@ -85,7 +84,7 @@
     </v-row>
     <v-row no-gutters style="position: relative">
       <v-overlay
-        v-if="exceptionLoading || !!!schedule.year"
+        v-if="exceptionLoading || !!!year"
         :color="exceptionLoading ? 'info' : 'secondary'"
         absolute
         opacity="0.2"
@@ -102,8 +101,8 @@
           :attributes="attributes"
           :columns="$vuetify.breakpoint.mdAndUp ? 2 : 1"
           :is-expanded="$vuetify.breakpoint.mobile"
-          :max-date="minAndMaxDates[1]"
-          :min-date="minAndMaxDates[0]"
+          :max-date="maxDate"
+          :min-date="minDate"
         >
           <template v-slot:day-popover="{day, attributes, dayTitle }">
             <div>
@@ -192,7 +191,6 @@
 </template>
 
 <script>
-import {defSchedule} from "@/plugins/schema";
 import {inputValidations} from "@/mixins/InputValidations";
 import IconBtnWithTip from "@/components/IconBtnWithTip";
 import {getShortDayLabel, normalizeDate} from "@/mixins/Filters";
@@ -201,17 +199,21 @@ import ScheduleChips from "@/components/Modals/ScheduleChips";
 import {ScheduleMethods} from "@/mixins/ScheduleMethods";
 import InputIcon from "@/components/InputIcon";
 import {appReady} from "@/mixins/ComputedData";
+import {Schedule} from "@/plugins/Schedule";
 
 
 export default {
-  mixins: [inputValidations, getShortDayLabel, normalizeDate, ScheduleMethods, appReady],
+  mixins: [inputValidations, getShortDayLabel, normalizeDate, appReady],
   components: {
     InputIcon,
     ScheduleChips,
     IconBtnWithTip,
   },
   data: () => ({
-    schedule: defSchedule(),
+    schedule: null,
+    minDate: null,
+    maxDate: null,
+    year: null,
     title: "",
     exception: [],
     valid: false,
@@ -222,18 +224,19 @@ export default {
     if (this.appReady) this.initialize()
   },
   computed: {
-    minAndMaxDates() {
-      const year = this.schedule.year
-      return [new Date(`${year}-01-01`), new Date(`${year}-12-31`)]
-    },
     attributes() {
+      const {holidays, workdays, minDate, maxDate} = this
+
       return [
         {
           key: 'allDays',
           popover: {
             visibility: 'hover',
           },
-          dates: {}
+          dates: {
+            start: minDate,
+            end: maxDate
+          }
         },
         {
           key: 'weekends',
@@ -261,7 +264,7 @@ export default {
               color: '#2196f3'
             }
           },
-          dates: this.holidays
+          dates: holidays
         },
         {
           key: 'workdays',
@@ -274,7 +277,7 @@ export default {
               color: '#fb8c00'
             }
           },
-          dates: this.workdays
+          dates: workdays
         },
       ]
     },
@@ -285,7 +288,8 @@ export default {
       return years
     },
     holidays() {
-      let exception = this.exception
+      let {exception} = this
+
       exception = exception.filter(x => x.type === 'holiday')
       exception = exception.map(x => x.date)
       exception = exception.sort()
@@ -293,7 +297,7 @@ export default {
       return exception
     },
     workdays() {
-      let exception = this.exception
+      let {exception} = this
       exception = exception.filter(x => x.type === 'workday')
       exception = exception.map(x => x.date)
       exception = exception.sort()
@@ -304,19 +308,19 @@ export default {
   methods: {
     initialize() {
       const id = this.$route.params.id
-      if (id) {
-        const schedule = this.$store.getters['schedules/getById'](id)
 
-        if (!schedule) this.$router.push({name: 'Schedules'})
-        else {
-          this.schedule = Object.assign({}, schedule)
-          this.title = schedule.title
-          this.exception = [...schedule.exception || []]
-          this.$nextTick(() => {
-            this.goto(`${schedule.year}-01-01`)
-          })
-        }
+      if (!id) {
+        return
       }
+
+      const schedule = this.$store.getters['schedules/getById'](id)
+
+      this.schedule = schedule
+      this.title = schedule.title
+      this.exception = schedule.exception || []
+      this.year = schedule.year
+
+      this.goto(`${schedule.year}-01-01`)
     },
     deleteException(exception) {
       if (exception === undefined) {
@@ -328,19 +332,11 @@ export default {
       this.exception = [...exceptions]
     },
     deleteExceptionByType(type) {
-      this.exception = this.schedule.exception.filter(x => x.type !== type)
+      this.exception = this.exception.filter(x => x.type !== type)
     },
     addToException(type, date) {
       date = this.$moment(date).format('YYYY-MM-DD')
       this.exception.push({date, type})
-    },
-    onYearChange() {
-      const year = this.schedule.year
-
-      this.updateExceptions(year)
-      this.$nextTick(() => {
-        this.goto(`${year}-01-01`)
-      })
     },
     updateExceptions(year) {
       this.exceptionLoading = true
@@ -351,29 +347,42 @@ export default {
         })
     },
     goto(date) {
-      this.$refs.datePicker.focusDate(new Date(date))
+      this.$nextTick(() => {
+        this.$refs.datePicker.focusDate(new Date(date))
+      })
     },
     onSubmit() {
       this.$refs.form.validate()
-      if (!this.valid) return
+      const {valid, schedule, exception, title, year} = this
+      if (!valid) return
 
-      let schedule = {...this.schedule}
+      let currentSchedule = new Schedule(schedule)
 
-      schedule.title = this.title
-      schedule.endDate = `${schedule.year}-12-31`
-      schedule.startDate = `${schedule.year}-01-01`
-      schedule.exception = [...this.exception]
+      currentSchedule.title = title
+      currentSchedule.year = year
+      currentSchedule.endDate = `${currentSchedule.year}-12-31`
+      currentSchedule.startDate = `${currentSchedule.year}-01-01`
+      currentSchedule.exception = exception
 
-      const method = !!!schedule.id ? this.createSchedule : this.updateSchedule
 
-      method(schedule)
-        .then((res) => this.$router.go(-1))
-        .catch(() => {})
+      if (currentSchedule.id) {
+        currentSchedule.update({type: 'edit'})
+          .then(this.$router.go(-1))
+      } else {
+        currentSchedule.create()
+          .then(this.$router.go(-1))
+      }
     }
   },
   watch: {
     appReady() {
       this.initialize()
+    },
+    year(val) {
+      this.updateExceptions(val)
+      this.minDate = new Date(`${val}-01-01`)
+      this.maxDate = new Date(`${val}-12-31`)
+      this.goto(`${val}-01-01`)
     }
   }
 };

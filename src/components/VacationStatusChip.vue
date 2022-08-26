@@ -1,27 +1,25 @@
 <template>
   <v-chip
-    :color="vacationStatuses[status].color"
+    :color="statuses[status].color"
     label
     outlined
     small
   >
-    {{ vacationStatuses[status].title }}
+    {{ statuses[status].label }}
   </v-chip>
 </template>
 <script>
-import {vacationStatuses} from "@/mixins/ComputedData";
 
 export default {
   name: 'VacationStatusChip',
-  mixins: [vacationStatuses],
   props: {
     status: {
       type: [String, Number],
       required: true
     },
-    tooltip: {
-      type: Boolean,
-      default: false
+    statuses: {
+      type: Object,
+      required: true
     }
   }
 }

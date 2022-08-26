@@ -34,23 +34,23 @@
           </template>
         </v-text-field
         >
-        <v-text-field
-          v-if="!hideAdditionalFields"
-          v-model="user.templateName"
-          :append-icon="disabled ? 'mdi-lock' : ''"
-          :disabled="disabled"
-          :rules="[fioCheck]"
-          hint="От: "
-          validate-on-blur
-          label="ФИО для шаблона заявления"
-          name="templateName"
-          @change="changed"
-        >
-          <template v-slot:prepend>
-            <v-icon color="blue-grey lighten-1">mdi-account</v-icon>
-          </template>
-        </v-text-field
-        >
+        <!--        <v-text-field-->
+        <!--          v-if="!hideAdditionalFields"-->
+        <!--          v-model="user.templateName"-->
+        <!--          :append-icon="disabled ? 'mdi-lock' : ''"-->
+        <!--          :disabled="disabled"-->
+        <!--          :rules="[fioCheck]"-->
+        <!--          hint="От: "-->
+        <!--          validate-on-blur-->
+        <!--          label="ФИО для шаблона заявления"-->
+        <!--          name="templateName"-->
+        <!--          @change="changed"-->
+        <!--        >-->
+        <!--          <template v-slot:prepend>-->
+        <!--            <v-icon color="blue-grey lighten-1">mdi-account</v-icon>-->
+        <!--          </template>-->
+        <!--        </v-text-field-->
+        <!--        >-->
       </v-card-text>
       <v-card-actions v-if="!hideAction && !disabled && solo">
         <v-spacer></v-spacer>

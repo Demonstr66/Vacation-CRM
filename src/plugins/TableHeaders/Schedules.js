@@ -9,8 +9,13 @@ export default [
   },
   {
     text: 'Статус',
+    value: 'status',
+    sortable: true,
+  },
+  {
+    text: 'Активация',
     value: 'isActive',
-    sortable: false,
+    align: 'center'
   },
   {
     text: 'Действия',

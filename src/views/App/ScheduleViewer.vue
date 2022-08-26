@@ -69,67 +69,40 @@
       </template>
     </app-block-with-right-navbar>
 
-
-    <app-ask
-      :show.sync="showAsk.reject"
-      @submit="onReject"
+    <app-popup
+      ref="rejectPopup"
+      show-comment
     >
       Отпуск будет отклонён. Продолжить?
-    </app-ask>
-    <app-ask
-      :show.sync="showAsk.accept"
-      no-comment
-      @submit="onAccept"
+    </app-popup>
+    <app-popup
+      ref="approvePopup"
     >
       Утвердить отпуск?
-    </app-ask>
-    <app-ask
-      :show.sync="showAsk.cancel"
-      @submit="onCancel"
+    </app-popup>
+    <app-popup
+      ref="cancelPopup"
+      show-comment
     >
       Отозвать решение?
-    </app-ask>
-
+    </app-popup>
   </div>
 </template>
 
 <script>
-import {
-  allVacations,
-  appReady,
-  posts,
-  postsCount,
-  schedules,
-  tasks,
-  tasksCount,
-  teams,
-  teamsCount
-} from "@/mixins/ComputedData";
-import Alert from "@/components/Modals/Alert";
-import {VacationMethods} from "@/mixins/VacationMethods";
-import AppBlockWithRightNavbar from "@/views/App/AppBlockWithRightNavbar";
-import AppAsk from "@/views/App/AppAsk";
-
+import {appReady, schedules} from "@/mixins/ComputedData";
+import AppBlockWithRightNavbar from "@/components/AppBlockWithRightNavbar";
+import AppPopup from "@/components/AppPopup";
 
 export default {
   name: 'ScheduleViewer',
-  components: {AppAsk, AppBlockWithRightNavbar, Alert},
-  mixins: [schedules, allVacations, tasksCount, teamsCount, postsCount, appReady,
-    VacationMethods, teams, tasks, posts],
+  components: {AppPopup, AppBlockWithRightNavbar},
+  mixins: [schedules, appReady],
   data: () => ({
     showFiltersBar: false,
     activeTab: null,
 
-    showAsk: {
-      reject: false,
-      accept: false,
-      cancel: false
-    },
-
-    selectedItem: null,
-
     schedule: null,
-    viewer: 'list',
     filters: {
       type: 'all',
       status: 'all'
@@ -154,17 +127,8 @@ export default {
   }),
   created() {
     if (this.appReady) this.initialize()
-    let routeName = this.$route.name
-    let viewer = this.viewers.find(v => v.to === routeName)
-    if (viewer) this.viewer = viewer.value
   },
   computed: {
-    selectedViewerTitle() {
-      const type = this.viewer
-      const types = this.viewers
-
-      return types.find(x => x.value === type).text
-    },
     filtersFunctions() {
       const {filters} = this
 
@@ -187,6 +151,8 @@ export default {
         vacations = vacations.filter(vacation => filters.every(f => f(vacation)))
       }
 
+      vacations = vacations.filter(vacation => !vacation.isDraft())
+
       return vacations
     }
   },
@@ -196,34 +162,39 @@ export default {
       this.schedule = this.schedules[id]
       if (!this.schedule) this.$router.push({name: 'Schedules'})
     },
-
     ask({item, type}) {
-      this.selectedItem = {...item}
-      this.showAsk[type] = true
-    },
-    closeAllAsk() {
-      this.selectedItem = null
-      for (let key in this.showAsk) {
-        this.showAsk[key] = false
+      switch (type) {
+        case 'reject':
+          this.onReject(item.id);
+          break;
+        case 'approve':
+          this.onApprove(item.id);
+          break;
+        case 'cancel':
+          this.onCancel(item.id);
+          break;
       }
     },
-    onReject(comment) {
-      this.rejectVacation(this.selectedItem, this.currentUID, comment)
-        .then(() => {
-          this.closeAllAsk()
-        })
+    async onReject(id) {
+      let result = await this.$refs.rejectPopup.open()
+
+      if (result) {
+        this.vacations.find(vacation => vacation.id === id).reject(result)
+      }
     },
-    onAccept() {
-      this.acceptVacation(this.selectedItem, this.currentUID)
-        .then(() => {
-          this.closeAllAsk()
-        })
+    async onApprove(id) {
+      let result = await this.$refs.approvePopup.open()
+
+      if (result) {
+        this.vacations.find(vacation => vacation.id === id).approve()
+      }
     },
-    onCancel(comment) {
-      this.cancelAcceptVacation(this.selectedItem, this.currentUID, comment)
-        .then(() => {
-          this.closeAllAsk()
-        })
+    async onCancel(id) {
+      let result = await this.$refs.cancelPopup.open()
+
+      if (result) {
+        this.vacations.find(vacation => vacation.id === id).cancel(result)
+      }
     }
     // mergeByAlex(data) {
     //   let n = data.length

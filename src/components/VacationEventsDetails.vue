@@ -1,11 +1,11 @@
 <template>
   <td :colspan="cols" class="pa-0">
-    <div v-if="events.length" style="max-height: 250px" class="overflow-y-auto ml-2">
+    <div v-if="events.length" class="overflow-y-auto ml-2" style="max-height: 250px">
       <v-timeline
         dense
       >
         <v-timeline-item
-          v-for="(event, idx) in reversedEvents"
+          v-for="(event, idx) in normalizedEvents"
           :key="idx"
 
           fill-dot
@@ -51,7 +51,7 @@
 <script>
 import {getShortUserNameByUID} from "@/mixins/ComputedData";
 import {normalizeDate} from "@/mixins/Filters";
-import VacationRangeLabel from "@/views/App/VacationRangeLabel";
+import VacationRangeLabel from "@/components/VacationRangeLabel";
 
 export default {
   name: 'VacationEventsDetails',
@@ -68,8 +68,8 @@ export default {
     }
   },
   computed: {
-    reversedEvents() {
-      return this.events.reverse()
+    normalizedEvents() {
+      return this.events.sort((a, b) => this.$moment(a.at) > this.$moment(b.at) ? -1 : 0)
     }
   },
   methods: {
@@ -89,8 +89,8 @@ export default {
           return 'Утверждён'
         case 'reject':
           return 'Отклонен'
-        case 'cancelAccept':
-          return 'Утверждение отозвано'
+        case 'cancel':
+          return 'Решение отозвано'
 
         default:
           return type

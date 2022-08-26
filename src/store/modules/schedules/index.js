@@ -1,10 +1,11 @@
 import {defSchedule} from "@/plugins/schema";
 import shortUUID from "short-uuid";
 import {asyncTryDecorator, basePathFunction, isUnique} from "@/plugins/utils";
+import {Schedule} from "@/plugins/Schedule";
 
 const basePath = basePathFunction(`schedules/{wid}`)
 const test = (item, wid) => !!wid && !!item && !!item.year && !!item.title
-const normalize = defSchedule
+const normalize = (args) => new Schedule(args)
 
 export default {
   namespaced: true,
@@ -20,7 +21,10 @@ export default {
   mutations: {
     set: (s, v) => {
       if (!s.ready) s.ready = true
-      s.schedules = Object.freeze(v)
+      for (let sid in v) {
+        v[sid] = new Schedule(v[sid])
+      }
+      s.schedules = v
     },
     setReady: (s, v) => s.ready = v,
     clear: (s) => s.schedules = null
@@ -45,12 +49,12 @@ export default {
 
         const path = basePath(wid)
         const key = shortUUID().new()
-        const data = normalize(schedule, {id: key})
+        const data = normalize({...schedule, id: key})
 
         return dispatch('DB/set', {path, key, data}, {root: true})
       })
     },
-    delete({rootGetters, dispatch}, id) {
+    delete({rootGetters, dispatch}, {id}) {
       return asyncTryDecorator(() => {
         const wid = rootGetters['app/getWID']
         if (!id || !wid) throw new Error('Что-то пошло не так: schedules/delete -> test')

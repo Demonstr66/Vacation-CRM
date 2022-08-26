@@ -1,9 +1,10 @@
 import {defVacation} from "@/plugins/schema";
 import shortUUID from "short-uuid";
 import {asyncTryDecorator, basePathFunction} from "@/plugins/utils";
+import {Vacation} from "@/plugins/Vacation";
 
 const basePath = basePathFunction(`vacations/{wid}`)
-const test = (item, wid) => !!wid && !!item.sid && !!item && !!item.start && !!item.end && !!item.uid
+const test = (item, wid) => !!wid && !!item.sid && !!item.start && !!item.end && !!item.uid
 const normalize = defVacation
 
 export default {
@@ -14,18 +15,17 @@ export default {
   }),
   getters: {
     get: (s) => s.vacations || {},
-    getBySid: (s) => (sid) => s.vacations ? {...s.vacations[sid]} : null,
+    getBySid: (s) => (sid) => s.vacations ? s.vacations[sid] : [],
     getBySidByUid: (s) => (sid, uid) => {
       try {
         let res = {}
-        for(let key in s.vacations[sid]) {
-          const v = s.vacations[sid][key]
-          if (v.uid === uid) res[key] = {...v}
-        }
+        s.vacations[sid].map(vacation => {
+          if (vacation.uid === uid) res[vacation.id] = vacation
+        })
+
 
         return res
-      }
-      catch (e) {
+      } catch (e) {
         return {}
       }
     },
@@ -49,7 +49,12 @@ export default {
   mutations: {
     set: (s, v) => {
       if (!s.ready) s.ready = true
-      s.vacations = Object.freeze(v)
+
+      for (let schedule in v) {
+        v[schedule] = Object.values(v[schedule]).map(item => new Vacation(item))
+      }
+
+      s.vacations = v
     },
     setReady: (s, v) => s.ready = v,
     clear: (s) => s.vacations = null

@@ -1,26 +1,26 @@
 <template>
   <div>
     <icon-btn-with-tip
-      v-if="vacation.status == 1"
+      v-if="status == 1"
       color="success"
       icon="mdi-check"
-      @click.stop="$emit('click', {item: vacation, type: 'accept'})"
+      @click.stop="$emit('click', 'approve')"
     >
       Утвердить
     </icon-btn-with-tip>
     <icon-btn-with-tip
-      v-if="vacation.status == 1"
+      v-if="status == 1"
       color="error"
       icon="mdi-close"
-      @click.stop="$emit('click', {item: vacation, type: 'reject'})"
+      @click.stop="$emit('click', 'reject')"
     >
       Отклонить
     </icon-btn-with-tip>
     <icon-btn-with-tip
-      v-if="vacation.status === 2 || vacation.status === 99"
+      v-if="status === 2 || status === 99"
       color="error"
       icon="mdi-cancel"
-      @click.stop="$emit('click', {item: vacation, type: 'cancel'})"
+      @click.stop="$emit('click', 'cancel')"
     >
       Отозвать решение
     </icon-btn-with-tip>
@@ -33,8 +33,8 @@ export default {
   name: 'VacationTools',
   components: {IconBtnWithTip},
   props: {
-    vacation: {
-      type: Object,
+    status: {
+      type: Number,
       required: true
     }
   }

@@ -11,7 +11,10 @@
       <v-row dense justify="space-between" no-gutters>
         <v-col cols="auto"><span class="font-weight-medium">Статус: </span></v-col>
         <v-col class="ml-2" cols="auto">
-          <VacationStatusChip :status="vacation.status"/>
+          <VacationStatusChip
+            :status="vacation.status"
+            :statuses="statuses"
+          />
         </v-col>
       </v-row>
       <v-row v-if="vacation.statusChangeByUid" dense justify="space-between" no-gutters>
@@ -30,7 +33,7 @@
     </v-card-text>
     <v-card-actions>
       <VacationTools
-        :vacation="vacation"
+        :status="vacation.status"
         @click="(data) => $emit('click', data)"
       />
     </v-card-actions>
@@ -40,9 +43,10 @@
 <script>
 import {getShortUserNameByUID} from "@/mixins/ComputedData";
 import {normalizeDate} from "@/mixins/Filters";
-import VacationStatusChip from "@/views/App/VacationStatusChip";
-import VacationRangeLabel from "@/views/App/VacationRangeLabel";
+import VacationStatusChip from "@/components/VacationStatusChip";
+import VacationRangeLabel from "@/components/VacationRangeLabel";
 import VacationTools from "@/components/ScheduleViewer/VacationTools";
+import {Vacation} from "@/plugins/Vacation";
 
 export default {
   name: 'EventMenu',
@@ -51,6 +55,8 @@ export default {
   props: {
     vacation: {}
   },
-  data: () => ({})
+  data: () => ({
+    statuses: Vacation.statuses
+  })
 }
 </script>

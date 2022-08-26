@@ -83,7 +83,7 @@
           :event="event"
           :root="node.root"
 
-          @click="(data) => $emit('click', data)"
+          @click="(data) => $emit('click', {type: data, id: event.id})"
         />
       </tr>
     </table>

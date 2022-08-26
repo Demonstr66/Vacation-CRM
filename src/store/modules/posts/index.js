@@ -14,6 +14,7 @@ export default {
   }),
   getters: {
     get: (s) => s.posts || {},
+    getById: (s) => (id) => s.posts[id],
     count: (s) => Object.values(s.posts || {}).length,
     isReady: (s) => s.ready
   },

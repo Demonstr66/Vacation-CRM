@@ -5,12 +5,14 @@
       :groups="groups"
       @clickFilter="$emit('showFiltersBar')"
     />
+    <div v-if="!tree.length">Отсутствуют данные</div>
     <the-timeline
+      v-else
       :exception="exception || []"
       :items="tree"
       :year="parseInt(year)"
 
-      @click="(data) => $emit('click', data)"
+      @click="({type, id}) => $emit('click', {type, item: getVacationById(id)})"
     >
     </the-timeline>
   </div>
@@ -58,6 +60,9 @@ export default {
     },
   },
   methods: {
+    getVacationById(id) {
+      return this.vacations.find(v => v.id === id)
+    },
     groupVacationsByUser(vacations) {
       let users = {}
       vacations.map(v => {

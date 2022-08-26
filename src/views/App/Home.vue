@@ -1,7 +1,8 @@
 <template>
   <div>
-    <v-btn @click="test">Success</v-btn>
-    <v-btn @click="tryy">try</v-btn>
+    <v-btn @click="test">test</v-btn>
+    <v-btn @click="get">get</v-btn>
+    <v-btn @click="update">update</v-btn>
   </div>
 </template>
 
@@ -9,23 +10,26 @@
 <script>
 import MainTools from "@/components/user/tools/main";
 import {messageHelper} from "@/mixins/MessageMethods";
-import {user} from "@/mixins/ComputedData";
+import {schedules, user} from "@/mixins/ComputedData";
 import abilityFor from "@/plugins/defineAbilities";
+import {Vacation} from "@/plugins/Vacation";
 
 export default {
   components: {MainTools},
-  mixins: [messageHelper, user],
-  data: () => ({}),
+  mixins: [messageHelper, user, schedules],
+  data: () => ({
+    vacations: null
+  }),
   methods: {
     test() {
+      console.log(this.vacations)
     },
-    tryy() {
-      console.log('#####################################')
-      console.log('#####################################')
-      console.log(this.$ability)
-      console.log('Delete', this.$can('delete', 'User'))
-      console.log('Read', this.$can('update', 'User'))
-      console.log('manage', this.$can('manage', 'all'))
+    async get() {
+      let vacations = this.$store.getters['vacations/get']
+
+      this.vacations = vacations
+    },
+    update() {
     }
   },
 };

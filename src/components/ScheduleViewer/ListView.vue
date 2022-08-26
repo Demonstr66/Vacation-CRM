@@ -49,6 +49,7 @@
         <vacation-status-chip
           :id="'state_' + item.id"
           :status="item.status"
+          :statuses="statuses"
         ></vacation-status-chip>
         <v-tooltip v-if="item.statusChangeByUid" :activator="'#state_'+item.id" bottom>
           <span>
@@ -64,8 +65,8 @@
       <template v-slot:item.action="{item}">
         <RowActions>
           <VacationTools
-            :vacation="item"
-            @click="(data) => $emit('click', data)"
+            :status="item.status"
+            @click="(type) => $emit('click', {type, item: getVacationById(item.id)})"
           />
         </RowActions>
       </template>
@@ -88,10 +89,11 @@ import Alert from "@/components/Modals/Alert";
 import Manage from "@/plugins/TableHeaders/Manage";
 import {VacationMethods} from "@/mixins/VacationMethods";
 import RowActions from "@/components/RowActions";
-import VacationStatusChip from "@/views/App/VacationStatusChip";
+import VacationStatusChip from "@/components/VacationStatusChip";
 import VacationTools from "@/components/ScheduleViewer/VacationTools";
 import VacationEventsDetails from "@/components/VacationEventsDetails";
 import GroupTools from "@/components/ScheduleViewer/GroupTools";
+import {Vacation} from "@/plugins/Vacation";
 
 export default {
   name: "List",
@@ -114,11 +116,11 @@ export default {
       {value: 'post', text: 'Должноcтям'},
       {value: 'team', text: 'Командам'}
     ],
+    statuses: Vacation.statuses
   }),
   computed: {
     tree() {
-      let tree = Object.values(this.vacations)
-
+      let tree = this.vacations
 
       tree = tree.map(node => {
         let user = this.$store.getters['users/getUserById'](node.uid)
@@ -126,11 +128,13 @@ export default {
         return {...node, ...user}
       })
 
-
       return tree
     }
   },
   methods: {
+    getVacationById(id) {
+      return this.vacations.find(v => v.id === id)
+    },
     getGroupHeaderText(val, [groupBy]) {
       switch (groupBy) {
         case 'uid':

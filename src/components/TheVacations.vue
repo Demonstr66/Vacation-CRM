@@ -1,6 +1,6 @@
 <template>
   <v-data-iterator
-    :items="Object.values(schedules)"
+    :items="filteredSchedules"
     hide-default-footer
   >
     <template v-slot:item="{item}">
@@ -71,6 +71,9 @@ export default {
     isModalVisible: false,
   }),
   computed: {
+    filteredSchedules() {
+      return Object.values(this.schedules).filter(schedule => !schedule.isDraft())
+    },
     fields() {
       return [
         {

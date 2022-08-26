@@ -184,14 +184,15 @@ export default {
       this.isExampleLoading = true
 
       let testData = templateFileData
-      for (key in testData) {
+      for (let key in testData) {
         let test = testData[key].test
         testData[key] = typeof test === 'function' ? test() : test
       }
 
       await this.downloadWithDataFile({
         fullPath: file.fullPath,
-        data: testData
+        data: testData,
+        fileName: "Пример заполненного заявления"
       })
 
       this.isExampleLoading = false
