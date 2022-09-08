@@ -39,9 +39,11 @@ export default {
 
         if (!wid) throw new Error('Что-то пошло не так: workspace/create -> !wid')
 
+        const defaultSetting = '{"admins":{"visibility":0,"manageUsers":[],"manageVacations":false,"manageWS":false},"leaders":{"visibility":0,"manageUsers":[],"manageVacations":false,"manageWS":false},"users":{"visibility":0,"manageUsers":[],"manageVacations":[],"manageWS":[]}}'
+
         const path = basePath(wid)
         const key = wid
-        const data = normalize({id: key, owner})
+        const data = normalize({id: key, owner, privacy: defaultSetting})
 
         return dispatch('DB/set', {path, key, data}, {root: true})
       })

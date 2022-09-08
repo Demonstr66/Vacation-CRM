@@ -1,8 +1,9 @@
 <template>
-    <the-vacations
-      :vacations="myVacations"
-      :uid="currentUID"
-    ></the-vacations>
+  <the-vacations
+    :vacations="myVacations"
+    :uid="currentUID"
+  ></the-vacations>
+
 </template>
 
 <script>
@@ -12,7 +13,7 @@ import TheVacations from "@/components/TheVacations";
 export default {
   name: 'Vacations',
   components: {TheVacations},
-  mixins: [ myVacations, currentUID]
+  mixins: [myVacations, currentUID]
 }
 </script>
 

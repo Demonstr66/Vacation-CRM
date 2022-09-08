@@ -2,7 +2,12 @@
   <div>
     <vc-date-picker
       v-model="dates"
-      :attributes="attributes"
+      :attributes="[
+        ...attributes,
+        ...userAttributes,
+        ...exceptionAttributes,
+        $options.WEEKEND_ATTRIBUTES,
+      ]"
       :columns="2"
       :disabled-dates="disableDates"
       :max-date="new Date(`${year}-12-31`)"
@@ -10,20 +15,41 @@
       :select-attribute="{highlight: {fillMode: 'light'}}"
       is-range
     >
-      <template v-slot:day-popover="{dayTitle, attributes}">
-        <div style="max-width: 400px">
-          <div class="text-xs text-gray-300 font-semibold text-center">
-            {{ dayTitle }}
-          </div>
-          <popover-row
-            v-for="attr in attributes"
-            :key="attr.key"
-            :attribute="attr"
+
+      <template v-slot:day-content="{attributesMap, day, dayEvents}">
+        <div
+          :class="{
+            'vc-custom-weekend': attributesMap && attributesMap.weekend,
+            'vc-custom-workday': attributesMap && attributesMap.workday,
+            'vc-custom-holiday': attributesMap && attributesMap.holiday,
+            'vc-custom-disabled': day && day.isDisabled,
+          }"
+          :style="attributesMap && attributesMap.weekends ? 'color: red' : ''"
+          class="vc-day in-month vc-day-box-center-center"
+          v-on="dayEvents"
+        >
+          <span
+            aria-disabled="false"
+            class="vc-day-content vc-focusable"
+            role="button"
+            tabindex="-1"
           >
-            {{ attr.customData.name }}{{ attr.customData.tasks }}:
-            {{ attr.customData.dates.start }} - {{ attr.customData.dates.end }}
-          </popover-row>
+            {{ day.day }}
+          </span>
         </div>
+      </template>
+      <template v-slot:day-popover="{dayTitle, attributes}">
+        <div class="text-xs text-gray-300 font-semibold text-center">
+          {{ dayTitle }}
+        </div>
+        <popover-row
+          v-for="attr in attributes"
+          :key="attr.key"
+          :attribute="attr"
+        >
+          {{ attr.customData.name }}{{ attr.customData.tasks }}:
+          {{ attr.customData.dates.start }} - {{ attr.customData.dates.end }}
+        </popover-row>
       </template>
     </vc-date-picker>
     <v-btn block color="primary" text @click="clearSelection">Сбросить</v-btn>
@@ -31,12 +57,26 @@
 </template>
 <script>
 import PopoverRow from 'v-calendar/lib/components/popover-row.umd.min'
-import {getChiefOf} from "@/mixins/ComputedData";
 
+const colors = ['blue', 'green', 'orange', 'yellow', 'blue', 'indigo', 'pink']
 export default {
   name: 'AddVacationCalendar',
   components: {PopoverRow},
-  mixins: [getChiefOf],
+  WEEKEND_ATTRIBUTES: {
+    key: 'weekend',
+    highlight: {
+      style: {
+        display: 'none'
+      },
+      fillMode: 'outline',
+      contentStyle: {
+        color: 'red'
+      },
+    },
+    dates: {
+      weekdays: [1, 7]
+    }
+  },
   props: {
     year: {
       type: [String, Number],
@@ -44,53 +84,25 @@ export default {
     },
     exception: {
       type: Array,
+      default: () => []
     },
-    value: {
-      type: Object
-    },
-    actually: {
-      type: Boolean,
-      default: false
-    },
+    value: {},
     currentUserVacations: {
-      type: Array
-    },
-    vacations: {
-      type: Array
+      type: Array,
+      default: () => []
     },
     uid: {
       type: String,
       required: true
     }
-
   },
   created() {
-    this.updateAttributes()
+    this.update()
   },
   data: () => ({
     attributes: [],
-    levels: [
-      {id: 0, hidden: false, title: 'Руководители', key: 'chief'},
-      {id: 1, hidden: false, title: 'Коллеги по команде', key: 'team'},
-      {id: 2, hidden: false, title: 'Коллеги по задачам', key: 'task'},
-    ],
-    colors: [
-      'teal',
-      'green',
-      'orange',
-      'yellow',
-      'blue',
-      'indigo',
-      'pink'
-    ]
   }),
   computed: {
-    holidays() {
-      return this.exception?.filter(x => x.type === 'holiday') || []
-    },
-    workdays() {
-      return this.exception?.filter(x => x.type === 'workday') || []
-    },
     dates: {
       get() {
         return this.value
@@ -100,117 +112,38 @@ export default {
       }
     },
     disableDates() {
-      const {actually, currentUserVacations} = this
-      const filteredVacations = currentUserVacations?.filter(x => x.actually === actually)
+      const {currentUserVacations} = this
+      const filteredVacations = currentUserVacations
 
-      return filteredVacations?.map(x => ({
+      return filteredVacations.map(x => ({
         start: new Date(x.start),
         end: new Date(x.end)
       }))
     },
-  },
-  methods: {
-    updateAttributes() {
-      const {vacations, currentUserVacations, holidays, workdays, actually, uid} = this
+    exceptionAttributes() {
+      const {exception} = this
 
-      const user = this.$store.getters['users/getUserById'](uid)
-      let attributes = []
-
-      let chiefs = this.getChiefOf(this.uid)
-
-      let normalizedUsersVacations = vacations?.map(v => {
-        v.lvl = []
-
-        const vacationOwner = this.$store.getters['users/getUserById'](v.uid)
-        v.displayName = vacationOwner.displayName
-
-
-        if (chiefs.indexOf(vacationOwner.uid))
-          v.lvl.push(this.levels.find(lvl => lvl.key === 'chief')['id'])
-        else if (!!vacationOwner.team && vacationOwner.team === user.team)
-          v.lvl.push(this.levels.find(lvl => lvl.key === 'team')['id'])
-
-        if (!user.tasks || user.tasks.length === 0) return v
-        if (!vacationOwner.tasks || vacationOwner.tasks.length === 0) return v
-
-        v.tasks = []
-        user.tasks.map(taskId => {
-          const task = vacationOwner.tasks.find(t => t == taskId)
-          if (!task) return
-
-          v.lvl.push(this.levels.find(lvl => lvl.key === 'task')['id'])
-          v.tasks.push(
-            this.$store.getters['tasks/getTitle'](taskId)
-          )
-        })
-
-        return v
-      })
-      let relevantUsersVacations = normalizedUsersVacations?.filter(v => v.lvl.length !== 0)
-
-      let normalizedLevels = this.levels.map(level => {
-        level.dates = relevantUsersVacations
-          ?.filter(v => v.lvl.some(lvl => lvl === level.id))
-          .map(v => ({
-            start: new Date(v.start),
-            end: new Date(v.end)
-          }))
-
-        return level
-      })
-
-      //Отпуска коллег
-      const colleaguesAttr = normalizedLevels.map(({id, dates}) => ({
-        key: `vacation-${id}`,
-        bar: {
-          color: this.colors[id],
-          style: {
-            width: '100%'
-          },
-          class: ''
-        },
-        dates: dates,
-      }))
-
-      //Отпуска коллег popover
-      const colleaguesPopover = relevantUsersVacations?.map(v => {
-        const dates = {
-          start: v.start,
-          end: v.end
-        }
-
+      return exception.map(({type, date}) => {
         return {
-          key: `popover-${v.id}`,
-          highlight: {
-            color: this.colors[Math.min(v.lvl)],
-            style: {
-              display: 'none'
-            },
-          },
-          popover: {
-            visibility: 'hover'
-          },
-          customData: {
-            name: v.displayName,
-            tasks: v.tasks?.length ? ' [' + v.tasks.join(', ') + ']' : '',
-            dates
-          },
-          dates
+          key: type,
+          dates: new Date(date)
         }
       })
+    },
+    //Мои отпуска
+    userAttributes() {
+      const {currentUserVacations} = this
 
-      //Мои отпуска
-      const userAttr = currentUserVacations
-        ?.filter(v => v.actually === actually)
+      return currentUserVacations
         .map(v => {
           return {
-            key: `myVacation-${v.id}`,
+            key: `userVacations-${v.id}`,
             highlight: {
-              color: !v.actually ? 'green' : 'red',
+              color: 'green',
               fillMode: 'light',
             },
             customData: {
-              name: 'Мой отпуск',
+              name: 'Существующий отпуск',
               tasks: '',
               dates: {
                 start: v.start,
@@ -227,78 +160,233 @@ export default {
             }
           }
         })
+    }
+  },
+  methods: {
+    async update() {
+      const {uid} = this
 
-      let exceptionAttr = [
-        {
-          key: 'weekends',
+      const sid = this.$route.params.id
+
+      const tasks = this.$store.getters['tasks/get']
+
+      const currentUser = this.$store.getters['users/getUserById'](uid)
+
+      const taskColleagues = []
+      if (currentUser.tasks) currentUser.tasks.map(task => {
+        let users = this.$store.getters['users/getUsersByTask'](task)
+          .filter(user => user.uid !== uid)
+        taskColleagues.push(...users)
+      })
+
+
+      const teamColleagues = this.$store.getters['users/getUsersByTeam'](currentUser.team)
+        .filter(user => user.uid !== uid && !taskColleagues.some(user2 => user2.uid === user.uid))
+      let chiefs = await this.$store.dispatch('users/getChiefsOf', currentUser.uid)
+
+      chiefs = chiefs
+        .filter(user => user.uid !== uid)
+        .filter(user => !taskColleagues.some(user2 => user2.uid === user.uid))
+        .filter(user => !teamColleagues.some(user2 => user2.uid === user.uid))
+
+      let taskBar = taskColleagues.map(user => {
+        let vacations = this.$store.getters['vacations/getBySidByUid'](sid, user.uid)
+        vacations = Object.values(vacations)
+          .filter(vacation => !vacation.isDraft() && !vacation.isRejected())
+        let attribute = {
+          key: `vacationTask-${user.uid}`,
+          bar: {
+            color: colors[0],
+            style: {
+              width: '100%'
+            },
+            class: ''
+          },
+          dates: [],
+        }
+        Object.values(vacations).map(({start, end}) => {
+          attribute.dates.push({start, end})
+        })
+
+        return attribute
+      })
+
+      let teamBar = teamColleagues.map(user => {
+        let vacations = this.$store.getters['vacations/getBySidByUid'](sid, user.uid)
+        vacations = Object.values(vacations)
+          .filter(vacation => !vacation.isDraft() && !vacation.isRejected())
+        let attribute = {
+          key: `vacationTeam-${user.uid}`,
+          bar: {
+            color: colors[1],
+            style: {
+              width: '100%'
+            },
+            class: ''
+          },
+          dates: [],
+        }
+        Object.values(vacations).map(({start, end}) => {
+          attribute.dates.push({start, end})
+        })
+
+        return attribute
+      })
+
+      let chiefsBar = chiefs.map(user => {
+        let vacations = this.$store.getters['vacations/getBySidByUid'](sid, user.uid)
+        vacations = Object.values(vacations)
+          .filter(vacation => !vacation.isDraft() && !vacation.isRejected())
+        let attribute = {
+          key: `vacationChiefs-${user.uid}`,
+          bar: {
+            color: colors[2],
+            style: {
+              width: '100%'
+            },
+            class: ''
+          },
+          dates: [],
+        }
+        Object.values(vacations).map(({start, end}) => {
+          attribute.dates.push({start, end})
+        })
+
+        return attribute
+      })
+
+      //Отпуска коллег popover
+      let taskPopover = taskColleagues.map(user => {
+        let vacations = this.$store.getters['vacations/getBySidByUid'](sid, user.uid)
+        vacations = Object.values(vacations)
+          .filter(vacation => !vacation.isDraft())
+
+        let attribute = (dates, vid) => ({
+          key: `taskPopover-${user.uid}-${vid}`,
           highlight: {
+            color: colors[0],
             style: {
               display: 'none'
             },
-            fillMode: 'outline',
-            contentStyle: {
-              color: 'red'
-            },
-            contentClass: 'myClass'
           },
-          dates: {
-            weekdays: [1, 7]
-          }
-        },
-        {
-          key: 'holidays',
+          popover: {
+            visibility: 'hover'
+          },
+          customData: {
+            name: user.displayName,
+            tasks: '[ ' + user.tasks
+              ?.filter(taskId => currentUser.tasks.includes(taskId))
+              .map(task => tasks[task].title)
+              .join(', ') + ' ]'
+            ,
+            dates
+          },
+          dates
+        })
+
+        const attributes = Object.values(vacations).map(({start, end, id}) => {
+          return attribute({start, end}, id)
+        })
+
+        return attributes
+      })
+
+      //Отпуска коллег popover
+      let teamPopover = teamColleagues.map(user => {
+        let vacations = this.$store.getters['vacations/getBySidByUid'](sid, user.uid)
+        vacations = Object.values(vacations)
+          .filter(vacation => !vacation.isDraft())
+
+        let attribute = (dates, vid) => ({
+          key: `teamPopover-${user.uid}-${vid}`,
           highlight: {
+            color: colors[1],
             style: {
               display: 'none'
             },
-            fillMode: 'outline',
-            contentStyle: {
-              color: '#2196f3'
-            }
           },
-          dates: holidays.map(d => new Date(d.date))
-        },
-        {
-          key: 'workdays',
+          popover: {
+            visibility: 'hover'
+          },
+          customData: {
+            name: user.displayName,
+            dates
+          },
+          dates
+        })
+
+        const attributes = Object.values(vacations).map(({start, end, id}) => {
+          return attribute({start, end}, id)
+        })
+
+        return attributes
+      })
+
+      //Отпуска коллег popover
+      let chiefsPopover = chiefs.map(user => {
+        let vacations = this.$store.getters['vacations/getBySidByUid'](sid, user.uid)
+        vacations = Object.values(vacations)
+          .filter(vacation => !vacation.isDraft())
+
+        let attribute = (dates, vid) => ({
+          key: `chiefPopover-${user.uid}-${vid}`,
           highlight: {
+            color: colors[2],
             style: {
               display: 'none'
             },
-            fillMode: 'outline',
-            contentStyle: {
-              color: '#fb8c00'
-            }
           },
-          dates: workdays.map(d => new Date(d.date))
-        },
-      ]
+          popover: {
+            visibility: 'hover'
+          },
+          customData: {
+            name: user.displayName,
+            dates
+          },
+          dates
+        })
 
-      if (userAttr) attributes.push(...userAttr)
-      if (colleaguesAttr) attributes.push(...colleaguesAttr)
-      if (colleaguesPopover) attributes.push(...colleaguesPopover)
-      if (exceptionAttr) attributes.push(...exceptionAttr)
+        const attributes = Object.values(vacations).map(({start, end, id}) => {
+          return attribute({start, end}, id)
+        })
 
+        return attributes
+      })
+
+
+      let attributes = [...taskBar, ...teamBar, ...chiefsBar]
+      taskPopover.map(arr => attributes.push(...arr))
+      teamPopover.map(arr => attributes.push(...arr))
+      chiefsPopover.map(arr => attributes.push(...arr))
       this.attributes = attributes
     },
-    setCssVariable() {
-      let root = document.documentElement;
-      root.style.setProperty('--min-h-day', "47px");
-    },
     clearSelection() {
-      this.dates = {}
+      this.dates = null
     },
-  },
-  watch: {
-    actually() {
-      this.updateAttributes()
-    }
   }
 }
 </script>
 
 <style lang="css">
 :root {
-  --min-h-day: 47px;
+  --min-h-day: 50px;
+}
+
+.vc-custom-weekend {
+  color: red;
+}
+
+.vc-custom-workday {
+  color: #fb8c00;
+}
+
+.vc-custom-holiday {
+  color: #2196f3;
+}
+
+.vc-custom-disabled {
+  font-style: italic !important;
+  opacity: 0.5;
 }
 
 .vc-day {
@@ -306,12 +394,12 @@ export default {
 }
 
 .vc-bars {
-  transform: translateY(50%);
   width: 100% !important;
   flex-direction: column !important;
 }
 
 .vc-bar {
+  margin-top: 1px;
   height: 5px;
 }
 
@@ -331,7 +419,5 @@ export default {
   margin-top: 10px;
 }
 
-.is-disabled {
-  font-style: italic !important;
-}
+
 </style>

@@ -11,7 +11,7 @@
 <script>
 
 export default {
-  name: 'VacationStatusChip',
+  name: 'AppStatusChip',
   props: {
     status: {
       type: [String, Number],

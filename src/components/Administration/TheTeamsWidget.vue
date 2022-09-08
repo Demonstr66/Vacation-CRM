@@ -15,13 +15,13 @@
       </icon-btn-with-tip>
 
       <icon-btn-with-tip icon="mdi-unfold-less-horizontal" @click="collapseAll">
-        Закрыть все
+        Свернуть все
       </icon-btn-with-tip>
     </div>
     <v-divider></v-divider>
     <v-treeview
       :active="active"
-      :items="tree"
+      :items="sortedTree"
       :open.sync="open"
     >
       <template v-slot:label="{item}">
@@ -43,20 +43,18 @@
       </template>
       <template v-slot:append="{item}">
         <div
-          v-if="item.children && $can('mange', 'Task')"
-          style="z-index: 1000"
         >
-          <v-btn v-if="!item.root" color="error" icon small @click.stop="onDelete(item)">
+          <v-btn v-if="!item.root" color="error" icon small @click.stop="deleteTeam(item)">
             <v-icon>
               mdi-minus-circle-outline
             </v-icon>
           </v-btn>
-          <v-btn v-if="!item.root" color="info" icon small @click.stop="onEdit(item)">
+          <v-btn v-if="!item.root" color="info" icon small @click.stop="editTeam(item)">
             <v-icon>
               mdi-pencil-circle-outline
             </v-icon>
           </v-btn>
-          <v-btn color="success" icon small @click.stop="addTeam(item.id)">
+          <v-btn color="success" icon small @click.stop="createTeam(item.id)">
             <v-icon>
               mdi-plus-circle-outline
             </v-icon>
@@ -64,227 +62,156 @@
         </div>
       </template>
     </v-treeview>
-    <Alert
-      :show="teamEditor"
-      :submit-disable="!teamEditorFormValid"
-      title="Настройки команды"
-      @cancel="closeTeamEditor"
-      @submit="teamEditorSubmit"
+
+    <app-popup
+      ref="editPopup"
     >
-      <v-form ref="teamEditorForm" v-model="teamEditorFormValid">
-        <v-text-field v-show="false" v-model="editingItem.id"></v-text-field>
-        <v-text-field v-show="false" v-model="editingItem.parent"></v-text-field>
-        <v-text-field
-          v-model="editingItem.title"
-          :rules="[blankCheck]"
+      <template v-slot:default="{data, setResData, setSubmitDisable}">
+        <v-form v-if="data" @input="(val) => setSubmitDisable(!val)">
+          <v-text-field
+            :rules="[blankCheck]"
+            :value="data.title"
+            dense
+            flat
+            placeholder="Название команды"
+            single-line
+
+            @change="(val) => setResData('title', val)"
+          ></v-text-field>
+          <v-select
+            :items="Object.values(users)"
+            :value="data.leaderId"
+            clearable
+            item-text="fullName"
+            item-value="uid"
+            placeholder="Выберите лидера"
+            @change="(val) => setResData('leaderId', val)"
+          >
+          </v-select>
+        </v-form>
+      </template>
+    </app-popup>
+    <app-popup
+      ref="deletePopup"
+    >
+      <template v-slot:default="{data, setResData}">
+        Команда
+        <span v-if="data" class="font-weight-bold">
+          {{ data.title }}
+        </span>
+        будет удалена, продолжить?
+        <v-checkbox
+          v-if="data && data.children && data.children.length > 0"
           dense
-          flat
-          placeholder="Название команды"
-          single-line
-        ></v-text-field>
-        <v-select
-          v-model="editingItem.leaderId"
-          :items="Object.values(users)"
-          clearable
-          item-text="fullName"
-          item-value="uid"
-          placeholder="Выберите лидера"
-        >
-        </v-select>
-      </v-form>
-    </Alert>
-    <Alert
-      :show="deletingAlert"
-      @cancel="closeDeletingAlert"
-      @submit="deleteItems"
-    >
-      Команда <span class="font-weight-bold">{{
-        deletingItems ? teams[deletingItems[0]].title :
-          ''
-      }}</span>
-      будет удалена,
-      продолжить?
-      <v-checkbox
-        v-if="deletingItems && deletingItems.length > 1"
-        v-model="deleteInnerTeams"
-        dense
-        hide-details
-        label="Удалить вложенные команды?"
-      ></v-checkbox>
-    </Alert>
+          hide-details
+          label="Удалить вложенные команды?"
+          @change="(val) => setResData('deleteChildren', val)"
+        ></v-checkbox>
+      </template>
+    </app-popup>
   </base-widget>
 </template>
 
 <script>
-import {defTeam} from "@/plugins/schema";
 import {getShortUserNameByUID, teams, users, workspace} from '@/mixins/ComputedData';
-import ListWithAdd from "@/components/Administration/BaseListWidget";
 import {getUserNameById} from "@/mixins/dataHelper";
 import BaseWidget from "@/components/Administration/BaseWidget";
-import Alert from "@/components/Modals/Alert";
 import {inputValidations} from "@/mixins/InputValidations";
 import IconBtnWithTip from "@/components/IconBtnWithTip";
-import {TeamMethods} from "@/mixins/TeamMethods";
-
-function treesIndexes(tree) {
-  console.log('tree: ', tree)
-  let ids = []
-  const f = (d) => {
-    ids.push(d.id)
-    if (!d.children || !d.children.length) return
-    d.children.forEach(f)
-  }
-
-  f(tree)
-
-  return ids
-}
+import AppPopup from "@/components/AppPopup";
+import {Team} from "@/plugins/servises/Team";
 
 export default {
-  mixins: [teams, TeamMethods, getUserNameById, users, workspace, inputValidations,
+  mixins: [teams, getUserNameById, users, workspace, inputValidations,
     getShortUserNameByUID],
   components: {
+    AppPopup,
     IconBtnWithTip,
-    Alert,
     BaseWidget,
-    ListWithAdd
   },
   data: () => ({
-    deletingAlert: false,
-    deletingItems: null,
-    deleteInnerTeams: false,
-    teamEditor: false,
-    teamEditorFormValid: false,
-    editingItem: {
-      id: null,
-      title: null,
-      leaderId: null,
-      parent: null
-    },
     sort: 0,
     open: [],
     active: []
   }),
   computed: {
     tree() {
-      const sort = this.sort
-      const teams = Object.freeze({...this.teams})
-      const keys = Object.keys(teams)
-      const values = Object.values(teams)
+      const {teams, workspace} = this
 
-      let tree = {...this.workspace, children: [], root: true, leaderId: ''}
-      tree.leaderId = tree.owner
-      let tempTeams = [...values]
+      let tree = {...workspace, children: [], root: true, leaderId: workspace.owner}
 
-      tempTeams = tempTeams.map(t => {
-        t.children = [];
-        return t
-      })
-      tempTeams.map((t, index) => {
-        if (t.parent === '') return
+      let tempTeams = {...teams}
 
-        const idx = keys.findIndex(i => t.parent === i)
-        if (idx === -1) return
-        tempTeams[idx].children.push(index)
-      })
-      tempTeams = tempTeams.map(t => {
-        t.children = t.children.map(c => tempTeams[c]);
-        return t
-      })
-      tempTeams = tempTeams.filter(t => t.parent == '')
-      tree.children.push(...tempTeams)
-      if (sort > 0) tree = this.sortChildren(tree)
-      return [{...tree}]
+      for (let id in tempTeams) {
+        let team = tempTeams[id]
+        let parent = team.parent
+
+        if (parent === '') continue
+
+        if (!teams[parent].children) tempTeams[parent].children = []
+        if (!tempTeams[parent].children.find(child => child.id === team.id)) {
+          tempTeams[parent].children.push(team)
+        }
+      }
+
+      tree.children.push(...Object.values(tempTeams).filter(t => t.parent === ''))
+
+      return [tree]
+    },
+    sortedTree() {
+      const {sort, tree} = this
+      if (sort === 0) return tree
+
+      return [this.sortChildren(tree[0])]
     }
   },
   methods: {
-    compare(a, b) {
-      return this.sort == 1 ? a > b : a < b
+    compare(item1, item2) {
+      let a = item1.title, b = item2.title
+      return (this.sort === 1 ? a > b : a < b) ? 0 : -1
     },
-    sortChildren(treeItem) {
-      if (treeItem.children && treeItem.children.length) {
-        treeItem.children = treeItem.children.sort((a, b) =>
-          this.compare(a.title, b.title)
-            ? 0
-            : -1
-        )
-        treeItem.children.forEach(this.sortChildren)
+    sortChildren(node) {
+      if (!node.children || !node.children.length) {
+        return {...node}
       }
 
-      return treeItem
+      let children = [...node.children]
+      children = children.sort(this.compare)
+      children.forEach(this.sortChildren)
+      return Object.assign({}, node, {children})
     },
     toggleSort() {
       this.sort = (this.sort + 1) % 3
     },
     expandAll() {
-      this.open = treesIndexes(this.tree[0])
+      this.open = [...Object.keys(this.teams), this.workspace.id]
     },
     collapseAll() {
       this.open = []
     },
-    console(val = "") {
-      console.log(val)
-    },
-    showTeamEditor() {
-      this.teamEditor = true
-    },
-    closeTeamEditor() {
-      this.$refs.teamEditorForm.reset()
-      this.teamEditor = false
-    },
-    showDeletingAlert() {
-      this.deletingAlert = true
-    },
-    closeDeletingAlert() {
-      this.deletingAlert = false
-      this.deletingItems = null
-      this.deleteInnerTeams = false
-    },
-    addTeam(parent) {
+
+    createTeam(parent) {
       if (parent === this.workspace.id) parent = ''
-      this.editingItem.parent = parent
 
-      this.showTeamEditor()
+      this.editTeam({parent})
     },
-    teamEditorSubmit() {
-      const team = defTeam(this.editingItem);
-
-      if (!team.id) this.createTeam(team)
-      else this.updateTeam(team)
-
-      this.closeTeamEditor()
-    },
-    onDelete(item) {
-      this.deletingItems = treesIndexes(item)
-      this.showDeletingAlert()
-    },
-    deleteItems() {
-      let ids = this.deletingItems
-      if (this.deleteInnerTeams) ids.map(id => this.deleteTeam(id))
-      else {
-        const [id] = ids.splice(0, 1)
-        const parent = this.teams[id].parent
-        ids.map(t => {
-          let team = this.teams[t]
-          if (team.parent === id) {
-            team.parent = parent
-            this.silentSaveTeam(false, team)
-          }
-        })
-
-        this.deleteTeam(id)
+    async editTeam(item) {
+      let result = await this.$refs.editPopup.open(item)
+      if (result) {
+        if (item.id) {
+          Team.update(Object.assign(item, result.data))
+        } else {
+          Team.create(Object.assign(item, result.data))
+        }
       }
-      this.closeDeletingAlert()
     },
-    onEdit(item) {
-      this.editingItem = {
-        id: item.id,
-        title: item.title,
-        leaderId: item.leaderId,
-        parent: item.parent
+    async deleteTeam(item) {
+      let result = await this.$refs.deletePopup.open(item)
+
+      if (result) {
+        Team.delete(item.id, !!result.data.deleteChildren)
       }
-      this.showTeamEditor()
-    }
+    },
   },
 };
 </script>

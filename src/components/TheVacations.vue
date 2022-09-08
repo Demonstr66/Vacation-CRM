@@ -2,7 +2,15 @@
   <v-data-iterator
     :items="filteredSchedules"
     hide-default-footer
+    style="background: inherit"
   >
+    <template v-slot:no-data>
+      <app-base-sheet class="text-center my-5 subtitle-1" style="color: black;">
+        <span>
+          Отсутсвуют данные
+        </span>
+      </app-base-sheet>
+    </template>
     <template v-slot:item="{item}">
       <base-widget
         :title="item.title"
@@ -48,6 +56,7 @@ import TheCalendar from "@/components/TheCalendar";
 import {schedules} from "@/mixins/ComputedData";
 import BaseWidget from "@/components/Administration/BaseWidget";
 import IconBtnWithTip from "@/components/IconBtnWithTip";
+import AppBaseSheet from "@/layouts/AppBaseSheet";
 
 export default {
   name: 'TheVacations',
@@ -61,6 +70,7 @@ export default {
   },
   mixins: [schedules],
   components: {
+    AppBaseSheet,
     IconBtnWithTip,
     BaseWidget,
     TheCalendar,

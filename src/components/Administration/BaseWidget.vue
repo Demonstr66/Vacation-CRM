@@ -1,28 +1,29 @@
 <template>
-  <v-card
-    :outlined="outlined"
-    :elevation="isMobile ? 2 : 0"
-    class="pa-0"
-    :class="{ 'ma-3': isMobile }"
-    :style="$vuetify.breakpoint.smAndUp ? '' : 'width: -webkit-fill-available'"
-  >
-    <v-card-title v-if="title != ''" class="justify-center pb-0" :title="title">
-      {{ title | truncate }}
-    </v-card-title>
-    <v-card-text class="justify-center pb-0">
-      <slot></slot>
-    </v-card-text>
-  </v-card>
+  <app-base-sheet>
+    <v-card
+      class="pa-0"
+      flat
+    >
+      <v-card-title v-if="title != ''" :title="title" class="justify-center pb-0">
+        {{ title | truncate }}
+      </v-card-title>
+      <v-card-text class="justify-center pb-0">
+        <slot></slot>
+      </v-card-text>
+    </v-card>
+  </app-base-sheet>
 </template>
 
 <script>
 import IconBtnWithTip from "@/components/IconBtnWithTip";
+import AppBaseSheet from "@/layouts/AppBaseSheet";
+
 export default {
-  components: {IconBtnWithTip},
+  components: {AppBaseSheet, IconBtnWithTip},
   props: {
     title: {
-      type:String,
-      default:"",
+      type: String,
+      default: "",
     },
     outlined: {
       type: Boolean,
@@ -39,7 +40,7 @@ export default {
     truncate(val) {
       const max = 35
       if (val.length <= max) return val
-      return val.slice(0, max-3) + '...'
+      return val.slice(0, max - 3) + '...'
     }
   }
 };

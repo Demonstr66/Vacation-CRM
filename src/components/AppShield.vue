@@ -1,24 +1,27 @@
 <template>
-  <v-sheet rounded class="pa-2 ma-2" elevation="2" max-width="200px">
+  <app-base-sheet :style="$vuetify.breakpoint.smAndDown ? 'max-width: 200px' : ''">
     <div class="d-flex justify-space-between">
       <span v-if="!!header">
-        {{header}}
+        {{ header }}
       </span>
       <v-icon v-if="!!icon" :color="iconColor">
         {{ icon }}
       </v-icon>
     </div>
     <span class="headline primary--text font-weight-bold mx-2">
-      {{text}}
+      {{ text }}
     </span><br>
     <small v-if="!!footer">
-      {{footer}}
+      {{ footer }}
     </small>
-  </v-sheet>
+  </app-base-sheet>
 </template>
 <script>
+import AppBaseSheet from "@/layouts/AppBaseSheet";
+
 export default {
   name: 'app-shield',
+  components: {AppBaseSheet},
   props: {
     icon: {
       type: String,

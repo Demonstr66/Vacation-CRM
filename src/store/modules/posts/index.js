@@ -45,7 +45,7 @@ export default {
         if (!isUnique(post, Object.values(getters.get))) throw new Error('Должность уже существет')
 
         const path = basePath(wid)
-        const key = shortUUID().new()
+        const key = post.id || shortUUID().new()
         const data = normalize(post, {id: key})
 
         return dispatch('DB/set', {path, key, data}, {root: true})
@@ -58,7 +58,8 @@ export default {
 
         const path = basePath(wid)
         const key = id
-
+        
+        dispatch('users/deletePostFromUsers', key, {root: true})
         return dispatch('DB/delete', {path, key}, {root: true})
       })
     },

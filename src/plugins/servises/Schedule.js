@@ -1,9 +1,4 @@
-import {Base} from "@/plugins/Base";
-import {dataToGenerateFile} from "@/plugins/schema";
-import store from "@/store";
-import {Vacation} from "@/plugins/Vacation";
-
-const moment = require('moment')
+import {Base} from "@/plugins/servises/Base";
 
 export class Schedule extends Base {
   static statuses = {
@@ -11,27 +6,27 @@ export class Schedule extends Base {
     1: {label: 'Доступен для редактирования', color: 'warning', icon: 'mdi-help'},
     2: {label: 'Утверждено', color: 'success', icon: 'mdi-check'},
   }
+  static schema = {
+    id: '', title: '',
 
-  id = ''
-  title = ''
+    startDate: '', endDate: '', year: '',
 
-  startDate = ''
-  endDate = ''
-  year = ''
+    status: 0, isActive: false,
 
-  status = 0
-  isActive = false
-
-  exception = []
-  events = []
+    exception: '',
+    events: '',
+  }
 
   constructor(args) {
     super({
-      save: 'schedules/update',
-      delete: 'schedules/delete',
-      create: 'schedules/create',
+      save: 'schedules/update', delete: 'schedules/delete', create: 'schedules/create',
     })
-    Object.assign(this, args)
+
+    Object.assign(this, Schedule.schema, args)
+  }
+
+  static normalize(...args) {
+    return Base.normalize(Schedule.schema, args);
   }
 
   isDraft() {

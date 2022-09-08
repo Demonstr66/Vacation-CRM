@@ -1,5 +1,6 @@
 <template>
   <v-tooltip
+    v-model="value"
     :bottom="bottom"
     :color="tooltipcolor ? tooltipcolor : ''"
     transition="fade-transition"
@@ -7,14 +8,18 @@
     <template v-slot:activator="{ on, attrs }">
       <v-btn
         :class="btnClass"
-        :color="fab ? 'white' : ''"
+        :color="fab ? 'white' : color"
         :disabled="disable"
         :fab="fab"
         :icon="!fab"
         :loading="loading"
         :small="fab || small"
+        :tile="tile"
+        :outlined="outlined"
+        :rounded="rounded"
+        :style="btnStyle"
         v-bind="attrs"
-        @click="$emit('click', $event)"
+        @click="onClick"
         v-on="on"
       >
         <v-icon :color="color"> {{ icon }}</v-icon>
@@ -43,6 +48,10 @@ export default {
       type: String,
       default: "",
     },
+    btnStyle: {
+      type: String,
+      default: "",
+    },
     fab: {
       type: Boolean,
       default: false,
@@ -58,6 +67,27 @@ export default {
     type: {
       type: String,
       default: 'button'
+    },
+    outlined: {
+      type: Boolean,
+      default: false
+    },
+    tile: {
+      type: Boolean,
+      default: false
+    },
+    rounded: {
+      type: Boolean,
+      default: false
+    },
+  },
+  data: () => ({
+    value: false
+  }),
+  methods: {
+    onClick(e) {
+      this.value = false
+      this.$emit('click', e)
     }
   }
 };

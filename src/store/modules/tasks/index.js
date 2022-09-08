@@ -59,6 +59,7 @@ export default {
         const path = basePath(wid)
         const key = id
 
+        dispatch('users/deleteTaskFromUsers', key, {root: true})
         return dispatch('DB/delete', {path, key}, {root: true})
       })
     },
@@ -89,7 +90,7 @@ export default {
 
       dispatch('DB/unsubscribe', {path}, {root: true})
     },
-    
+
     addMultiple({dispatch, rootGetters}, tasks) {
       return asyncTryDecorator(() => {
         const wid = rootGetters['app/getWID']

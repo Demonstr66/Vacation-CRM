@@ -3,7 +3,7 @@ import shortUUID from "short-uuid";
 import {asyncTryDecorator, basePathFunction, isUnique} from "@/plugins/utils";
 
 const basePath = basePathFunction(`workspaces/{wid}/teams`)
-const test = (item, wid) => !!wid && !!item  && !!item.title
+const test = (item, wid) => !!wid && !!item && !!item.title
 const normalize = defTeam
 
 export default {
@@ -33,9 +33,6 @@ export default {
       dispatch('unsubscribe')
       commit('clear')
     },
-    get({}) {
-
-    },
     create({dispatch, rootGetters, getters}, team) {
       return asyncTryDecorator(() => {
         const wid = rootGetters['app/getWID']
@@ -44,7 +41,7 @@ export default {
         if (!isUnique(team, Object.values(getters.get))) throw new Error('Команда уже существет')
 
         const path = basePath(wid)
-        const key = shortUUID().new()
+        const key = team.id || shortUUID().new()
         const data = normalize(team, {id: key})
 
         return dispatch('DB/set', {path, key, data}, {root: true})
@@ -58,6 +55,7 @@ export default {
         const path = basePath(wid)
         const key = id
 
+        dispatch('users/deleteTeamFromUsers', key, {root: true})
         return dispatch('DB/delete', {path, key}, {root: true})
       })
     },

@@ -1,6 +1,8 @@
 <template>
   <div>
     <v-data-table
+      :custom-filter="filter"
+      :search="JSON.stringify(filters)"
       :expanded="expanded"
       :group-by.sync="groupBy"
       :headers="headers"
@@ -11,7 +13,6 @@
         <group-tools
           v-model="groupBy"
           :groups="groups"
-          @clickFilter="$emit('showFiltersBar')"
         />
       </template>
       <template v-slot:expanded-item="{ headers, item }">
@@ -32,7 +33,7 @@
         </td>
       </template>
       <template v-slot:item.uid="{item}">
-        <div>
+        <div class="text-no-wrap">
           {{ users[item.uid].displayName }}
         </div>
       </template>
@@ -45,28 +46,27 @@
           <span class="font-weight-bold">{{ item.end | normalizeDate }}</span>
         </div>
       </template>
-      <template v-slot:item.approved="{item}">
+      <template v-slot:item.status="{item}">
         <vacation-status-chip
-          :id="'state_' + item.id"
           :status="item.status"
           :statuses="statuses"
         ></vacation-status-chip>
-        <v-tooltip v-if="item.statusChangeByUid" :activator="'#state_'+item.id" bottom>
-          <span>
-              {{ getShortUserNameByUID(item.statusChangeByUid) }}:
-              {{ $moment(item.statusChangeAt).format('YYYY-MM-DD HH:mm') }}
-          </span>
-          <br/>
-          <span v-if="item.comment" class="font-italic">
-            {{ item.comment }}
-          </span>
-        </v-tooltip>
+      </template>
+      <template v-slot:item.comment="{value}">
+              <span v-if="value" class="font-italic font-weight-light">
+                {{ value }}
+              </span>
+        <span v-else>
+                Нет
+              </span>
       </template>
       <template v-slot:item.action="{item}">
         <RowActions>
           <VacationTools
             :status="item.status"
-            @click="(type) => $emit('click', {type, item: getVacationById(item.id)})"
+            @approve="approveVacation(item.id)"
+            @reject="rejectVacation(item.id)"
+            @cancel="cancelVacation(item.id)"
           />
         </RowActions>
       </template>
@@ -89,11 +89,11 @@ import Alert from "@/components/Modals/Alert";
 import Manage from "@/plugins/TableHeaders/Manage";
 import {VacationMethods} from "@/mixins/VacationMethods";
 import RowActions from "@/components/RowActions";
-import VacationStatusChip from "@/components/VacationStatusChip";
+import VacationStatusChip from "@/components/AppStatusChip";
 import VacationTools from "@/components/ScheduleViewer/VacationTools";
 import VacationEventsDetails from "@/components/VacationEventsDetails";
 import GroupTools from "@/components/ScheduleViewer/GroupTools";
-import {Vacation} from "@/plugins/Vacation";
+import {Vacation} from "@/plugins/servises/Vacation";
 
 export default {
   name: "List",
@@ -103,10 +103,14 @@ export default {
     VacationTools, VacationStatusChip, RowActions, Alert, IconBtnWithTip
   },
   mixins: [schedules, vacationsBySid, lowerCase, getShortDayLabel, normalizeDate, users,
-    currentUID, appReady, VacationMethods, getShortUserNameByUID, posts, teams],
+    currentUID, appReady, getShortUserNameByUID, posts, teams],
   props: {
     vacations: {},
+    filters: {
+      type: Array
+    }
   },
+  inject: ['rejectVacation', 'cancelVacation', 'approveVacation'],
   data: () => ({
     headers: Manage,
     expanded: [],
@@ -122,16 +126,16 @@ export default {
     tree() {
       let tree = this.vacations
 
-      tree = tree.map(node => {
-        let user = this.$store.getters['users/getUserById'](node.uid)
-
-        return {...node, ...user}
-      })
-
       return tree
     }
   },
   methods: {
+    filter(value, json, item) {
+      const {filters} = this
+      if (!filters || !filters.length) return true
+
+      return filters.every(f => f(item))
+    },
     getVacationById(id) {
       return this.vacations.find(v => v.id === id)
     },

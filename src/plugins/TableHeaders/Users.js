@@ -1,43 +1,42 @@
 export default [
   {
     text: 'Имя',
-    value: 'uid',
+    value: 'fullName',
     cellClass: 'pa-0 px-2',
     class: 'text-no-wrap',
     align: 'start',
     groupable: false
   },
+  // {
+  //   text: 'Должность',
+  //   value: 'post',
+  //   class: 'text-no-wrap',
+  //   align: 'center',
+  // },
   {
-    text: 'Даты',
-    value: 'start',
+    text: 'Команда',
+    value: 'team',
     class: 'text-no-wrap',
     align: 'center',
   },
   {
-    text: 'Дней',
-    value: 'days',
-    class: 'text-no-wrap',
+    text: 'Задачи',
+    value: 'tasks',
     align: 'center',
+    class: 'text-no-wrap',
+    groupable: false
   },
   {
     text: 'Статус',
-    value: 'status',
+    value: 'active',
     align: 'center',
     class: 'pa-0 text-no-wrap',
     cellClass: 'fit-content',
-  },
-  {
-    text: 'Комментарий',
-    value: 'comment',
-    align: 'center',
-    class: 'pa-0 text-no-wrap',
-    cellClass: 'fit-content',
-    sortable: false,
   },
   {
     text: '',
     value: 'action',
-    align: 'end',
+    align: 'center',
     cellClass: 'px-0 fit-content border-left',
     sortable: false,
     groupable: false

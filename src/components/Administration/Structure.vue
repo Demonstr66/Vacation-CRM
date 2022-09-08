@@ -1,15 +1,17 @@
 <template>
-  <v-row>
-    <v-col cols="12" md="6" lg="4" xl="3">
-      <teams></teams>
-    </v-col>
-    <v-col cols="12" md="6" lg="4" xl="3">
-      <tasks></tasks>
-    </v-col>
-    <v-col cols="12" md="6" lg="4" xl="3">
-      <posts></posts>
-    </v-col>
-  </v-row>
+  <div class="mt-1">
+    <v-row no-gutters>
+      <v-col cols="12" md="6" lg="4" xl="3">
+        <teams></teams>
+      </v-col>
+      <v-col cols="12" md="6" lg="4" xl="3">
+        <tasks class="mb-1"></tasks>
+      </v-col>
+      <v-col cols="12" md="6" lg="4" xl="3" offset="0" offset-md="6" offset-lg="0">
+        <posts></posts>
+      </v-col>
+    </v-row>
+  </div>
 </template>
 
 <script>
@@ -21,6 +23,3 @@ export default {
   components: {Teams, Tasks, Posts},
 };
 </script>
-
-<style lang="scss" scoped>
-</style>

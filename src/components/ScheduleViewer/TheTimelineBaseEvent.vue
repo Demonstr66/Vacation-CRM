@@ -2,21 +2,22 @@
   <div
     v-ripple
     :class="{
-        'event-actually': event.actually,
         'overflow-hidden': root
       }"
     class="event"
     @click="show"
   >
-    <v-badge
-      v-if="!root"
-      :color="currentStatus.color"
-      :icon="currentStatus.icon"
-      bordered
-      class="badge"
-      overlap
-    >
-    </v-badge>
+    <div class="badge-wrapper">
+      <v-badge
+        v-if="!root"
+        :color="currentStatus.color"
+        :icon="currentStatus.icon"
+        bordered
+        class="badge"
+        overlap
+      >
+      </v-badge>
+    </div>
 
     <div v-if="root" class="event-workload-wrapper">
       <div
@@ -38,7 +39,6 @@
       <EventMenu
         v-if="!root"
         :vacation="event"
-        @click="(data) => $emit('click', data)"
       />
     </v-menu>
   </div>
@@ -47,6 +47,7 @@
 <script>
 import EventMenu from "@/components/ScheduleViewer/EventMenu";
 import {vacationStatuses} from "@/mixins/ComputedData";
+import {Vacation} from "@/plugins/servises/Vacation";
 
 export default {
   name: 'TheTimelineBaseEvent',
@@ -66,7 +67,7 @@ export default {
   }),
   computed: {
     currentStatus() {
-      return this.vacationStatuses[this.event.status]
+      return Vacation.statuses[this.event.status]
     }
   },
   methods: {
@@ -85,8 +86,16 @@ export default {
 <style lang="scss" scoped>
 $day-width: 25px;
 .badge {
+  position: sticky;
+  right: 0;
   float: right;
   z-index: 2;
+
+  &-wrapper {
+    position: relative;
+    left: $day-width;
+    width: calc(100% - 25px);
+  }
 }
 
 .event {
@@ -94,7 +103,6 @@ $day-width: 25px;
   display: block;
   top: 1px;
   bottom: 2px;
-  background-color: rgb(33, 150, 220);
   background: linear-gradient(45deg, #2196f3, #6ebfff);
   border-radius: 3px;
 
@@ -105,7 +113,6 @@ $day-width: 25px;
   }
 
   &-actually {
-    background-color: #FF4C7EFF;
     background: linear-gradient(45deg, #fd4c7e, #ffa1bc);
   }
 

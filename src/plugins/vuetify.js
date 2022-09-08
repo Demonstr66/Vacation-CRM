@@ -6,7 +6,7 @@ Vue.use(Vuetify);
 
 export default new Vuetify({
   lang: {
-    locales: { ru },
+    locales: {ru},
     current: 'ru',
   },
 });

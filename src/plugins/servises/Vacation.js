@@ -1,4 +1,4 @@
-import {Base} from "@/plugins/Base";
+import {Base} from "@/plugins/servises/Base";
 import {dataToGenerateFile} from "@/plugins/schema";
 import store from "@/store";
 
@@ -6,26 +6,24 @@ const moment = require('moment')
 
 export class Vacation extends Base {
   static statuses = {
-    0: {label: 'Черновик', color: 'secondary', icon: 'mdi-pencil'},
-    1: {label: 'Ожидает подтверждения', color: 'warning', icon: 'mdi-help'},
-    2: {label: 'Утверждено', color: 'success', icon: 'mdi-check'},
-    99: {label: 'Отклонено', color: 'error', icon: 'mdi-close'},
+    0: {id: 0, label: 'Черновик', color: 'secondary', icon: 'mdi-pencil', private: true},
+    1: {id: 1, label: 'Ожидает подтверждения', color: 'warning', icon: 'mdi-help'},
+    2: {id: 2, label: 'Утверждено', color: 'success', icon: 'mdi-check'},
+    99: {id: 99, label: 'Отклонено', color: 'error', icon: 'mdi-close'},
   }
 
-
-  id = ''
-  uid = ''
-  sid = ''
-
-  //True - если отпуск фактический, и не совпадает с заявлением
-  actually = false
-  start = null
-  end = null
-  days = 0
-  approved = false
-  status = 0
-  comment = null
-  events = null
+  static schema = {
+    id: '',
+    uid: '',
+    sid: '',
+    start: null,
+    end: null,
+    days: 0,
+    approved: false,
+    status: 0,
+    comment: '',
+    events: '',
+  }
 
   constructor(args) {
     super({
@@ -33,11 +31,20 @@ export class Vacation extends Base {
       delete: 'vacations/delete',
       create: 'vacations/create',
     })
-    Object.assign(this, args)
+
+    Object.assign(this, Vacation.schema, args)
+  }
+
+  static normalize(...args) {
+    return Base.normalize(Vacation.schema, args);
   }
 
   isDraft() {
     return this.status === 0
+  }
+
+  isRejected() {
+    return this.status === 99
   }
 
   sendToApprove() {
@@ -60,7 +67,6 @@ export class Vacation extends Base {
     return this.setStatus(0, {type: 'cancelApproval'})
   }
 
-
   setStatus(statusId, event) {
     this.status = statusId
     this.approved = statusId === 2
@@ -75,6 +81,11 @@ export class Vacation extends Base {
     event.days = days
 
     return super.create(this, event);
+  }
+
+  edit() {
+    let status = this.status === 99 ? 0 : this.status
+    return this.setStatus(status, {type: 'edit'})
   }
 
   update(event) {

@@ -1,5 +1,5 @@
 <template>
-  <div>
+  <app-base-sheet>
     <v-list v-if="Object.values(archive).length">
       <UserItemArchiveTabDeportment
         v-for="user in archive"
@@ -8,9 +8,11 @@
         @userEvent="onItemEvent"
       />
     </v-list>
-    <span v-else>
-      В архиве нет ни одного пользователя
-    </span>
+    <div v-else class="text-center my-5 subtitle-1" style="color: black;">
+      <span>
+        В архиве нет ни одного пользователя
+      </span>
+    </div>
     <Alert :show="isAlertRestore" @cancel="onCancelAlert" @submit="onSubmitAlert">
       Пользователь будет восстановлен.
       <br>Продолжить?
@@ -19,7 +21,7 @@
       Пользователь будет удалён. Все его данные будут стёрты.
       <br>Продолжить?
     </Alert>
-  </div>
+  </app-base-sheet>
 </template>
 
 <script>
@@ -27,10 +29,11 @@ import {archive} from "@/mixins/ComputedData";
 import UserItemArchiveTabDeportment from "@/components/Administration/ArchiveTabUserItem";
 import Alert from "@/components/Modals/Alert";
 import {UserMethods} from "@/mixins/UserMethods";
+import AppBaseSheet from "@/layouts/AppBaseSheet";
 
 export default {
   mixins: [archive, UserMethods],
-  components: {Alert, UserItemArchiveTabDeportment},
+  components: {AppBaseSheet, Alert, UserItemArchiveTabDeportment},
   data: () => ({
     isAlertDelete: false,
     isAlertRestore: false,

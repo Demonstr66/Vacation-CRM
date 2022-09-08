@@ -1,46 +1,35 @@
-import {defSchedule} from "@/plugins/schema";
 import shortUUID from "short-uuid";
 import {asyncTryDecorator, basePathFunction, isUnique} from "@/plugins/utils";
-import {Schedule} from "@/plugins/Schedule";
+import {Schedule} from "@/plugins/servises/Schedule";
 
 const basePath = basePathFunction(`schedules/{wid}`)
 const test = (item, wid) => !!wid && !!item && !!item.year && !!item.title
-const normalize = (args) => new Schedule(args)
+const normalize = (...args) => Schedule.normalize(...args)
 
 export default {
-  namespaced: true,
-  state: () => ({
-    schedules: null,
-    ready: false
-  }),
-  getters: {
+  namespaced: true, state: () => ({
+    schedules: null, ready: false
+  }), getters: {
     get: (s) => s.schedules || {},
     getById: (s) => (id) => s.schedules && s.schedules[id] || null,
     isReady: (s) => s.ready
-  },
-  mutations: {
+  }, mutations: {
     set: (s, v) => {
       if (!s.ready) s.ready = true
       for (let sid in v) {
         v[sid] = new Schedule(v[sid])
       }
       s.schedules = v
-    },
-    setReady: (s, v) => s.ready = v,
-    clear: (s) => s.schedules = null
-  },
-  actions: {
+    }, setReady: (s, v) => s.ready = v, clear: (s) => s.schedules = null
+  }, actions: {
     initialize({dispatch}) {
       return dispatch('subscribe')
-    },
-    onLogOut({dispatch, commit}) {
+    }, onLogOut({dispatch, commit}) {
       dispatch('unsubscribe')
       commit('clear')
-    },
-    get({}) {
+    }, get({}) {
 
-    },
-    create({dispatch, rootGetters, getters}, schedule) {
+    }, create({dispatch, rootGetters, getters}, schedule) {
       return asyncTryDecorator(() => {
         const wid = rootGetters['app/getWID']
 
@@ -53,8 +42,7 @@ export default {
 
         return dispatch('DB/set', {path, key, data}, {root: true})
       })
-    },
-    delete({rootGetters, dispatch}, {id}) {
+    }, delete({rootGetters, dispatch}, {id}) {
       return asyncTryDecorator(() => {
         const wid = rootGetters['app/getWID']
         if (!id || !wid) throw new Error('Что-то пошло не так: schedules/delete -> test')
@@ -65,8 +53,7 @@ export default {
         dispatch('vacations/deleteAllBySid', id, {root: true})
         return dispatch('DB/delete', {path, key}, {root: true})
       })
-    },
-    update({rootGetters, dispatch, getters}, schedule) {
+    }, update({rootGetters, dispatch, getters}, schedule) {
       return asyncTryDecorator(() => {
         const wid = rootGetters['app/getWID']
 
@@ -79,15 +66,13 @@ export default {
 
         return dispatch('DB/set', {path, key, data}, {root: true})
       })
-    },
-    subscribe({rootGetters, dispatch}) {
+    }, subscribe({rootGetters, dispatch}) {
       const wid = rootGetters['app/getWID']
       const path = basePath(wid)
       const setter = 'schedules/set'
 
       return dispatch('DB/subscribe', {path, setter}, {root: true})
-    },
-    unsubscribe({dispatch, rootGetters}) {
+    }, unsubscribe({dispatch, rootGetters}) {
       const wid = rootGetters['app/getWID']
       const path = basePath(wid)
 

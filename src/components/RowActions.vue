@@ -15,7 +15,7 @@
       <slot></slot>
     </div>
   </v-menu>
-  <div v-else>
+  <div v-else class="d-flex flex-nowrap">
     <slot></slot>
   </div>
 </template>

@@ -1,43 +1,40 @@
 <template>
   <list-with-add
     :items="Object.values(tasks)"
+    action
     title="Задачи"
-    :action="$can('mange', 'Post')"
     @delete="onDelete"
     @save="onSave"
   >
-    <template v-slot:alert="{item}">
+    <template v-slot:alert="{data}">
       <span>
-      Задача
-      <span class="font-weight-medium font-italic">
-          {{ item ? item.title : '' }}
+        Задача
+        <span class="font-weight-medium font-italic">
+          {{ data ? data.title : '' }}
         </span>
-      будет удалена у всех пользователей.<br/>Продолжить?
-        </span>
+        будет удалена.<br>Продолжить?
+      </span>
     </template>
   </list-with-add>
 </template>
 
 <script>
-import {defTask} from "@/plugins/schema";
 import {tasks} from "@/mixins/ComputedData";
 import ListWithAdd from "./BaseListWidget.vue";
-import {TaskMethods} from "@/mixins/TaskMethods";
+import {Task} from "@/plugins/servises/Task";
 
 export default {
-  mixins: [tasks, TaskMethods],
+  mixins: [tasks],
   components: {
     ListWithAdd
   },
   methods: {
     onSave(item) {
-      const task = defTask(item);
-
-      if (!task.id) this.createTask(task).catch(err => {})
-      else this.updateTask(task).catch(err => {})
+      if (!item.id) Task.create(item)
+      else Task.update(item)
     },
     onDelete(id) {
-      this.deleteTask(id);
+      Task.delete(id)
     },
   },
 };

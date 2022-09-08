@@ -1,73 +1,105 @@
 <template>
   <div>
-    <v-progress-linear v-if="!schedule" indeterminate></v-progress-linear>
-    <div v-else>
-      <div class="d-flex">
-        <div class="headline ml-2 info--text">
-          {{ schedule.title }}
-        </div>
-        <v-spacer/>
+    <app-base-sheet class="d-flex flex-column justify-center">
+      <span class="display-1 ml-2">{{ schedule && schedule.title }}</span>
+      <div
+        :class="schedule && schedule.isActive ? 'error--text' : 'info--text'"
+        class="caption ml-1"
+        v-text="schedule && schedule.isActive
+                  ? 'Редактирование не доступно'
+                  : 'Доступно для редактирования'"
+      >
       </div>
-      <v-tabs v-model="activeTab">
+    </app-base-sheet>
+    <app-base-sheet>
+      <v-tabs
+        v-model="activeTab"
+      >
         <v-tab
-          v-for="(item, index) in viewers"
-          :key="index"
-          :to="{name: item.to}"
+          v-for="view in viewers"
+          :key="view.id"
         >
-          {{ item.text }}
+          {{ view.name }}
         </v-tab>
       </v-tabs>
-    </div>
-
-
-    <app-block-with-right-navbar
-      :showBar.sync="showFiltersBar"
-    >
+    </app-base-sheet>
+    <v-progress-linear v-if="!schedule" indeterminate></v-progress-linear>
+    <!--      <v-tab-item-->
+    <!--        v-for="view in viewers"-->
+    <!--        :key="view.id"-->
+    <!--      >-->
+    <!--    <v-tabs-items v-model="activeTab" style="background: inherit">-->
+    <app-block-with-right-navbar v-else>
       <template v-slot:main>
-        <keep-alive>
+        <app-base-sheet>
           <router-view
-            v-if="!!schedule"
             :exception="schedule.exception"
             :vacations="vacations"
+            :filters="filtersFunctions"
 
             :year="schedule.year"
-
-            @click="ask"
-
-            @showFiltersBar="showFiltersBar = true"
           />
-        </keep-alive>
+        </app-base-sheet>
       </template>
       <template v-slot:navbar>
-        <v-card>
-          <v-card-title>Фильтры</v-card-title>
-          <v-card-text>
-            <v-radio-group
-              v-model="filters.type"
-              label="Тип"
-            >
-              <v-radio
-                v-for="(type, idx) in types"
-                :key="idx"
-                :label="type.text"
-                :value="type.value"
-              ></v-radio>
-            </v-radio-group>
-            <v-radio-group
-              v-model="filters.status"
-              label="Статус"
-            >
-              <v-radio
-                v-for="(status, idx) in statuses"
-                :key="idx"
-                :label="status.text"
-                :value="status.value"
-              ></v-radio>
-            </v-radio-group>
-          </v-card-text>
-        </v-card>
+        <app-base-sheet>
+          <v-card-title class="justify-center">Фильтры</v-card-title>
+          <v-select
+            v-model="filters.status.value"
+            :items="statuses"
+            class="mt-8"
+            dense
+            hide-details
+            item-text="label"
+            item-value="id"
+            label="Статус"
+          />
+          <v-select
+            v-model="filters.team.value"
+            :items="teams"
+            class="mt-8"
+            dense
+            hide-details
+            item-text="title"
+            item-value="id"
+            label="Команда"
+          />
+          <v-select
+            v-model="filters.post.value"
+            :items="posts"
+            item-text="title"
+            item-value="id"
+            class="mt-8"
+            dense
+            hide-details
+            label="Должность"
+          />
+          <v-select
+            v-model="filters.task.value"
+            :items="tasks"
+            item-text="title"
+            item-value="id"
+            class="mt-8"
+            dense
+            hide-details
+            label="Задача"
+          />
+          <v-btn
+            block
+            class="mt-2"
+            color="secondary"
+            left
+            small
+            text
+            @click="reset"
+          >
+            сброс
+          </v-btn>
+        </app-base-sheet>
       </template>
     </app-block-with-right-navbar>
+    <!--      </v-tab-item>-->
+    <!--    </v-tabs-items>-->
 
     <app-popup
       ref="rejectPopup"
@@ -93,53 +125,100 @@
 import {appReady, schedules} from "@/mixins/ComputedData";
 import AppBlockWithRightNavbar from "@/components/AppBlockWithRightNavbar";
 import AppPopup from "@/components/AppPopup";
+import TimelineView from "@/components/ScheduleViewer/TimelineView";
+import ListView from "@/components/ScheduleViewer/ListView";
+import AppBaseSheet from "@/layouts/AppBaseSheet";
+import {Vacation} from "@/plugins/servises/Vacation";
+import {Team} from "@/plugins/servises/Team";
+import {Post} from "@/plugins/servises/Post";
+import {Task} from "@/plugins/servises/Task";
 
+const allItem = {label: 'Все', title: 'Все', id: -1}
+const noneItem = {label: 'Нет', title: 'Нет', id: 0}
 export default {
   name: 'ScheduleViewer',
-  components: {AppPopup, AppBlockWithRightNavbar},
+  components: {
+    AppPopup, AppBlockWithRightNavbar, AppBaseSheet
+  },
   mixins: [schedules, appReady],
-  data: () => ({
-    showFiltersBar: false,
-    activeTab: null,
+  data() {
+    return {
+      activeTab: 0,
+      schedule: null,
+      filters: {
+        status: {
+          value: -1,
+          handler: (item, val, user) => item.status === val
+        },
+        team: {
+          value: -1,
+          handler: (item, val, user) => user.team === val || val === 0 && !user.team
 
-    schedule: null,
-    filters: {
-      type: 'all',
-      status: 'all'
-    },
+        },
+        post: {
+          value: -1,
+          handler: (item, val, user) => user.post === val || val === 0 && !user.post
 
-    viewers: [
-      {text: 'Список', value: 'list', to: 'Viewer1'},
-      {text: 'Таймлайн', value: 'tl', to: 'Viewer2'},
-      // {text: 'Календарь', value: 'fullCalendar', to: 'Viewer3'},
-    ],
-    types: [
-      {text: 'Все', value: 'all'},
-      {text: 'По заявлению', value: 'actually:false'},
-      {text: 'Фактический', value: 'actually:true'}
-    ],
-    statuses: [
-      {text: 'Все', value: 'all'},
-      {text: 'На утверждении', value: 'status:1'},
-      {text: 'Утверждённые', value: 'status:2'},
-      {text: 'Отклонено', value: 'status:99'},
-    ]
-  }),
+        },
+        task: {
+          value: -1,
+          handler: (item, val, user) =>
+            user.tasks && user.tasks.includes(val) ||
+            val === 0 && !user.tasks || !user.tasks.length
+
+        },
+      },
+      viewers: [
+        {id: 0, name: 'Список', route: 'Viewer1', component: 'ListView'},
+        {id: 1, name: 'Таймлайн', route: 'Viewer2', component: 'TimelineView'},
+        // {text: 'Календарь', value: 'fullCalendar', to: 'Viewer3'},
+      ],
+      statuses: [
+        allItem,
+        ...Object.values(Vacation.statuses).filter(s => !s.private)
+      ]
+    }
+  },
   created() {
     if (this.appReady) this.initialize()
+
+    const name = this.$route.name
+    const id = this.viewers.findIndex(view => view.route === name)
+    if (this.activeTab !== id) this.activeTab = id
   },
   computed: {
+    teams() {
+      return [
+        allItem,
+        ...Team.getAll(),
+        noneItem
+      ]
+    },
+    posts() {
+      return [
+        allItem,
+        ...Post.getAll(),
+        noneItem
+      ]
+    },
+    tasks() {
+      return [
+        allItem,
+        ...Task.getAll(),
+        noneItem
+      ]
+    },
     filtersFunctions() {
       const {filters} = this
 
-      let functions = Object.values(filters).filter(filter => filter !== 'all')
+      const functions = Object.values(filters).filter(filter => filter.value !== -1)
 
-      functions = functions.map(filter => {
-        let [key, val] = filter.split(':')
-        return (item) => item[key] !== undefined ? String(item[key]) === val : false
+      return functions.map(filter => {
+        return (item, uid) => {
+          const user = this.$store.getters['users/getUserById'](uid || item.uid)
+          return filter.handler(item, filter.value, user)
+        }
       })
-
-      return functions
     },
     vacations() {
       const scheduleId = this.$route.params.id
@@ -147,13 +226,20 @@ export default {
 
       let vacations = Object.values(this.$store.getters['vacations/getBySid'](scheduleId))
 
-      if (filters.length) {
-        vacations = vacations.filter(vacation => filters.every(f => f(vacation)))
-      }
+      // if (filters.length) {
+      //   vacations = vacations.filter(vacation => filters.every(f => f(vacation)))
+      // }
 
       vacations = vacations.filter(vacation => !vacation.isDraft())
 
       return vacations
+    }
+  },
+  provide() {
+    return {
+      approveVacation: this.onApprove,
+      rejectVacation: this.onReject,
+      cancelVacation: this.onCancel,
     }
   },
   methods: {
@@ -162,24 +248,11 @@ export default {
       this.schedule = this.schedules[id]
       if (!this.schedule) this.$router.push({name: 'Schedules'})
     },
-    ask({item, type}) {
-      switch (type) {
-        case 'reject':
-          this.onReject(item.id);
-          break;
-        case 'approve':
-          this.onApprove(item.id);
-          break;
-        case 'cancel':
-          this.onCancel(item.id);
-          break;
-      }
-    },
     async onReject(id) {
       let result = await this.$refs.rejectPopup.open()
 
       if (result) {
-        this.vacations.find(vacation => vacation.id === id).reject(result)
+        this.vacations.find(vacation => vacation.id === id).reject(result.comment)
       }
     },
     async onApprove(id) {
@@ -193,8 +266,11 @@ export default {
       let result = await this.$refs.cancelPopup.open()
 
       if (result) {
-        this.vacations.find(vacation => vacation.id === id).cancel(result)
+        this.vacations.find(vacation => vacation.id === id).cancel(result.comment)
       }
+    },
+    reset() {
+      for (let key in this.filters) this.filters[key].value = -1
     }
     // mergeByAlex(data) {
     //   let n = data.length
@@ -246,7 +322,11 @@ export default {
   watch: {
     appReady() {
       this.initialize()
-    }
+    },
+    activeTab(id) {
+      const name = this.viewers[id].route
+      if (this.$route.name !== name) this.$router.replace({name})
+    },
   }
 }
 </script>

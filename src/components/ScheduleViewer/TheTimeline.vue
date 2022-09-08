@@ -1,92 +1,108 @@
 <template>
-  <div class="calendar-wrapper">
-    <slot name="top"></slot>
-    <table
-      ref="calendar"
-      class="calendar"
-    >
-      <!--      months-->
-      <tr class="calendar-header-row">
-        <td class="calendar-event-header">
-        </td>
-        <td
-          v-for="(month, mIndex) in calendar.months"
-          :key="'header-month-'+mIndex"
-          :colspan="month.days"
-          class="calendar-header-month"
-        >
-          {{ month.title }}
-        </td>
-      </tr>
-
-      <!--      dates-->
-      <tr>
-        <td class="calendar-event-header">
-        </td>
-        <td
-          v-for="(day, dIndex) in calendar.dates"
-          :id="'header-day-'+day.date"
-          :key="'header-days-'+dIndex"
-          :class="{'calendar-header-day__today': day.isToday}"
-          class="calendar-header-day"
-        >
-          <div class="d-flex flex-column">
-            <div>{{ day.date | getShortDayLabel }}</div>
-            <div>{{ day.dayNumber }}</div>
-          </div>
-        </td>
-      </tr>
-
-      <div id="today-marker" class="today-marker">
-        <span class="today-marker-dot today-marker-dot-top"></span>
-        <span class="today-marker-line"></span>
-        <span class="today-marker-dot today-marker-dot-bottom"></span>
-      </div>
-
-      <!--      events-->
-      <tr
-        v-for="(node, nodeIndex) in tree"
-        :key="'root-row-'+nodeIndex"
-        class="calendar-event-row"
+  <div class="overflow-hidden elevation-2"
+       style="border-radius: 4px;">
+    <div class="calendar-wrapper">
+      <table
+        class="calendar"
       >
-        <td class="calendar-event-header">
-          <div
-            v-ripple
-            class="calendar-event-header-item"
+        <!--      months-->
+        <tr class="calendar-header-row">
+          <td id="header-col" class="calendar-event-header first">
+          </td>
+          <td
+            v-for="(month, mIndex) in calendar.months"
+            :key="'header-month-'+mIndex"
+            :colspan="month.days"
+            class="calendar-header-month"
           >
+              <span class="calendar-header-month__title">
+                {{ month.title }}
+              </span>
+          </td>
+        </tr>
+
+        <!--      dates-->
+        <tr>
+          <td class="calendar-event-header">
+          </td>
+          <td
+            v-for="(day, dIndex) in calendar.dates"
+            :id="'header-day-'+day.date"
+            :key="'header-days-'+dIndex"
+            :class="{
+              'calendar-header-day__today': day.isToday,
+              'calendar-header-day__weekend': day.isWeekend,
+              'calendar-header-day__workday': day.isWorkday,
+              'calendar-header-day__holiday': day.isHoliday,
+              'calendar-header-day__monthend': day.isLastDayOfMonth,
+              'calendar-header-day__monthstart': day.isFirstDayOfMonth
+            }"
+            class="calendar-header-day"
+          >
+            <div class="d-flex flex-column text-center">
+              <div>{{ day.date | getShortDayLabel }}</div>
+              <div>{{ day.dayNumber }}</div>
+            </div>
+          </td>
+        </tr>
+
+        <div id="today-marker" class="today-marker">
+          <span class="today-marker-dot today-marker-dot-top"></span>
+          <span class="today-marker-line"></span>
+          <span class="today-marker-dot today-marker-dot-bottom"></span>
+        </div>
+
+        <!--      events-->
+        <tr
+          v-for="(node, nodeIndex) in tree"
+          :key="'root-row-'+nodeIndex"
+          class="calendar-event-row"
+        >
+          <td
+            :class="{'last': nodeIndex === tree.length - 1}"
+            class="calendar-event-header hoverable"
+          >
+            <div
+              v-ripple
+              :title="node.title"
+              class="calendar-event-header-item text-truncate"
+            >
             <span v-if="node.children && node.children.length">
               <v-btn icon small @click="toggleExpand(node.id)">
-                  <v-icon v-if="open.indexOf(node.id) === -1">
+                  <v-icon
+                    class="expand"
+                    :class="{'open': open.indexOf(node.id) !== -1} "
+                  >
                     mdi-chevron-down
-                  </v-icon>
-                  <v-icon v-else>
-                    mdi-chevron-up
                   </v-icon>
               </v-btn>
             </span>
-            <span :class="{'ml-6': !node.root}">
+              <span :class="{'ml-6': !node.root && !node.flat}" class="mx-3">
               {{ node.title }}
             </span>
-          </div>
-        </td>
-        <td
-          v-for="(cell, cIndex) in calendar.dates"
-          :key="'root-row-'+nodeIndex +'-day-'+cIndex"
-          class="calendar-event-cell"
-        >
-        </td>
-        <TheTimelineBaseEvent
-          v-for="(event, eIndex) in node.events"
-          :id="'row-'+nodeIndex+'-event-'+eIndex"
-          :key="'row-'+nodeIndex+'-event-'+eIndex"
+            </div>
+          </td>
+          <td
+            v-for="(cell, cIndex) in calendar.dates"
+            :key="'root-row-'+nodeIndex +'-day-'+cIndex"
+            :class="{
+              'calendar-header-day__monthend': cell.isLastDayOfMonth,
+              'calendar-header-day__monthstart': cell.isFirstDayOfMonth
+            }"
+            class="calendar-event-cell"
+          >
+          </td>
+          <TheTimelineBaseEvent
+            v-for="(event, eIndex) in node.events"
+            :id="'row-'+nodeIndex+'-event-'+eIndex"
+            :key="'row-'+nodeIndex+'-event-'+eIndex"
 
-          :event="event"
-          :root="node.root"
-
-          @click="(data) => $emit('click', {type: data, id: event.id})"
-        />
-      </tr>
-    </table>
+            :event="event"
+            :root="node.root"
+          />
+        </tr>
+      </table>
+    </div>
   </div>
 </template>
 
@@ -115,17 +131,22 @@ export default {
     this.initialize()
   },
   mounted() {
-    this.placementEvents()
-    this.placementTodayMarker()
+    this.$nextTick(() => {
+      this.placementEvents()
+      this.placementTodayMarker()
 
-    document.getElementById('today-marker').scrollIntoView()
+      document.getElementById('today-marker').scrollIntoView()
+    })
   },
   computed: {
     tree() {
       let tree = []
       const {items, open} = this
+      const isFlatArray = items.every(item => !item.children || !item.children.length)
       items.map(node => {
         let currentNode = {...node, root: true}
+
+        currentNode.flat = isFlatArray
 
         if (!node.children || !node.children.length) {
           currentNode.root = false
@@ -163,6 +184,7 @@ export default {
         calendar.dates.push({
           dayNumber: currDay.format('DD'),
           date: currDay.format('YYYY-MM-DD'),
+          isFirstDayOfMonth: currDay.format('DD') === '01',
           isLastDayOfMonth: month !== this.$moment(currDay).add(1, 'days').get('month'),
           isLastDayOfWeek: year !== this.$moment(currDay).add(1, 'days').get('year'),
           isWeekend: currDay.day() == 6 || currDay.day() == 0,
@@ -182,6 +204,7 @@ export default {
           const el = document.getElementById('row-' + nodeIndex + '-event-' + eIndex)
 
           const style = this.calculateEventStyle(event)
+
           el.style.left = style.left
           el.style.width = style.width
         })
@@ -194,7 +217,7 @@ export default {
         return
       }
 
-      const wrap = this.$refs.calendar
+      const wrap = document.getElementById('header-col')
       const wrapX = wrap.getBoundingClientRect().x
       const todayEl = document.getElementsByClassName('calendar-header-day__today')[0]
 
@@ -207,17 +230,21 @@ export default {
       marker.style.left = left + 'px'
     },
     calculateEventStyle(e) {
-      const wrap = this.$refs.calendar
+      const wrap = document.getElementById('header-col')
       const start = document.getElementById(`header-day-${e.start}`)
       const end = document.getElementById(`header-day-${e.end}`)
 
-      const startX = start.getBoundingClientRect().x
-      const endX = end.getBoundingClientRect().x + end.offsetWidth
-      const wrapX = wrap.getBoundingClientRect().x
+      const leftEdge = start.getBoundingClientRect().x + start.clientLeft
+      const rightEdge = end.getBoundingClientRect().x + end.offsetWidth - (end.offsetWidth -
+        end.clientWidth -
+        end.clientLeft)
+      const wrapLeftEdge = wrap.getBoundingClientRect().x
 
+      const mx = 1
       return {
-        left: `${startX - wrapX + (wrapX - start.parentNode.getBoundingClientRect().x) + 1}px`,
-        width: `${endX - startX - 3}px`
+        left: `${leftEdge - wrapLeftEdge + (wrapLeftEdge -
+          start.parentNode.getBoundingClientRect().x) + mx}px`,
+        width: `${rightEdge - leftEdge - mx * 2}px`
       }
     },
     toggleExpand(id) {
@@ -276,8 +303,12 @@ $day-width: 25px;
   }
 }
 
-.rotate {
-  transition: 0.3s cubic-bezier(0.25, 0.8, 0.5, 1), visibility 0s;
+.expand {
+  transition: transform 0.3s cubic-bezier(0.25, 0.8, 0.5, 1);
+
+  &.open {
+    transform: rotate(180deg);
+  }
 }
 
 .calendar {
@@ -298,21 +329,38 @@ $day-width: 25px;
     &-header {
       position: sticky;
       left: 0;
-      border-right: 1px solid black;
-      border-bottom: 1px solid black;
-      background-color: #d0d0d0;
+      background-color: #fff;
       white-space: nowrap;
       z-index: 5;
+      min-width: 200px;
+      max-width: 200px;
+      transition: background-color .1s ease-in-out;
+      border-right: 1px solid #eee;
+
+      &.first {
+        border-top-right-radius: 4px;
+      }
+
+      &.last {
+        border-bottom-right-radius: 4px;
+      }
+
+      &.hoverable:hover {
+        transition: background-color .1s ease-in-out;
+        background-color: #eeeeee;
+        cursor: pointer;
+      }
 
       &-item {
+        border-top: 1px solid #eee;
         padding: 4px;
-        cursor: pointer;
       }
     }
 
     &-cell {
-      border-right: 1px dashed #c3c3c3;
-      border-bottom: 1px dashed #c3c3c3;
+      border-color: #ccc !important;
+      border-right: 1px dashed;
+      border-bottom: 1px dashed;
     }
   }
 
@@ -322,25 +370,57 @@ $day-width: 25px;
     flex-grow: 1;
 
     &-month {
-      background-color: #b8f8ec;
-      border-right: 1px solid black;
-      border-bottom: 1px solid black;
-      border-top: 1px solid black;
+      border: 2px solid #ccc;
+      border-bottom: none;
+      border-top-left-radius: 4px;
+      border-top-right-radius: 4px;
       text-align: center;
+      background-color: #f4f4f4;
 
       z-index: 1;
 
       &__title {
-        display: block;
+        position: sticky;
+        margin: 0 10px;
+        left: 210px;
+        right: 10px;
       }
     }
 
     &-day {
       max-width: $day-width;
       min-width: $day-width;
-      background-color: #b8caf8;
-      border-right: 1px solid black;
-      border-bottom: 1px solid black;
+      background-color: #fafafa;
+
+      border-color: #ccc !important;
+      border-right: 1px dashed;
+      border-bottom: 1px dashed;
+
+
+      &__weekend {
+        color: #FF5252;
+      }
+
+      &__workday {
+        color: #FFC107;
+      }
+
+      &__holiday {
+        color: #1976D2;
+      }
+
+      &__month {
+
+        &end {
+          border-right-style: solid;
+          border-right-width: 2px;
+        }
+
+        &start {
+          border-left-style: solid;
+          border-left-width: 2px;
+        }
+      }
 
       &-today::after {
         content: "";

@@ -3,8 +3,8 @@
     <v-card>
       <v-card-title>{{ title }}</v-card-title>
       <v-card-text>
-        <slot></slot>
-        <v-form @submit="submit" v-if="showComment">
+        <slot :data="data" :setResData="setResData" :setSubmitDisable="setSubmitDisable"></slot>
+        <v-form v-if="showComment" @submit="submit">
           <v-textarea
             v-model="comment"
             class="mt-2"
@@ -20,8 +20,8 @@
       <v-card-actions>
         <v-spacer></v-spacer>
         <v-btn color="red darken-1" text @click="close"> Отмена</v-btn>
-        <v-btn color="green darken-1" type="submit" text @click="submit"
-               :disabled="submitDisable"> ОК
+        <v-btn :disabled="submitDisable" color="green darken-1" text type="submit"
+               @click="submit"> ОК
         </v-btn>
       </v-card-actions>
     </v-card>
@@ -36,27 +36,27 @@ export default {
       type: String,
       default: "Внимание"
     },
-    submitDisable: {
-      type: Boolean,
-      default: false
-    },
     showComment: {
       type: Boolean,
       default: false
     }
   },
   data: () => ({
+    submitDisable: false,
     show: false,
-    comment: ""
+    comment: "",
+    data: {},
+    resData: {}
   }),
   methods: {
-    open() {
+    open(data) {
       let resolve, reject
       const result = new Promise((res, rej) => {
         resolve = res
         reject = rej
       })
 
+      if (data) this.data = data
       this.show = true
       this.$options.PopupController = {resolve, reject}
       return result
@@ -67,12 +67,25 @@ export default {
     },
     submit() {
       this.show = false
-      this.$options.PopupController.resolve(this.comment || true)
+      this.$options.PopupController.resolve({
+        val: true,
+        comment: this.comment,
+        data: this.resData
+      })
     },
+    setResData(key, val) {
+      this.resData[key] = val
+    },
+    setSubmitDisable(val) {
+      console.log(val)
+      this.submitDisable = val
+    }
   },
   watch: {
     show(val) {
       if (!val) this.comment = ''
+      if (!val) this.resData = {}
+      if (!val) this.data = null
     }
   }
 };

@@ -1,45 +1,41 @@
 <template>
   <list-with-add
+    action
     :items="Object.values(posts)"
     title="Должности"
-    :action="$can('mange', 'Post')"
     @delete="onDelete"
     @save="onSave"
   >
-    <template v-slot:alert="{item}">
+    <template v-slot:alert="{data}">
       <span>
-      Должность
-      <span class="font-weight-medium font-italic">
-          {{ item ? item.title : '' }}
+        Должность
+        <span class="font-weight-medium font-italic">
+          {{ data ? data.title : '' }}
         </span>
-      будет удалена у всех пользователей.<br/>Продолжить?
-        </span>
+        будет удалена.<br>Продолжить?
+      </span>
     </template>
   </list-with-add>
 </template>
 
 <script>
 
-import {defPost} from "../../plugins/schema";
-import {posts} from "../../mixins/ComputedData";
+import {posts} from "@/mixins/ComputedData";
 import ListWithAdd from "./BaseListWidget.vue";
-import {PostMethods} from "@/mixins/PostMethods";
+import {Post} from "@/plugins/servises/Post";
 
 export default {
-  mixins: [posts, PostMethods],
+  mixins: [posts],
   components: {
     ListWithAdd
   },
   methods: {
-
     onSave(item) {
-      console.log('try save', item)
-      const post = defPost(item);
-      if (!post.id) this.createPost(post)
-      else this.updatePost(post)
+      if (!item.id) Post.create(item)
+      else Post.update(item)
     },
     onDelete(id) {
-      this.deletePost(id);
+      Post.delete(id)
     },
   },
 };

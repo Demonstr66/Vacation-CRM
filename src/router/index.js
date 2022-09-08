@@ -24,6 +24,7 @@ const Tab3 = () => import('@/components/Administration/Archive')
 const Viewer1 = () => import('@/components/ScheduleViewer/ListView'  )
 const Viewer2 = () => import('@/components/ScheduleViewer/TimelineView'  )
 const Viewer3 = () => import('@/components/ScheduleViewer/FullCalendarView'  )
+const RightSidebar = () => import('@/components/Administration/AdministrationRightSidebar'  )
 
 const test = () => import('@/views/test'  )
 
@@ -48,7 +49,7 @@ const routes = [
     name: 'Home',
     component: Home,
     meta: {
-      layout: 'MainLayout',
+      layout: 'MainEmptyLayout',
       title: 'Главная',
       protected: {
         accessLevel: [2]
@@ -60,7 +61,7 @@ const routes = [
     name: 'Vacations',
     component: Vacations,
     meta: {
-      layout: 'MainLayout',
+      layout: 'MainEmptyLayout',
       title: 'Мои отпуска',
       protected: {
         accessLevel: [2]
@@ -72,7 +73,7 @@ const routes = [
     name: 'Vacation',
     component: Vacation,
     meta: {
-      layout: 'MainLayout',
+      layout: 'MainEmptyLayout',
       title: '',
       protected: {
         accessLevel: [2]
@@ -105,7 +106,7 @@ const routes = [
         component: Tab1,
         name: 'Tab1',
         meta: {
-          layout: 'MainLayout',
+          layout: 'MainEmptyLayout',
           title: 'Управление',
           protected: {
             accessLevel: [2]
@@ -116,7 +117,7 @@ const routes = [
         component: Tab2,
         name: 'Tab2',
         meta: {
-          layout: 'MainLayout',
+          layout: 'MainEmptyLayout',
           title: 'Управление',
           protected: {
             accessLevel: [2]
@@ -127,7 +128,7 @@ const routes = [
         component: Tab3,
         name: 'Tab3',
         meta: {
-          layout: 'MainLayout',
+          layout: 'MainEmptyLayout',
           title: 'Управление',
           protected: {
             accessLevel: [2]
@@ -135,7 +136,7 @@ const routes = [
         }
       }],
     meta: {
-      layout: 'MainLayout',
+      layout: 'MainEmptyLayout',
       title: 'Управление',
       protected: {
         accessLevel: [2]
@@ -147,7 +148,7 @@ const routes = [
     name: 'User',
     component: User,
     meta: {
-      layout: 'MainLayout',
+      layout: 'MainEmptyLayout',
       title: 'Профиль',
       protected: {
         accessLevel: [2]
@@ -228,7 +229,7 @@ const routes = [
         component: Viewer1,
         name: 'Viewer1',
         meta: {
-          layout: 'MainLayout',
+          layout: 'MainEmptyLayout',
           title: 'Управление',
           protected: {
             accessLevel: [2]
@@ -239,7 +240,7 @@ const routes = [
         component: Viewer2,
         name: 'Viewer2',
         meta: {
-          layout: 'MainLayout',
+          layout: 'MainEmptyLayout',
           title: 'Управление',
           protected: {
             accessLevel: [2]
@@ -250,7 +251,7 @@ const routes = [
         component: Viewer3,
         name: 'Viewer3',
         meta: {
-          layout: 'MainLayout',
+          layout: 'MainEmptyLayout',
           title: 'Управление',
           protected: {
             accessLevel: [2]
@@ -258,7 +259,7 @@ const routes = [
         }
       }],
     meta: {
-      layout: 'MainLayout',
+      layout: 'MainEmptyLayout',
       title: 'Просмотр',
       protected: {
         accessLevel: [2]
@@ -270,7 +271,7 @@ const routes = [
     name: 'Account',
     component: Account,
     meta: {
-      layout: 'MainLayout',
+      layout: 'MainEmptyLayout',
       title: 'Настройки аккаунта',
       protected: {
         accessLevel: [2]

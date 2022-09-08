@@ -3,7 +3,8 @@
     :show="show"
     :submitDisable="!valid"
     :title="title"
-    @cancel="onCancel"
+    @cancel="close"
+    @reset="reset"
     @submit="onSubmit"
   >
     <v-form ref="form" v-model="valid" class="mt-4">
@@ -30,29 +31,21 @@
 
 <script>
 import BaseModal from "./Base.vue";
-import {domain, teams} from "@/mixins/ComputedData";
-import {UserMethods} from "@/mixins/UserMethods";
 import TheAccountInfo from "@/components/TheAccountInfo";
 import TheUserInfo from "@/components/TheUserInfo";
-import {defUser} from "@/plugins/schema";
-import {fullToDisplayName} from "@/plugins/utils";
+import {User} from "@/plugins/servises/User";
 
 export default {
-  mixins: [UserMethods, teams, domain],
-  props: {
-    show: {
-      type: Boolean,
-      required: true,
-    },
-    user: {}
-  },
+  ModalController: null,
   components: {
     BaseModal,
     TheUserInfo,
     TheAccountInfo
   },
   data: () => ({
+    show: false,
     valid: false,
+    user: {}
   }),
   computed: {
     title() {
@@ -60,32 +53,45 @@ export default {
     },
   },
   methods: {
+    open(uid) {
+      let resolve, reject
+      const result = new Promise((res, rej) => {
+        resolve = res
+        reject = rej
+      })
+
+      if (uid) {
+        this.user = {...this.$store.getters['users/getUserById'](uid)}
+      } else {
+        this.user = new User()
+      }
+
+      this.show = true
+      this.$options.ModalController = {resolve, reject}
+      return result
+    },
     async onSubmit() {
-      let user = defUser(
-        this.user,
-        this.$refs.account.getData(),
-        this.$refs.user.getData()
+      let user = new User(
+        {
+          ...this.user,
+          ...this.$refs.account.getData(),
+          ...this.$refs.user.getData()
+        }
       );
 
-      if (!!!user.displayName) user.displayName = fullToDisplayName(user.fullName)
-
-      const method = !!!user.uid ? this.createUser : this.updateUser
-
-      method(user)
-        .then(() => this.closeModal())
-        .catch(er => {
-        })
+      !!user.uid
+        ? user.update().then(() => this.close())
+        : user.create().then(() => this.close())
     },
-    onCancel() {
-      this.closeModal();
+    close() {
+      this.show = false
+      this.$options.ModalController.resolve(false)
     },
-    closeModal() {
-      this.$emit("close");
-    },
-  },
-  watch: {
-    show(val) {
-      if (!val) this.$refs.form.reset()
+    reset() {
+      this.user = new User()
+      this.$nextTick(() => {
+        this.$refs.form.resetValidation()
+      })
     }
   }
 };

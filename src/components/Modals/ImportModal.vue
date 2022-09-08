@@ -1,11 +1,11 @@
 <template>
   <BaseModal
-      :show="show"
-      :submitDisable="!isUploadSuccessful || !!!importingUsers.length"
-      :title="title"
-      @cancel="onCancel"
-      @reset="reset"
-      @submit="onSubmit"
+    :show="show"
+    :submitDisable="!isUploadSuccessful || !!!uploadingUsers.length"
+    :title="title"
+    @cancel="onCancel"
+    @reset="reset"
+    @submit="onSubmit"
   >
     <v-card-text>
       <v-row>
@@ -42,18 +42,18 @@
         </v-col>
       </v-row>
       <v-file-input
-          v-model="file"
-          :error="isUploadError"
-          :error-messages="uploadError"
-          :loading="isLoading"
-          accept=".xlsx,.xls,.csv"
-          class="mt-2"
-          label="Файл Excel ( .xlsx, .xls, .csv )"
-          @change="onChange"
-          @click:clear="reset"
+        v-model="file"
+        :error="isUploadError"
+        :error-messages="uploadError"
+        :loading="isLoading"
+        accept=".xlsx,.xls,.csv"
+        class="mt-2"
+        label="Файл Excel ( .xlsx, .xls, .csv )"
+        @change="onChange"
+        @click:clear="reset"
       ></v-file-input>
       <div v-if="isUploadSuccessful" class="mt-2">
-        <div v-if="importingUsers.length == 0">
+        <div v-if="!uploadingUsers.length">
           <span>Не найдено новых записей. Поля:</span>
           <span v-for="(col, idx) in uniqFields" class="font-weight-bold">
             {{ col.title }};
@@ -61,23 +61,23 @@
           <span> должны быть уникальными.</span>
         </div>
         <div v-else>
-          <span class="font-weight-bold">Количество записей:</span> {{ importingUsers.length }}
+          <span class="font-weight-bold">Количество записей:</span> {{ uploadingUsers.length }}
           <v-row align="center" justify="space-between">
             <v-col class="pb-0 mb-0 font-weight-bold" cols="12" md="auto">Найденные поля:</v-col>
             <v-col class="pb-0 mb-0" cols="12" md="7">
               <v-select
-                  v-model="allFieldsModel"
-                  :items="fields"
-                  dense
-                  disabled
-                  item-text="title"
-                  item-value="model"
-                  multiple
+                v-model="allFieldsModel"
+                :items="uploadFields"
+                dense
+                disabled
+                item-text="title"
+                item-value="model"
+                multiple
               >
               </v-select>
             </v-col>
           </v-row>
-          <v-row v-if="!!newItems.teams.length" align="center" justify="space-between">
+          <v-row v-if="uploadingTeams.length" align="center" justify="space-between">
             <v-col class="pb-0 mb-0" cols="12" md="auto">
             <span class="font-weight-bold">
               Найденные команды:
@@ -86,18 +86,26 @@
             </v-col>
             <v-col class="pb-0 mb-0" cols="12" md="7">
               <v-select
-                  v-model="newItems.selectedTeams"
-                  :items="newItems.teams"
-                  chips
-                  deletable-chips
-                  item-text="title"
-                  item-value="id"
-                  multiple
-                  small-chips
-              ></v-select>
+                v-model="teams"
+                :items="uploadingTeams"
+                multiple
+              >
+                <template #selection="{item, index}">
+                  <v-chip
+                    close
+                    color="accent"
+                    label
+                    outlined
+                    small
+                    @click:close="teams.splice(index, 1)"
+                  >
+                    {{ item }}
+                  </v-chip>
+                </template>
+              </v-select>
             </v-col>
           </v-row>
-          <v-row v-if="!!newItems.posts.length" align="center" justify="space-between">
+          <v-row v-if="uploadingPosts.length" align="center" justify="space-between">
             <v-col class="pb-0 mb-0" cols="12" md="auto">
             <span class="font-weight-bold">
               Найденные должности:
@@ -106,15 +114,23 @@
             </v-col>
             <v-col class="pb-0 mb-0" cols="12" md="7">
               <v-select
-                  v-model="newItems.selectedPosts"
-                  :items="newItems.posts"
-                  chips
-                  deletable-chips
-                  item-text="title"
-                  item-value="id"
-                  multiple
-                  small-chips
-              ></v-select>
+                v-model="posts"
+                :items="uploadingPosts"
+                multiple
+              >
+                <template #selection="{item, index}">
+                  <v-chip
+                    close
+                    color="accent"
+                    label
+                    outlined
+                    small
+                    @click:close="posts.splice(index, 1)"
+                  >
+                    {{ item }}
+                  </v-chip>
+                </template>
+              </v-select>
             </v-col>
           </v-row>
         </div>
@@ -128,27 +144,16 @@
 
 <script>
 import BaseModal from "./Base.vue";
-import {excelToArray, parseArrayData} from "@/plugins/utils";
-import {importMethods} from "@/mixins/ImportMethods";
-import {users} from "@/mixins/ComputedData"
+import {IImport} from "@/plugins/servises/IImport";
 
 export default {
-  mixins: [importMethods, users],
   components: {
     BaseModal,
   },
+  ModalController: null,
   props: {
-    show: {
-      type: Boolean,
-      required: true,
-    },
-    availableFields: {
-      type: Array,
-      required: true,
-    },
     dataType: {
       type: String,
-      required: true,
     },
     title: {
       type: String,
@@ -156,104 +161,122 @@ export default {
     },
   },
   data: () => ({
+    availableFields: IImport.users.fields,
+    show: false,
+
+    uploadFields: [],
+    uploadingTeams: [],
+    uploadingPosts: [],
+    uploadingUsers: [],
+
+    teams: [],
+    posts: [],
+
+
     isFileUploading: false,
     isUploadSuccessful: false,
     isUploadError: false,
     uploadError: '',
     isLoading: false,
     file: null,
-    fields: [],
-    importingUsers: [],
   }),
   computed: {
     allFieldsModel() {
-      return this.fields.map(f => f.model)
+      return this.uploadFields.map(f => f.model)
     },
     requiredFields() {
       return this.availableFields.filter(x => !!x.required)
     },
     uniqFields() {
-      return this.availableFields.filter(x => !!x.uniq)
+      return this.availableFields.filter(x => !!x.unique)
     },
     optionalFields() {
       return this.availableFields.filter(x => !!!x.required)
     },
   },
   methods: {
-    onChange(get) {
-      if (!this.file) return;
-
-      this.isLoading = true;
-
-      excelToArray(this.file)
-          .then(data => parseArrayData(data, this.availableFields, Object.values(this.users)))
-          .then((data) => {
-            this.fields = Object.values(data.cols)
-            return Promise.resolve(data)
-          })
-          .then(({items: users, cols}) => this.mixParseTeamsInArray(users, cols))
-          .then(({users, cols}) => this.mixParsePostsInArray(users, cols))
-          .then(({users}) => {
-            this.importingUsers = users
-            this.isUploadSuccessful = true
-          })
-          .catch(err => {
-            console.error(err)
-            this.isUploadError = true
-            this.uploadError = err.message
-          })
-          .finally(() => {
-            this.isLoading = false
-          })
-    },
-    saveData(users, newItems) {
-      const teams = newItems.teams.filter(team =>
-          newItems.selectedTeams.some(st => st == team.id))
-
-      const unUsedTeams = newItems.teams.filter(team =>
-          !newItems.selectedTeams.some(st => st == team.id))
-
-      const posts = newItems.posts.filter(post =>
-          newItems.selectedPosts.some(sp => sp == post.id))
-      const unUsedPosts = newItems.posts.filter(post =>
-          !newItems.selectedPosts.some(sp => sp == post.id))
-
-      users = users.map(user => {
-        if (user.team && unUsedTeams.find(ut => ut.id == user.team)) user.team = null
-        if (user.post && unUsedPosts.find(up => up.id == user.post)) user.post = null
-
-        return user
+    open() {
+      let resolve, reject
+      const result = new Promise((res, rej) => {
+        resolve = res
+        reject = rej
       })
 
-      this.mixSaveAllImportData({users, teams, posts})
+      this.show = true
+      this.$options.ModalController = {resolve, reject}
+      return result
+    },
+    onChange() {
+      this.clearError()
+      if (!this.file) return
+
+      this.isLoading = true
+      IImport.users.upload(this.file)
+        .then(({users, teams, posts, fields}) => {
+          this.uploadingUsers = users
+          this.uploadingTeams = teams
+          this.uploadingPosts = posts
+          this.posts = [...posts]
+          this.teams = [...teams]
+          this.uploadFields = fields
+
+          this.isFileUploading = true
+          this.isUploadSuccessful = true
+        })
+        .catch(err => {
+          this.isUploadError = true
+          this.uploadError = err.message
+        })
+        .finally(() => this.isLoading = false)
     },
     clearError() {
       this.isUploadError = false
       this.uploadError = ''
     },
     reset() {
+      console.log('reset')
       this.isFileUploading = false;
       this.isUploadSuccessful = false;
-      this.fields = [];
-      this.importingUsers = [];
+      this.uploadingUsers = []
+      this.uploadingTeams = []
+      this.teams = []
+      this.uploadingPosts = []
+      this.posts = []
+      this.uploadFields = []
+
       this.file = null;
       this.clearError()
     },
     onSubmit() {
-      if (!this.importingUsers.length) return
+      const {uploadingUsers, uploadingTeams, uploadingPosts, teams, posts} = this
+      if (!uploadingUsers.length) return
 
-      this.saveData(this.importingUsers, this.newItems);
-      this.closeModal();
+      const users = uploadingUsers.map(user => {
+        if (!teams.includes(user.team) && uploadingTeams.includes(user.team) || !user.team) {
+          user.team = ''
+        }
+
+        if (!posts.includes(user.post) && uploadingPosts.includes(user.post) || !user.post) {
+          user.post = ''
+        }
+
+        return user
+      })
+
+      IImport.users.save(users, teams, posts)
+        .then(() => {
+          this.closeModal()
+        })
+
     },
     onCancel() {
       this.closeModal();
     },
     closeModal() {
-      this.$emit("close");
+      this.reset()
+      this.show = false
+      this.$options.ModalController.resolve(false)
     },
   },
 };
 </script>
-
-<style lang="scss" scoped>
-</style>

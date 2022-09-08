@@ -2,9 +2,11 @@ import {parsePostsInArray, parseTeamsInArray} from "@/plugins/utils";
 import {posts, teams} from "@/mixins/ComputedData";
 import {dataMethods} from "@/mixins/dataHelper";
 import {messageHelper} from "@/mixins/MessageMethods";
+import {dispatchMethods} from "@/mixins/BaseMethods";
 
 export const importMethods = {
-  mixins: [teams, posts, dataMethods, messageHelper], data: () => ({
+  mixins: [teams, posts, dataMethods, messageHelper, dispatchMethods],
+  data: () => ({
     newItems: {
       selectedTeams: [], selectedPosts: [], teams: [], posts: []
     }
@@ -42,31 +44,21 @@ export const importMethods = {
     },
     mixSaveAllImportData({users, teams, posts}) {
       let promises = []
-      if (users) promises.push(this.mixSaveUsers(users))
-      if (teams) promises.push(this.mixSaveTeams(teams))
-      if (posts) promises.push(this.mixSavePosts(posts))
-
-      return this.promiseMessages({
-        promise: Promise.all(promises),
-        msg: 'Данные успешно импортированы'
-      })
-    },
-    mixSaveUsers(users) {
-      return this.asyncDispatch({
+      if (users) promises.push({
         method: 'users/addMultiple',
         data: users
       })
-    },
-    mixSaveTeams(teams) {
-      return this.asyncDispatch({
+      if (teams) promises.push({
         method: 'teams/addMultiple',
         data: teams
       })
-    },
-    mixSavePosts(posts) {
-      return this.asyncDispatch({
+      if (posts) promises.push({
         method: 'posts/addMultiple',
         data: posts
+      })
+      return this.dispatchAllMethodsWithMessage({
+        tasks: promises,
+        msg: 'Данные успешно импортированы'
       })
     },
   }

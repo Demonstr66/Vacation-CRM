@@ -1,15 +1,16 @@
 import {AbilityBuilder} from "@casl/ability";
 
 function defineRulesForOwner(user, privacy) {
-  const { can, cannot, rules } = new AbilityBuilder();
+  const {can, cannot, rules} = new AbilityBuilder();
 
   can('manage', 'all')
 
   return rules
 }
+
 function defineRulesForAdmin(user, privacy) {
-  const { can, cannot, rules } = new AbilityBuilder()
-  const {manageUsers, manageVacations,  manageWS} = privacy['admins']
+  const {can, cannot, rules} = new AbilityBuilder()
+  const {manageUsers, manageVacations, manageWS} = privacy['admins']
 
   can('read', 'all')
 
@@ -18,7 +19,7 @@ function defineRulesForAdmin(user, privacy) {
 
   if (manageVacations) {
     can('manage', 'Vacation', {team: user.team})
-  }else {
+  } else {
     can('manage', 'Vacation', {uid: user.uid})
   }
 
@@ -28,9 +29,10 @@ function defineRulesForAdmin(user, privacy) {
 
   return rules
 }
+
 function defineRulesForLeader(user, privacy) {
-  const { can, cannot, rules } = new AbilityBuilder()
-  const {manageUsers, manageVacations,  manageWS, visibility} = privacy['leaders']
+  const {can, cannot, rules} = new AbilityBuilder()
+  const {manageUsers, manageVacations, manageWS, visibility} = privacy['leaders']
 
   can('read', 'all')
 
@@ -39,7 +41,7 @@ function defineRulesForLeader(user, privacy) {
 
   if (manageVacations) {
     can('manage', 'Vacation', {team: user.team})
-  }else {
+  } else {
     can('manage', 'Vacation', {uid: user.uid})
   }
 
@@ -50,9 +52,10 @@ function defineRulesForLeader(user, privacy) {
   return rules
 
 }
+
 function defineRulesForUser(user, privacy) {
-  const { can, cannot, rules } = new AbilityBuilder()
-  const {manageUsers, manageVacations,  manageWS} = privacy['users']
+  const {can, cannot, rules} = new AbilityBuilder()
+  const {manageUsers, manageVacations, manageWS} = privacy['users']
 
   can('read', 'all')
 
@@ -61,7 +64,7 @@ function defineRulesForUser(user, privacy) {
 
   if (manageVacations && manageVacations.length) {
     can('manage', 'Vacation', {team: user.team})
-  }else {
+  } else {
     cannot('manage', 'Vacation')
     can('manage', 'Vacation', {uid: user.uid})
   }
@@ -79,7 +82,7 @@ function defineRulesForUser(user, privacy) {
 }
 
 export default function defineAbilitiesFor(user, privacy) {
-  const { can, cannot, rules } = new AbilityBuilder();
+  const {can, cannot, rules} = new AbilityBuilder();
   const opt = JSON.parse(privacy)
   console.log(opt)
   if (!user) {
@@ -87,12 +90,16 @@ export default function defineAbilitiesFor(user, privacy) {
   }
 
   switch (user.role) {
-    // case "owner": return defineRulesForUser(user, opt);
+    case "owner":
+      return defineRulesForOwner(user, opt);
 
-    case "owner": return defineRulesForOwner(user, opt);
-    case "admin": return defineRulesForAdmin(user, opt);
-    case "leader": return defineRulesForLeader(user, opt);
-    case "user": return defineRulesForUser(user, opt);
+    // case "owner": return defineRulesForOwner(user, opt);
+    case "admin":
+      return defineRulesForOwner(user, opt);
+    case "leader":
+      return defineRulesForOwner(user, opt);
+    case "user":
+      return defineRulesForOwner(user, opt);
   }
 
   // if (user.active) {cannot('create', 'User')

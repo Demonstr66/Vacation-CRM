@@ -91,8 +91,8 @@ import IconBtnWithTip from "@/components/IconBtnWithTip";
 import {schedules} from "@/mixins/ComputedData";
 import schedulesHeaders from "@/plugins/TableHeaders/Schedules";
 import RowActions from "@/components/RowActions";
-import VacationStatusChip from "@/components/VacationStatusChip";
-import {Schedule} from "@/plugins/Schedule";
+import VacationStatusChip from "@/components/AppStatusChip";
+import {Schedule} from "@/plugins/servises/Schedule";
 import AppPopup from "@/components/AppPopup";
 
 

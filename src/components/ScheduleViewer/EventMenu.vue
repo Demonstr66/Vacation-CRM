@@ -34,7 +34,10 @@
     <v-card-actions>
       <VacationTools
         :status="vacation.status"
-        @click="(data) => $emit('click', data)"
+
+        @approve="approveVacation(vacation.id)"
+        @reject="rejectVacation(vacation.id)"
+        @cancel="cancelVacation(vacation.id)"
       />
     </v-card-actions>
   </v-card>
@@ -43,15 +46,16 @@
 <script>
 import {getShortUserNameByUID} from "@/mixins/ComputedData";
 import {normalizeDate} from "@/mixins/Filters";
-import VacationStatusChip from "@/components/VacationStatusChip";
+import VacationStatusChip from "@/components/AppStatusChip";
 import VacationRangeLabel from "@/components/VacationRangeLabel";
 import VacationTools from "@/components/ScheduleViewer/VacationTools";
-import {Vacation} from "@/plugins/Vacation";
+import {Vacation} from "@/plugins/servises/Vacation";
 
 export default {
   name: 'EventMenu',
   components: {VacationTools, VacationStatusChip, VacationRangeLabel},
   mixins: [getShortUserNameByUID, normalizeDate],
+  inject: ['rejectVacation', 'cancelVacation', 'approveVacation'],
   props: {
     vacation: {}
   },

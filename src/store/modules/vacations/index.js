@@ -1,21 +1,17 @@
-import {defVacation} from "@/plugins/schema";
 import shortUUID from "short-uuid";
 import {asyncTryDecorator, basePathFunction} from "@/plugins/utils";
-import {Vacation} from "@/plugins/Vacation";
+import {Vacation} from "@/plugins/servises/Vacation";
 
 const basePath = basePathFunction(`vacations/{wid}`)
 const test = (item, wid) => !!wid && !!item.sid && !!item.start && !!item.end && !!item.uid
-const normalize = defVacation
+const normalize = (...args) => Vacation.normalize(...args)
 
 export default {
-  namespaced: true,
-  state: () => ({
-    vacations: null,
-    ready: false
-  }),
-  getters: {
+  namespaced: true, state: () => ({
+    vacations: null, ready: false
+  }), getters: {
     get: (s) => s.vacations || {},
-    getBySid: (s) => (sid) => s.vacations ? s.vacations[sid] : [],
+    getBySid: (s) => (sid) => s.vacations ? s.vacations[sid] || [] : [],
     getBySidByUid: (s) => (sid, uid) => {
       try {
         let res = {}
@@ -45,8 +41,7 @@ export default {
       return res
     },
     isReady: (s) => s.ready
-  },
-  mutations: {
+  }, mutations: {
     set: (s, v) => {
       if (!s.ready) s.ready = true
 
@@ -55,22 +50,16 @@ export default {
       }
 
       s.vacations = v
-    },
-    setReady: (s, v) => s.ready = v,
-    clear: (s) => s.vacations = null
-  },
-  actions: {
+    }, setReady: (s, v) => s.ready = v, clear: (s) => s.vacations = null
+  }, actions: {
     initialize({dispatch}) {
       return dispatch('subscribe')
-    },
-    onLogOut({dispatch, commit}) {
+    }, onLogOut({dispatch, commit}) {
       dispatch('unsubscribe')
       commit('clear')
-    },
-    get({}) {
+    }, get({}) {
 
-    },
-    create({dispatch, rootGetters, getters}, vacation) {
+    }, create({dispatch, rootGetters, getters}, vacation) {
       return asyncTryDecorator(() => {
         const wid = rootGetters['app/getWID']
 
@@ -82,8 +71,7 @@ export default {
 
         return dispatch('DB/set', {path, key, data}, {root: true})
       })
-    },
-    delete({rootGetters, dispatch}, {id, sid}) {
+    }, delete({rootGetters, dispatch}, {id, sid}) {
       return asyncTryDecorator(() => {
         const wid = rootGetters['app/getWID']
         if (!id || !sid || !wid) throw new Error('Что-то пошло не так: vacations/delete -> test')
@@ -93,8 +81,7 @@ export default {
 
         return dispatch('DB/delete', {path, key}, {root: true})
       })
-    },
-    update({rootGetters, dispatch}, vacation) {
+    }, update({rootGetters, dispatch}, vacation) {
       return asyncTryDecorator(() => {
         const wid = rootGetters['app/getWID']
 
@@ -106,15 +93,13 @@ export default {
 
         return dispatch('DB/set', {path, key, data}, {root: true})
       })
-    },
-    subscribe({rootGetters, dispatch}) {
+    }, subscribe({rootGetters, dispatch}) {
       const wid = rootGetters['app/getWID']
       const path = basePath(wid)
       const setter = 'vacations/set'
 
       return dispatch('DB/subscribe', {path, setter}, {root: true})
-    },
-    unsubscribe({dispatch, rootGetters}) {
+    }, unsubscribe({dispatch, rootGetters}) {
       const wid = rootGetters['app/getWID']
       const path = basePath(wid)
 
@@ -133,6 +118,29 @@ export default {
         return dispatch('DB/delete', {path, key}, {root: true})
       })
     },
-  },
-  modules: {}
+
+    deleteAllByUser({getters, rootGetters, dispatch}, uid) {
+      return asyncTryDecorator(() => {
+        const wid = rootGetters['app/getWID']
+        if (!uid || !wid) throw new Error('Что-то пошло не так: vacations/deleteAllBySid -> test')
+
+        const vacations = getters.get
+
+        let promises = []
+
+        for (let sid in vacations) {
+          vacations[sid].map(vacation => {
+            if (vacation.uid === uid) {
+              const path = basePath(wid, sid)
+              const key = vacation.id
+
+              promises.push(dispatch('DB/delete', {path, key}, {root: true}))
+            }
+          })
+        }
+
+        return Promise.all(promises)
+      })
+    },
+  }, modules: {}
 }

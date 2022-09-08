@@ -1,6 +1,7 @@
 import {defPost, defTeam} from "@/plugins/schema";
 import * as XLSX from "xlsx/xlsx.mjs";
 import shortUUID from "short-uuid";
+import {Team} from "@/plugins/servises/Team";
 
 const moment = require('moment')
 
@@ -62,61 +63,57 @@ export function excelToArray(file) {
   })
 }
 
-export function parseArrayData(data, fields, existArray) {
-  return new Promise((res, rej) => {
-    try {
+export function groupArrayByHeaders(data, headers) {
+  let uniques = {}
+  return data.map(dataRow => {
+    let item = {}
 
-      let findingHeaders = data.shift().map(x => normalize('' + x))
-      let cols = {}
+    headers.map(header => {
+      const dataCell = dataRow[header.colId]
+      if (!dataCell && header.required) throw new Error('Пропущены обязательные поля')
 
-      for (let id in fields) {
-        let field = fields[id]
-        let req = !!field.required
-
-        let colIndex = findingHeaders.findIndex(header => header == field.model.toLowerCase())
-
-        if (colIndex == -1 && req) throw new Error('Отсутсвуют обязательные поля')
-
-        if (colIndex == -1) continue
-
-        cols[colIndex] = {...field}
+      if (header.unique) {
+        if (!uniques[header.model]) uniques[header.model] = []
+        if (uniques[header.model].includes(dataCell)) throw new Error(`Поле ${header.title} должно быть уникальным`)
+        uniques[header.model].push(dataCell)
       }
 
-      let items = data.map(d => {
-        let item = {}
-        for (let id in cols) {
-          let col = cols[id]
-          item[col.model] = d[id]
-          if (col.required && !!!d[id]) throw new Error('В некоторых строках пропущены' +
-            ' обязательные поля')
-        }
-        return item
-      })
+      item[header.model] = dataCell
+    })
 
-      for (let id in cols) {
-        let col = cols[id]
-        if (!!!col.uniq) continue
-
-        const arrOfColValues = items.map(item => item[col.model])
-        const setOfColValues = new Set(arrOfColValues)
-
-        if (arrOfColValues.length !== setOfColValues.size) throw new Error(`Поле "${col.title}" должно быть уникальным!`)
-
-        const arrOfExistColValues = existArray.map(item => item[col.model])
-
-        if (!arrOfExistColValues.length) continue
-
-        items = items.filter(item => arrOfExistColValues.indexOf(item[col.model]) == -1)
-      }
-
-
-      cols = Object.values(cols)
-      res({items, cols})
-
-    } catch (e) {
-      rej(e)
-    }
+    return item
   })
+}
+
+export function parseItems(users, key, existItems) {
+  let items = new Set(users.map(item => item[key]))
+  items = Array.from(items).filter(u => !!u)
+
+  items = items.filter(title => {
+    const item = existItems.find(i => i.title === title)
+    
+    if (item) {
+      users = users.map(user => {
+        if (user[key] === title) user[key] = item.id
+        return user
+      })
+    }
+
+    return !!!item
+  })
+
+  return {users, items}
+}
+
+export function parseHeaders(data, fields) {
+  const headers = fields.map(header => {
+    const colId = data[0].findIndex(str => String(str).toLowerCase() === header.model.toLowerCase())
+    if (header.required && colId === -1) throw new Error('Обязательные поля не найдены')
+
+    return {...header, colId}
+  })
+
+  return headers.filter(header => header.colId !== -1)
 }
 
 export function parseTeamsInArray(data, teams) {
@@ -309,7 +306,7 @@ export function mergeEvents(events) {
       currDays.push(allDaysInEvents[day])
       curr = moment(day)
       curr.add(1, 'days')
-      return
+
     }
   })
 
@@ -355,7 +352,14 @@ export function getKey(groupBy) {
   }
 }
 
-export function getCalendarAttributes({holidays, workdays, currentUserVacations, usersVacations, levels, isActually}) {
+export function getCalendarAttributes({
+                                        holidays,
+                                        workdays,
+                                        currentUserVacations,
+                                        usersVacations,
+                                        levels,
+                                        isActually
+                                      }) {
   const uid = this.uid
   const user = {...this.$store.getters['users/getUserById'](uid)}
   let exceptionAttr = [

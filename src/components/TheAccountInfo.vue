@@ -12,7 +12,7 @@
               :rules="[blankCheck, emailCheck]"
               label="Email"
               name="email"
-              validate-on-blur
+
               @change="changed"
             >
               <template v-slot:prepend>

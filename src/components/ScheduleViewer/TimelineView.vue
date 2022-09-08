@@ -3,18 +3,24 @@
     <groupTools
       v-model="groupBy"
       :groups="groups"
-      @clickFilter="$emit('showFiltersBar')"
     />
-    <div v-if="!tree.length">Отсутствуют данные</div>
+    <template v-if="!tree.length">
+      <v-divider class="mt-5"/>
+      <div
+        class="text-center my-3 subtitle-2 font-weight-regular"
+        style="color: rgba(0, 0, 0, 0.38);"
+      >
+        <span v-if="vacations.length">Не найдено подходящих записей</span>
+        <span v-else>Отсутствуют данные</span>
+      </div>
+      <v-divider/>
+    </template>
     <the-timeline
       v-else
       :exception="exception || []"
       :items="tree"
       :year="parseInt(year)"
-
-      @click="({type, id}) => $emit('click', {type, item: getVacationById(id)})"
-    >
-    </the-timeline>
+    />
   </div>
 </template>
 
@@ -29,6 +35,9 @@ export default {
   components: {GroupTools, TheTimeline},
   mixins: [teams, tasks, posts],
   props: {
+    filters: {
+      type: Array
+    },
     vacations: {},
     year: {
       type: [String, Number]
@@ -47,9 +56,12 @@ export default {
     ],
   }),
   computed: {
+    filteredVacations() {
+      return this.vacations.filter(this.filter)
+    },
     tree() {
-      const {vacations, groupBy, hideEmptyGroups} = this
-      const users = [...this.groupVacationsByUser(Object.values(vacations))]
+      const {filteredVacations, groupBy, hideEmptyGroups} = this
+      const users = [...this.groupVacationsByUser(Object.values(filteredVacations))]
       let tree = [...convertUsersToTree(users, groupBy, this.getHeaders(groupBy))]
 
       if (hideEmptyGroups && groupBy) {
@@ -60,6 +72,12 @@ export default {
     },
   },
   methods: {
+    filter(item) {
+      const {filters} = this
+      if (!filters || !filters.length) return true
+
+      return filters.every(f => f(item))
+    },
     getVacationById(id) {
       return this.vacations.find(v => v.id === id)
     },

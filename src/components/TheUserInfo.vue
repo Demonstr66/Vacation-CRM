@@ -10,7 +10,7 @@
           :disabled="disabled"
           :rules="[blankCheck, fioCheck]"
           label="ФИО"
-          validate-on-blur
+
           name="fullName"
           @change="changed"
         >
@@ -41,7 +41,7 @@
         <!--          :disabled="disabled"-->
         <!--          :rules="[fioCheck]"-->
         <!--          hint="От: "-->
-        <!--          validate-on-blur-->
+        <!--          -->
         <!--          label="ФИО для шаблона заявления"-->
         <!--          name="templateName"-->
         <!--          @change="changed"-->

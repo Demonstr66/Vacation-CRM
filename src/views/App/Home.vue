@@ -1,8 +1,38 @@
 <template>
   <div>
-    <v-btn @click="test">test</v-btn>
-    <v-btn @click="get">get</v-btn>
-    <v-btn @click="update">update</v-btn>
+    <app-base-sheet>
+      <div>HEADER</div>
+    </app-base-sheet>
+    <app-block-with-right-navbar>
+
+      <template #main>
+        <app-base-sheet>
+          <div>MAIN</div>
+          <v-btn @click="test">click</v-btn>
+          <div>
+            Lorem ipsum dolor sit amet, consectetur adipisicing elit. Consequuntur dolor laboriosam
+            libero nesciunt veritatis? Aliquid, aperiam culpa cupiditate eaque eos est et
+            exercitationem id, nobis non officia, quo soluta voluptatibus?
+          </div>
+          <table>
+            <tr v-for="(row, idx) in table" :key="idx">
+              <td>{{ row[0] }}</td>
+              <td>{{ row[1] }}</td>
+            </tr>
+          </table>
+        </app-base-sheet>
+      </template>
+      <template #navbar>
+        <app-base-sheet>
+          <div>NAVBAR</div>
+          <div>
+            Lorem ipsum dolor sit amet, consectetur adipisicing elit. Dicta eos natus porro
+            quibusdam repellat sit tempore voluptates? Aperiam consequuntur dignissimos ea,
+            excepturi explicabo inventore laborum minima neque non nostrum voluptates.
+          </div>
+        </app-base-sheet>
+      </template>
+    </app-block-with-right-navbar>
   </div>
 </template>
 
@@ -12,17 +42,440 @@ import MainTools from "@/components/user/tools/main";
 import {messageHelper} from "@/mixins/MessageMethods";
 import {schedules, user} from "@/mixins/ComputedData";
 import abilityFor from "@/plugins/defineAbilities";
-import {Vacation} from "@/plugins/Vacation";
+import {Vacation} from "@/plugins/servises/Vacation";
+import AppBlockWithRightNavbar from "@/components/AppBlockWithRightNavbar";
+import AppBaseSheet from "@/layouts/AppBaseSheet";
 
 export default {
-  components: {MainTools},
+  components: {AppBaseSheet, AppBlockWithRightNavbar, MainTools},
   mixins: [messageHelper, user, schedules],
   data: () => ({
-    vacations: null
+    vacations: null,
+    dates: null,
+    table: []
   }),
   methods: {
     test() {
-      console.log(this.vacations)
+      let data = `1023
+1019
+1019
+1019
+1019
+1019
+1019
+1022
+1024
+1024
+1024
+1022
+1022
+1019
+1019
+1019
+1019
+1022
+1023
+1019
+1019
+1022
+1022
+1023
+1002
+1019
+1019
+1019
+1002
+1022
+1023
+1019
+1025
+1022
+1021
+1021
+1024
+1021
+1023
+1022
+1002
+1021
+1002
+1024
+1023
+1021
+1021
+1021
+1021
+1026
+1025
+1025
+1027
+1002
+1023
+1023
+1023
+1002
+1024
+1005
+1022
+1022
+1002
+1023
+1022
+1023
+1023
+1023
+1023
+1023
+1002
+1002
+1002
+1002
+1005
+1005
+1002
+1007
+1027
+1027
+1027
+1027
+1027
+1022
+1027
+1022
+1022
+1002
+1022
+1025
+1025
+1002
+1026
+1025
+1025
+1025
+1025
+1002
+1002
+1025
+1025
+1025
+1007
+1025
+1025
+1007
+1027
+1025
+1024
+1024
+1010
+1005
+1007
+1005
+1025
+1010
+1007
+1007
+1007
+1023
+1023
+1026
+1026
+1007
+1020
+1020
+1009
+1020
+1013
+1013
+1009
+1009
+1020
+1014
+1001
+1001
+1001
+1010
+1020
+1014
+1020
+1014
+1001
+1014
+1009
+1009
+1010
+1009
+1026
+1009
+1013
+1030
+1013
+1024
+1024
+1024
+1024
+1024
+1020
+1007
+1007
+1014
+1014
+1009
+1009
+1009
+1014
+1013
+1007
+1007
+1007
+1007
+1005
+1007
+1009
+1014
+1007
+1011
+1011
+1011
+1011
+1006
+1014
+1011
+1009
+1014
+1011
+1011
+1005
+1001
+1001
+1001
+1001
+1001
+1001
+1006
+1006
+1006
+1006
+1001
+1014
+1006
+1006
+1009
+1009
+1009
+1011
+1009
+1014
+1011
+1005
+1013
+1013
+1013
+1004
+1004
+1003
+1003
+1006
+1006
+1004
+1008
+1014
+1011
+1011
+1017
+1017
+1017
+1003
+1026
+1026
+1026
+1010
+1010
+1026
+1003
+1003
+1011
+1014
+1013
+1013
+1021
+1021
+1011
+1017
+1013
+1003
+1004
+1015
+1001
+1001
+1015
+1015
+1015
+1001
+1001
+1004
+1004
+1010
+1026
+1015
+1015
+1026
+1010
+1005
+1014
+1013
+1013
+1013
+1015
+1008
+1017
+1010
+1010
+1008
+1003
+1014
+1017
+1018
+1012
+1017
+1012
+1012
+1013
+1016
+1017
+1021
+1006
+1006
+1021
+1012
+1016
+1021
+1006
+1005
+1005
+1012
+1001
+1017
+1016
+1012
+1012
+1012
+1012
+1012
+1012
+1012
+1012
+1018
+1021
+1010
+1010
+1010
+1018
+1005
+1021
+1003
+1003
+1003
+1003
+1005
+1003
+1021
+1010
+1012
+1012
+1018
+1018
+1017
+1017
+1018
+1010
+1011
+1011
+1011
+1018
+1017
+1017
+1016
+1003
+1003
+1003
+1005
+1012
+1018
+1010
+1036
+1017
+1017
+1015
+1015
+1015
+1015
+1015
+1015
+1015
+1017
+1013
+1018
+1015
+1021
+1021
+1021
+1005
+1013
+1015
+1013
+1016
+1018
+1016
+1016
+1006
+1006
+1310
+1016
+1006
+1004
+1018
+1016
+1016
+1004
+1005
+1004
+1004
+1005
+1026
+1004
+1006
+1026
+1005
+1004
+1026
+1006
+1006
+1003
+1026
+1005
+1004
+1004
+1004
+1004
+1016
+1016
+1016
+1016
+1016
+1016
+1005
+1017
+1026
+1026`
+
+      let res = {}
+      data = data.split('\n').filter(x => !!x)
+
+      data.map(x => {
+        if (!res[x]) res[x] = 0
+        res[x]++
+      })
+      this.table = Object.entries(res)
     },
     async get() {
       let vacations = this.$store.getters['vacations/get']

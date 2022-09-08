@@ -1,21 +1,24 @@
 <template>
-  <div class="d-flex justify-space-between">
-    <div>
-      <small>Группировать по</small>
-      <a
+  <div class="d-flex justify-space-between my-2">
+    <div class="d-flex flex-row align-center text-body-1">
+      <span class="mr-1">Группировать по</span>
+      <span
         v-for="(group, idx) in groups"
         :key="idx"
-        :class="{'text--secondary': group.value !== groupBy}"
-        class="ml-2"
+        :class="{
+          'info--text': group.value === groupBy
+        }"
+        class="ml-2 font-weight-light"
+        role="button"
         @click.prevent="toggleGroup(group.value)"
       >
-        <small>{{ group.text }}</small>
-      </a>
+        {{ group.text }}
+      </span>
     </div>
     <v-btn
-      v-if="$vuetify.breakpoint.mdAndDown"
+      v-if="$vuetify.breakpoint.smAndDown"
       icon
-      @click.stop="$emit('clickFilter')"
+      @click.stop="openRightSidebar"
     >
       <v-icon>mdi-tune-variant</v-icon>
     </v-btn>
@@ -43,6 +46,7 @@ export default {
       }
     }
   },
+  inject: ['openRightSidebar'],
   methods: {
     toggleGroup(val) {
       this.groupBy = this.groupBy === val ? null : val

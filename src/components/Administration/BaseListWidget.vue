@@ -1,49 +1,51 @@
 <template>
   <widget :title="title">
     <v-divider></v-divider>
-    <div class="text-right">
-      <icon-btn-with-tip
-        :color="sort !== 0 ? 'primary' : ''"
-        :icon="'mdi-sort-alphabetical-' + (sort !== 2 ? 'ascending' : 'descending')"
-        @click="toggleSort"
-      >
-        Сортировка
-      </icon-btn-with-tip>
-    </div>
-    <v-divider></v-divider>
-    <v-list v-if="items && items.length > 0" class="pa-0 ma-0">
-      <v-list-item
-        v-for="(item, id) in sortedItems"
-        :key="id"
-        :class="{ editing: item.id === newItemId }"
-        class="pa-0 border-bottom"
-      >
-        <v-list-item-content>
-          <v-list-item-title v-text="item.title"></v-list-item-title>
-          <slot :item="item" name="subtitle">
-          </slot>
-        </v-list-item-content>
-        <v-list-item-action class="d-flex flex-row" v-if="action">
-          <icon-btn-with-tip
-            color="primary"
-            icon="mdi-pencil"
-            @click="onEditItem(item)"
-          >
-            Изменить
-          </icon-btn-with-tip>
-          <icon-btn-with-tip
-            color="error"
-            icon="mdi-close"
-            @click="onDeleteItem(item.id)"
-          >
-            Удалить
-          </icon-btn-with-tip>
-        </v-list-item-action>
-      </v-list-item>
-    </v-list>
-    <span v-else>
+    <template v-if="items && items.length > 0">
+      <div class="text-right">
+        <icon-btn-with-tip
+          :color="sort !== 0 ? 'primary' : ''"
+          :icon="'mdi-sort-alphabetical-' + (sort !== 2 ? 'ascending' : 'descending')"
+          @click="toggleSort"
+        >
+          Сортировка
+        </icon-btn-with-tip>
+      </div>
+      <v-divider></v-divider>
+      <v-list class="pa-0 ma-0">
+        <v-list-item
+          v-for="(item, id) in sortedItems"
+          :key="id"
+          :class="{ editing: item.id === newItemId }"
+          class="pa-0 border-bottom"
+        >
+          <v-list-item-content>
+            <v-list-item-title v-text="item.title"></v-list-item-title>
+            <slot :item="item" name="subtitle">
+            </slot>
+          </v-list-item-content>
+          <v-list-item-action v-if="action" class="d-flex flex-row">
+            <icon-btn-with-tip
+              color="primary"
+              icon="mdi-pencil"
+              @click="onEditItem(item)"
+            >
+              Изменить
+            </icon-btn-with-tip>
+            <icon-btn-with-tip
+              color="error"
+              icon="mdi-close"
+              @click="onDeleteItem(item)"
+            >
+              Удалить
+            </icon-btn-with-tip>
+          </v-list-item-action>
+        </v-list-item>
+      </v-list>
+    </template>
+    <div v-else class="text-center subtitle-1 mt-4">
       {{ noDataText }}
-    </span>
+    </div>
     <v-form
       v-if="action"
       ref="addItem"
@@ -80,14 +82,13 @@
         </template>
       </v-text-field>
     </v-form>
-    <Alert
-      :show="showAlert"
-      @cancel="closeAlert"
-      @submit="deleteItem"
+    <app-popup
+      ref="listPopup"
     >
-      <slot :item="deletingId" name="alert">
-      </slot>
-    </Alert>
+      <template v-slot:default="{data}">
+        <slot :data="data" name="alert"/>
+      </template>
+    </app-popup>
   </widget>
 </template>
 
@@ -97,10 +98,12 @@ import IconBtnWithTip from "../IconBtnWithTip.vue";
 import Alert from "../Modals/Alert.vue";
 import {inputValidations} from "@/mixins/InputValidations";
 import {messageHelper} from "@/mixins/MessageMethods";
+import AppPopup from "@/components/AppPopup";
 
 export default {
   mixins: [inputValidations, messageHelper],
   components: {
+    AppPopup,
     Widget,
     IconBtnWithTip,
     Alert,
@@ -124,25 +127,22 @@ export default {
     sort: 0,
     newItemTitle: null,
     newItemId: null,
-    deletingId: null,
     valid: false,
-    showAlert: false
   }),
   computed: {
     sortedItems() {
-      const temp = [...this.items]
-      if (this.sort === 0) return temp
+      const {items, sort} = this
+      const temp = [...items]
+      if (sort === 0) return temp
 
-      return temp.sort((a, b) =>
-        this.compare(a.title, b.title)
-          ? 0
-          : -1
-      )
+      return temp.sort(this.compare)
     }
   },
   methods: {
-    compare(a, b) {
-      return this.sort == 1 ? a > b : a < b
+    compare(item1, item2) {
+      let a = item1.title.toLowerCase(),
+        b = item2.title.toLowerCase()
+      return (this.sort === 1 ? a > b : a < b) ? 0 : -1
     },
     toggleSort() {
       this.sort = (this.sort + 1) % 3
@@ -156,29 +156,23 @@ export default {
       this.clearForm();
     },
 
-    onDeleteItem(id) {
-      this.deletingId = id
-      this.showAlert = true
-    },
-    closeAlert() {
-      this.deletingId = null
-      this.showAlert = false
+    async onDeleteItem(data) {
+      let result = await this.$refs.listPopup.open(data)
+
+      if (result) {
+        this.$emit('delete', data.id)
+      }
     },
 
     saveItem() {
+      if (!this.valid) return
       const newItem = {title: this.newItemTitle, id: this.newItemId}
       this.$emit('save', newItem)
       this.clearForm();
     },
-    deleteItem() {
-      const id = this.deletingId
-      this.$emit('delete', id)
-      this.closeAlert()
-    },
     clearForm() {
       this.item = null
       this.newItemId = null
-      this.deletingId = null
       this.$refs.addItem.reset()
       this.$refs.inputTitle.blur()
     },

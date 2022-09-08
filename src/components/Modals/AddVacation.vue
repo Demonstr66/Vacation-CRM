@@ -2,10 +2,10 @@
   <BaseModal
     :result="dates"
     :show="show"
-    :submitDisable="!valid"
+    :submitDisable="!dates"
     large
     title="Новый отпуск"
-    @cancel="onCancel"
+    @cancel="close(false)"
     @submit="onSubmit"
   >
     <v-row class="mt-2">
@@ -13,12 +13,11 @@
         <AddVacationCalendar
           v-if="calendar"
           v-model="dates"
-          :actually="isActually"
+
           :current-user-vacations="currentUserVacations"
           :exception="exception"
-          :uid="uid"
 
-          :vacations="colleaguesVacations"
+          :uid="uid"
           :year="year"
         />
 
@@ -32,27 +31,25 @@
               <span class="font-weight-bold"> {{ rangeLength }}</span>
             </v-chip>
           </div>
-          <v-form ref="datesForm" v-model="valid">
-            <v-text-field
-              v-model="rangeLabel"
-              :rules="[blankCheck]"
-              hide-details
-              label="Даты"
-              prepend-icon="mdi-calendar"
-              readonly
-            ></v-text-field>
-            <v-checkbox
-              v-model="isActually"
-              hide-details
-              label="Фактический отпуск (без заявления)"
-            >
-            </v-checkbox>
-          </v-form>
+          <v-text-field
+            v-model="rangeLabel"
+            hide-details
+            label="Даты"
+            prepend-icon="mdi-calendar"
+            readonly
+          ></v-text-field>
+          <v-textarea
+            v-model="comment"
+            hide-details
+            no-resize
+            label="Комментарий"
+          >
+          </v-textarea>
         </div>
         <div>
           <small>
-            Выбранные даты будут будут отправлены на утверждение руководителю
-            и будут видны для всех сотрудников сразу после отправки
+            Выбранные Вами даты будут видны другим пользователям только после отправки на
+            утверждение
           </small>
           <v-divider/>
           <small class="red--text">
@@ -66,7 +63,7 @@
     <v-row no-gutters>
       <v-col class="d-flex flex-row justify-start" cols="12">
         <div
-          v-for="(lvl, index) in levels.filter(l => !l.hidden)"
+          v-for="(lvl, index) in levels"
           :key="index"
           class="ml-2"
         >
@@ -77,30 +74,7 @@
         </div>
       </v-col>
       <v-col class="d-flex flex-row justify-start" cols="12">
-        <div
-          class="ml-2">
-          <v-badge color="black" dot inline left>
-            <span class="subtitle-1"> Рабочие дни </span>
-          </v-badge>
-        </div>
-        <div
-          class="ml-2">
-          <v-badge color="error" dot inline left>
-            <span class="subtitle-1"> Выходные дни </span>
-          </v-badge>
-        </div>
-        <div
-          class="ml-2">
-          <v-badge color="#2196f3" dot inline left>
-            <span class="subtitle-1"> Праздничные дни </span>
-          </v-badge>
-        </div>
-        <div
-          class="ml-2">
-          <v-badge color="warning" dot inline left>
-            <span class="subtitle-1"> Рабочие выходные дни </span>
-          </v-badge>
-        </div>
+        <calendar-legend/>
       </v-col>
     </v-row>
   </BaseModal>
@@ -109,37 +83,26 @@
 <script>
 import BaseModal from "./Base.vue";
 import {dateDiff} from "@/plugins/utils";
-import {dataMethods} from "@/mixins/dataHelper";
-import {getChiefOf, myVacations} from "@/mixins/ComputedData";
-import {normalizeDate} from "@/mixins/Filters";
-import {VacationMethods} from "@/mixins/VacationMethods";
-import {inputValidations} from "@/mixins/InputValidations";
 import AddVacationCalendar from "@/components/Modals/AddVacationCalendar";
-import {Vacation} from "@/plugins/Vacation";
+import {Vacation} from "@/plugins/servises/Vacation";
+import CalendarLegend from "@/views/App/CalendarLegend";
 
 export default {
+  ModalController: null,
   components: {
+    CalendarLegend,
     AddVacationCalendar,
     BaseModal
   },
-  mixins: [getChiefOf, dataMethods, myVacations, VacationMethods, normalizeDate, inputValidations],
-  props: {
-    show: {
-      type: Boolean,
-      required: true
-    },
-    vacationId: {
-      type: String,
-      default: null
-    },
-  },
   data: () => ({
+    vacationId: undefined,
+    show: false,
+
     calendar: false,
-    valid: false,
 
     schedule: {},
-    dates: {},
-    isActually: false,
+    dates: null,
+    comment: "",
 
     currentUserVacations: [],
     colleaguesVacations: [],
@@ -150,42 +113,51 @@ export default {
     exception: {},
     uid: null,
 
-
     attributes: [],
 
     levels: [
-      {id: 0, hidden: false, title: 'Руководители', key: 'chief', color: 'teal'},
+      {id: 2, hidden: false, title: 'Руководители', key: 'chief', color: 'orange'},
       {id: 1, hidden: false, title: 'Коллеги по команде', key: 'team', color: 'green'},
-      {id: 2, hidden: false, title: 'Коллеги по задачам', key: 'task', color: 'orange'},
+      {id: 0, hidden: false, title: 'Коллеги по задачам', key: 'task', color: 'blue'},
     ],
 
   }),
   computed: {
-    isShow: {
-      get() {
-        return this.show
-      },
-      set(val) {
-        this.$emit('update:show', val)
-      }
-    },
     rangeLabel() {
-      const {start, end} = this.dates
-      if (!start) return ""
+      const {dates} = this
+      if (!dates) return ""
 
-      const formattedStart = this.$moment(start).format('DD.MM.YYYY')
-      const formattedEnd = this.$moment(end).format('DD.MM.YYYY')
+      const formattedStart = this.$moment(dates.start).format('DD.MM.YYYY')
+      const formattedEnd = this.$moment(dates.end).format('DD.MM.YYYY')
 
       return `C ${formattedStart} по ${formattedEnd}`
+
     },
     rangeLength() {
       const {dates} = this
 
-      return dates.start ? dateDiff(dates.start, dates.end) : 0
-    },
-  },
+      if (!dates) return 0
 
+      return dateDiff(dates.start, dates.end)
+    }
+  },
   methods: {
+    open(vacationId) {
+      let resolve, reject
+      const result = new Promise((res, rej) => {
+        resolve = res
+        reject = rej
+      })
+
+      this.vacationId = vacationId
+      this.show = true
+      this.$options.ModalController = {resolve, reject}
+      return result
+    },
+    close(val) {
+      this.show = false
+      this.$options.ModalController.resolve(val)
+    },
     initialize() {
       const {id, uid} = this.$route.params
       const schedule = this.$store.getters['schedules/getById'](id)
@@ -201,8 +173,8 @@ export default {
           end: new Date(currentVacation.end),
         }
 
-        this.isActually = currentVacation.actually
         this.vacation = currentVacation
+        this.comment = currentVacation.comment
       }
 
       this.schedule = schedule
@@ -210,12 +182,10 @@ export default {
       this.exception = schedule.exception || []
       this.uid = uid
 
-      //Отпуска коллег
-      this.colleaguesVacations = scheduleVacations?.filter(v => v.uid !== uid)
-
       //Мои отпуска, кроме текущего
-      this.currentUserVacations = scheduleVacations?.filter(v => v.uid === uid && v.id !==
-        vacationId)
+      this.currentUserVacations = scheduleVacations
+        .filter(v => v.uid === uid && v.id !== vacationId)
+        .filter(v => !v.isRejected())
 
       this.$nextTick(() => {
         this.calendar = true
@@ -230,32 +200,25 @@ export default {
           sid: this.schedule.id,
         })
 
-      vacation.actually = this.isActually
-
+      vacation.comment = this.comment
       vacation.start = this.$moment(this.dates.start).format('YYYY-MM-DD')
       vacation.end = this.$moment(this.dates.end).format('YYYY-MM-DD')
       vacation.days = this.rangeLength
 
       if (this.vacationId) {
-        vacation.update({type: 'edit'})
+        vacation.edit()
       } else {
         vacation.create()
       }
 
-      this.closeModal()
-    },
-    onCancel() {
-      this.closeModal();
-    },
-    closeModal() {
-      this.isShow = false
-    },
 
+      this.close(true)
+    },
     reset() {
-      this.valid = false
+      this.vacationId = undefined
       this.schedule = {}
-      this.dates = {}
-      this.isActually = false
+      this.dates = null
+      this.comment = ""
       this.calendar = false
     }
   },
@@ -273,10 +236,3 @@ export default {
   }
 };
 </script>
-
-<style lang="css">
-.vc-bar {
-  height: 5px;
-}
-
-</style>
