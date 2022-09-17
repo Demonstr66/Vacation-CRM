@@ -1,8 +1,9 @@
 <template>
   <app-base-sheet>
     <v-card
-      class="pa-0"
+      class="pa-0 d-flex flex-column justify-start"
       flat
+      style="height: 100%"
     >
       <v-card-title v-if="title != ''" :title="title" class="justify-center pb-0">
         {{ title | truncate }}
@@ -10,6 +11,9 @@
       <v-card-text class="justify-center pb-0">
         <slot></slot>
       </v-card-text>
+      <v-card-actions class="mt-auto">
+        <slot name="actions"/>
+      </v-card-actions>
     </v-card>
   </app-base-sheet>
 </template>

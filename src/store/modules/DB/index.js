@@ -12,7 +12,7 @@ export default {
         onValue(dataRef, (data) => {
           res()
           const val = data.val();
-          commit(setter, val, {root: true})
+          if (setter) commit(setter, val, {root: true})
           if (dispatcher) dispatch(dispatcher, val, {root: true})
         });
       })
@@ -22,18 +22,22 @@ export default {
       const wsRef = ref(db, path);
       off(wsRef)
     },
-    set({}, {path, key, data}) {
+    set({rootGetters}, {path, key, data}) {
+      if (rootGetters.sandboxMode) return Promise.reject({code: 'sandboxMode'})
+
       return new Promise(async (res, rej) => {
         try {
           const db = getDatabase();
           await set(ref(db, `${path}/${key}`), data)
-          res()
+          res(key)
         } catch (e) {
           rej(e)
         }
       })
     },
-    delete({}, {path, key}) {
+    delete({rootGetters}, {path, key}) {
+      if (rootGetters.sandboxMode) return Promise.reject({code: 'sandboxMode'})
+
       return new Promise(async (res, rej) => {
         try {
           const db = getDatabase();

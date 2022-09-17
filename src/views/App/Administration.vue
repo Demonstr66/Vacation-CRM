@@ -27,12 +27,11 @@
 
 import Users from "@/components/Administration/Users";
 import Structure from "@/components/Administration/Structure";
-import Archive from "@/components/Administration/Archive";
 import AppBaseSheet from "@/layouts/AppBaseSheet";
 
 export default {
   name: "Administration",
-  components: {AppBaseSheet, Archive, Structure, Users},
+  components: {AppBaseSheet, Structure, Users},
   props: {
     sidebarData: {}
   },
@@ -40,8 +39,7 @@ export default {
     activeTab: 0,
     tabs: [
       {id: 1, name: "Сотрудники", route: 'Tab1', component: 'Users'},
-      {id: 2, name: "Структура", route: 'Tab2', component: 'Structure'},
-      // {id: 3, name: "Архив", route: 'Tab3', component: 'Archive'}
+      {id: 2, name: "Структура", route: 'Tab2', component: 'Structure'}
     ]
   }),
   created() {
@@ -53,9 +51,6 @@ export default {
     activeTab(id) {
       const name = this.tabs[id].route
       if (this.$route.name !== name) this.$router.replace({name})
-    },
-    sidebarData(val) {
-      console.log(val)
     }
   }
 };

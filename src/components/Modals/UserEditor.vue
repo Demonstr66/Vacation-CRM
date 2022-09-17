@@ -10,6 +10,7 @@
     <v-form ref="form" v-model="valid" class="mt-4">
       <the-user-info
         ref="user"
+        :disabled="!$can('updatePersonalData', user)"
         :user="user"
         hide-action
         hide-additional-fields
@@ -19,13 +20,28 @@
       <the-account-info
         ref="account"
         :cols="$vuetify.breakpoint.mdAndUp ? 2 : 1"
-        :disable-email="false"
+        :disable-team="!$can('updateTeam', user)"
+        :disabled="!$can('updateAccountData', user)"
         :user="user"
         hide-action
         hide-title
       >
       </the-account-info>
     </v-form>
+    <Can I="updateUserRole" :this="user">
+      <div>
+        <v-switch
+          v-model="role"
+          class="ml-auto"
+          color="error"
+          flat
+          hide-details
+          inset
+          label="Администратор"
+          style="width: 200px"
+        />
+      </div>
+    </Can>
   </BaseModal>
 </template>
 
@@ -45,7 +61,8 @@ export default {
   data: () => ({
     show: false,
     valid: false,
-    user: {}
+    user: {},
+    role: false
   }),
   computed: {
     title() {
@@ -61,7 +78,8 @@ export default {
       })
 
       if (uid) {
-        this.user = {...this.$store.getters['users/getUserById'](uid)}
+        this.user = this.$store.getters['users/getUserById'](uid)
+        this.role = 'admin' === this.user.role
       } else {
         this.user = new User()
       }
@@ -77,11 +95,24 @@ export default {
           ...this.$refs.account.getData(),
           ...this.$refs.user.getData()
         }
-      );
+      )
 
-      !!user.uid
-        ? user.update().then(() => this.close())
-        : user.create().then(() => this.close())
+      let shouldDeterminateRole = false
+      if (this.$can('updateUserRole', this.user)) {
+        if (this.role) {
+          user.role = 'admin'
+        } else if (user.role === 'admin') {
+          user.role = 'user'
+          shouldDeterminateRole = true
+        }
+      }
+
+      const promise = user.uid ? user.update() : user.create()
+
+      promise.then(() => {
+        if (shouldDeterminateRole) User.determinateLeaders()
+        this.close()
+      })
     },
     close() {
       this.show = false
@@ -89,6 +120,7 @@ export default {
     },
     reset() {
       this.user = new User()
+      this.role = false
       this.$nextTick(() => {
         this.$refs.form.resetValidation()
       })

@@ -20,30 +20,15 @@ const ScheduleEditor = () => import('@/views/App/ScheduleEditor')
 const User = () => import('@/views/App/User')
 const Tab1 = () => import('@/components/Administration/Users')
 const Tab2 = () => import('@/components/Administration/Structure')
-const Tab3 = () => import('@/components/Administration/Archive')
 const Viewer1 = () => import('@/components/ScheduleViewer/ListView'  )
 const Viewer2 = () => import('@/components/ScheduleViewer/TimelineView'  )
-const Viewer3 = () => import('@/components/ScheduleViewer/FullCalendarView'  )
-const RightSidebar = () => import('@/components/Administration/AdministrationRightSidebar'  )
+const ScheduleStatistic = () => import('@/views/App/ScheduleStatistic')
 
-const test = () => import('@/views/test'  )
 
 Vue.use(VueRouter)
 
 
 const routes = [
-  {
-    path: '/test',
-    name: 'Test',
-    component: test,
-    meta: {
-      layout: 'MainLayout',
-      title: 'С 7 по 8 февраля на двоих',
-      protected: {
-        accessLevel: [2]
-      }
-    }
-  },
   {
     path: '/',
     name: 'Home',
@@ -80,18 +65,6 @@ const routes = [
       }
     }
   },
-  // {
-  //   path: '/manage',
-  //   name: 'Manage',
-  //   component: Manage,
-  //   meta: {
-  //     layout: 'MainLayout',
-  //     title: 'Управление',
-  //     protected: {
-  //       accessLevel: [2]
-  //     }
-  //   }
-  // },
   {
     path: '/administration',
     name: 'Administration',
@@ -123,17 +96,6 @@ const routes = [
             accessLevel: [2]
           }
         }
-      }, {
-        path: 'tab3',
-        component: Tab3,
-        name: 'Tab3',
-        meta: {
-          layout: 'MainEmptyLayout',
-          title: 'Управление',
-          protected: {
-            accessLevel: [2]
-          }
-        }
       }],
     meta: {
       layout: 'MainEmptyLayout',
@@ -155,30 +117,6 @@ const routes = [
       }
     }
   },
-  // {
-  //   path: '/schedules',
-  //   name: 'Schedules',
-  //   component: Schedules,
-  //   meta: {
-  //     layout: 'MainLayout',
-  //     title: 'Графики отпусков',
-  //     protected: {
-  //       accessLevel: [2]
-  //     }
-  //   }
-  // },
-  // {
-  //   path: '/schedule/:id',
-  //   name: 'Schedule',
-  //   component: Schedule,
-  //   meta: {
-  //     layout: 'MainLayout',
-  //     title: 'График отпусков',
-  //     protected: {
-  //       accessLevel: [2]
-  //     }
-  //   }
-  // },
   {
     path: '/schedules',
     name: 'Schedules',
@@ -246,21 +184,22 @@ const routes = [
             accessLevel: [2]
           }
         }
-      }, {
-        path: 'fullcalendar/:id',
-        component: Viewer3,
-        name: 'Viewer3',
-        meta: {
-          layout: 'MainEmptyLayout',
-          title: 'Управление',
-          protected: {
-            accessLevel: [2]
-          }
-        }
       }],
     meta: {
       layout: 'MainEmptyLayout',
       title: 'Просмотр',
+      protected: {
+        accessLevel: [2]
+      }
+    }
+  },
+  {
+    path: '/schedules/stat/:id',
+    component: ScheduleStatistic,
+    name: 'ScheduleStatistic',
+    meta: {
+      layout: 'MainEmptyLayout',
+      title: 'Статистика',
       protected: {
         accessLevel: [2]
       }
@@ -272,7 +211,7 @@ const routes = [
     component: Account,
     meta: {
       layout: 'MainEmptyLayout',
-      title: 'Настройки аккаунта',
+      title: '',
       protected: {
         accessLevel: [2]
       }

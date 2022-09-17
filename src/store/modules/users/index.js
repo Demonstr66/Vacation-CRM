@@ -4,7 +4,7 @@ import {User} from "@/plugins/servises/User";
 
 const basePath = basePathFunction(`users/{wid}`)
 const test = (item, wid) => !!wid && !!item && !!item.fullName && !!item.email
-const normalize = (...args) => User.normalize(...args)
+const normalize = User.normalize
 
 
 export default {
@@ -86,7 +86,7 @@ export default {
         if (!user) throw new Error('Пользователь не найден')
 
         await dispatch('vacations/deleteAllByUser', uid, {root: true})
-        
+
         const path = basePath(wid)
         const key = uid
 

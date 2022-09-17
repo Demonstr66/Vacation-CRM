@@ -3,6 +3,7 @@ node_modules
 /dist
 secure.js
 config.js
+setting.json
 
 # local env files
 .env.local

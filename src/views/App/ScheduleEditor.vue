@@ -97,6 +97,7 @@
       <v-col cols="12" order="1" order-sm="0" sm="auto">
         <vc-date-picker
           ref="datePicker"
+          locale="ru"
           v-model="selectedDate"
           :attributes="attributes"
           :columns="$vuetify.breakpoint.mdAndUp ? 2 : 1"
@@ -183,7 +184,7 @@ import ScheduleChips from "@/components/Modals/ScheduleChips";
 import InputIcon from "@/components/InputIcon";
 import {appReady} from "@/mixins/ComputedData";
 import {Schedule} from "@/plugins/servises/Schedule";
-import CalendarLegend from "@/views/App/CalendarLegend";
+import CalendarLegend from "@/components/CalendarLegend";
 
 
 export default {
@@ -274,23 +275,22 @@ export default {
     },
     holidays() {
       let {exception} = this
+      return this.getExceptionDatesByType(exception, 'holiday')
+    },
+    workdays() {
+      let {exception} = this
+      return this.getExceptionDatesByType(exception, 'workday')
+    }
 
-      exception = exception.filter(x => x.type === 'holiday')
+  },
+  methods: {
+    getExceptionDatesByType(exception, type) {
+      exception = exception.filter(x => x.type === type)
       exception = exception.map(x => x.date)
       exception = exception.sort()
 
       return exception
     },
-    workdays() {
-      let {exception} = this
-      exception = exception.filter(x => x.type === 'workday')
-      exception = exception.map(x => x.date)
-      exception = exception.sort()
-
-      return exception
-    }
-  },
-  methods: {
     initialize() {
       const id = this.$route.params.id
 
@@ -302,8 +302,8 @@ export default {
 
       this.schedule = schedule
       this.title = schedule.title
-      this.exception = schedule.exception || []
       this.year = schedule.year
+      this.exception = schedule.exception || []
 
       this.goto(`${schedule.year}-01-01`)
     },
@@ -343,20 +343,20 @@ export default {
 
       let currentSchedule = new Schedule(schedule)
 
-      currentSchedule.title = title
-      currentSchedule.year = year
-      currentSchedule.endDate = `${currentSchedule.year}-12-31`
-      currentSchedule.startDate = `${currentSchedule.year}-01-01`
-      currentSchedule.exception = exception
-
-
-      if (currentSchedule.id) {
-        currentSchedule.update({type: 'edit'})
-          .then(this.$router.go(-1))
-      } else {
-        currentSchedule.create()
-          .then(this.$router.go(-1))
+      const newData = {
+        title,
+        year,
+        endDate: `${currentSchedule.year}-12-31`,
+        startDate: `${currentSchedule.year}-01-01`,
+        exception,
       }
+
+
+      let res = !!currentSchedule.id
+        ? currentSchedule.update({type: 'edit'}, newData)
+        : currentSchedule.create(newData)
+
+      res.then(() => this.$router.go(-1))
     }
   },
   watch: {
@@ -364,7 +364,7 @@ export default {
       this.initialize()
     },
     year(val) {
-      this.updateExceptions(val)
+      if (!this.schedule || this.schedule.year !== val) this.updateExceptions(val)
       this.minDate = new Date(`${val}-01-01`)
       this.maxDate = new Date(`${val}-12-31`)
       this.goto(`${val}-01-01`)

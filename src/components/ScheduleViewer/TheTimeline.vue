@@ -1,7 +1,7 @@
 <template>
   <div class="overflow-hidden elevation-2"
        style="border-radius: 4px;">
-    <div class="calendar-wrapper">
+    <div class="calendar-wrapper pb-5">
       <table
         class="calendar"
       >
@@ -53,54 +53,59 @@
         </div>
 
         <!--      events-->
-        <tr
-          v-for="(node, nodeIndex) in tree"
-          :key="'root-row-'+nodeIndex"
-          class="calendar-event-row"
+        <v-slide-y-transition
+          style="display: contents"
+          group
         >
-          <td
-            :class="{'last': nodeIndex === tree.length - 1}"
-            class="calendar-event-header hoverable"
+          <tr
+            v-for="(node, nodeIndex) in tree"
+            :key="'root-row-'+nodeIndex"
+            class="calendar-event-row"
           >
-            <div
-              v-ripple
-              :title="node.title"
-              class="calendar-event-header-item text-truncate"
+            <td
+              :class="{'last': nodeIndex === tree.length - 1}"
+              class="calendar-event-header hoverable"
             >
-            <span v-if="node.children && node.children.length">
-              <v-btn icon small @click="toggleExpand(node.id)">
-                  <v-icon
-                    class="expand"
-                    :class="{'open': open.indexOf(node.id) !== -1} "
-                  >
-                    mdi-chevron-down
-                  </v-icon>
-              </v-btn>
-            </span>
-              <span :class="{'ml-6': !node.root && !node.flat}" class="mx-3">
-              {{ node.title }}
-            </span>
-            </div>
-          </td>
-          <td
-            v-for="(cell, cIndex) in calendar.dates"
-            :key="'root-row-'+nodeIndex +'-day-'+cIndex"
-            :class="{
-              'calendar-header-day__monthend': cell.isLastDayOfMonth,
-              'calendar-header-day__monthstart': cell.isFirstDayOfMonth
-            }"
-            class="calendar-event-cell"
-          >
-          </td>
-          <TheTimelineBaseEvent
-            v-for="(event, eIndex) in node.events"
-            :id="'row-'+nodeIndex+'-event-'+eIndex"
-            :key="'row-'+nodeIndex+'-event-'+eIndex"
+              <div
+                v-ripple
+                :title="node.title"
+                class="calendar-event-header-item text-truncate"
+              >
+              <span v-if="node.children && node.children.length">
+                <v-btn icon small @click="toggleExpand(node.id)">
+                    <v-icon
+                      class="expand"
+                      :class="{'open': open.indexOf(node.id) !== -1} "
+                    >
+                      mdi-chevron-down
+                    </v-icon>
+                </v-btn>
+              </span>
+                <span :class="{'ml-6': !node.root && !node.flat}" class="mx-3">
+                {{ node.title }}
+              </span>
+              </div>
+            </td>
+            <td
+              v-for="(cell, cIndex) in calendar.dates"
+              :key="'root-row-'+nodeIndex +'-day-'+cIndex"
+              :class="{
+                'calendar-header-day__monthend': cell.isLastDayOfMonth,
+                'calendar-header-day__monthstart': cell.isFirstDayOfMonth
+              }"
+              class="calendar-event-cell"
+            >
+            </td>
+            <TheTimelineBaseEvent
+              v-for="(event, eIndex) in node.events"
+              :id="'row-'+nodeIndex+'-event-'+eIndex"
+              :key="'row-'+nodeIndex+'-event-'+eIndex"
 
-            :event="event"
-            :root="node.root"
-          />
-        </tr>
+              :event="event"
+              :root="node.root"
+            />
+          </tr>
+        </v-slide-y-transition>
       </table>
     </div>
   </div>
@@ -211,21 +216,27 @@ export default {
       })
     },
     placementTodayMarker() {
-      const marker = document.getElementById('today-marker')
       if (this.year !== this.$moment().year()) {
         marker.style.display = 'none'
         return
       }
 
       const wrap = document.getElementById('header-col')
-      const wrapX = wrap.getBoundingClientRect().x
-      const todayEl = document.getElementsByClassName('calendar-header-day__today')[0]
+      const wrapLeftEdge = wrap.getBoundingClientRect().x
 
+      const marker = document.getElementById('today-marker')
 
-      const startToday = todayEl.getBoundingClientRect().x
+      const today = this.$moment().format('YYYY-MM-DD')
+      console.log(today)
+      const todayEl = document.getElementById(`header-day-${today}`)
+
+      const todayLeftEdge = todayEl.getBoundingClientRect().x + todayEl.clientLeft
+
       const widthToday = todayEl.offsetWidth
       const widthMarker = marker.offsetWidth
-      const left = startToday + widthToday / 2 - widthMarker / 2 - wrapX - 1
+
+      const left = todayLeftEdge - wrapLeftEdge + (wrapLeftEdge -
+        todayEl.parentNode.getBoundingClientRect().x) + widthToday / 2 - widthMarker / 2
 
       marker.style.left = left + 'px'
     },
@@ -264,7 +275,9 @@ export default {
 </script>
 
 <style lang="scss" scoped>
-$day-width: 25px;
+$day-width: 30px;
+$row-height: 50px;
+
 .today-marker {
   $marker-color: rgba(255, 0, 0, 0.94);
   $marker-dot-size: 5.5px;
@@ -324,6 +337,7 @@ $day-width: 25px;
   &-event {
     &-row {
       position: relative;
+      height: $row-height;
     }
 
     &-header {
@@ -336,9 +350,11 @@ $day-width: 25px;
       max-width: 200px;
       transition: background-color .1s ease-in-out;
       border-right: 1px solid #eee;
+      border-bottom: 1px solid #eee;
 
       &.first {
         border-top-right-radius: 4px;
+        border-bottom: none;
       }
 
       &.last {
@@ -352,8 +368,8 @@ $day-width: 25px;
       }
 
       &-item {
-        border-top: 1px solid #eee;
         padding: 4px;
+        height: $row-height;
       }
     }
 

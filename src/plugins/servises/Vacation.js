@@ -7,9 +7,13 @@ const moment = require('moment')
 export class Vacation extends Base {
   static statuses = {
     0: {id: 0, label: 'Черновик', color: 'secondary', icon: 'mdi-pencil', private: true},
-    1: {id: 1, label: 'Ожидает подтверждения', color: 'warning', icon: 'mdi-help'},
+    1: {id: 1, label: 'Ожидает утверждения', color: 'warning', icon: 'mdi-help'},
     2: {id: 2, label: 'Утверждено', color: 'success', icon: 'mdi-check'},
     99: {id: 99, label: 'Отклонено', color: 'error', icon: 'mdi-close'},
+  }
+
+  static get modelName() {
+    return 'Vacation'
   }
 
   static schema = {
@@ -41,6 +45,10 @@ export class Vacation extends Base {
 
   isDraft() {
     return this.status === 0
+  }
+
+  isSending() {
+    return this.status === 1
   }
 
   isRejected() {
@@ -115,8 +123,7 @@ export class Vacation extends Base {
       post: post || "", date: moment().format('YYYY-MM-DD'), start: start, finish: end, days: days
     })
 
-    return this.dispatchMethod('templateFile/downloadWithData', {
-      fullPath: store.getters['templateFile/get'].fullPath,
+    return Base.dispatchMethod('templateFile/downloadWithData', {
       data,
       fileName: 'Заявление на очередной оплачиваемый отпуск ' + store.getters['users/getDisplayNameByUID'](uid)
     })

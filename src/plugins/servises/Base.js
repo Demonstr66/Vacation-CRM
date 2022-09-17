@@ -69,7 +69,7 @@ export class Base {
     args.map(arg => Object.assign(options, arg))
 
     for (let key in schema) {
-      res[key] = options[key]
+      res[key] = options[key] ?? ''
     }
 
     return res

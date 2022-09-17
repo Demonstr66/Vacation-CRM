@@ -1,5 +1,6 @@
 <template>
-  <v-dialog v-model="show" max-width="400" persistent>
+  <v-dialog v-model="show" max-width="400" persistent @keydown.enter="submit"
+            @keydown.esc="close">
     <v-card>
       <v-card-title>{{ title }}</v-card-title>
       <v-card-text>
@@ -66,6 +67,7 @@ export default {
       this.$options.PopupController.resolve(false)
     },
     submit() {
+      if (!this.show) return
       this.show = false
       this.$options.PopupController.resolve({
         val: true,
@@ -77,15 +79,16 @@ export default {
       this.resData[key] = val
     },
     setSubmitDisable(val) {
-      console.log(val)
       this.submitDisable = val
     }
   },
   watch: {
     show(val) {
-      if (!val) this.comment = ''
-      if (!val) this.resData = {}
-      if (!val) this.data = null
+      this.$nextTick(() => {
+        if (!val) this.comment = ''
+        if (!val) this.resData = {}
+        if (!val) this.data = null
+      })
     }
   }
 };

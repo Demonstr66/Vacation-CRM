@@ -1,4 +1,4 @@
-import {defineAbility, defineAbilityFor} from '@casl/ability';
+import {defineAbility} from '@casl/ability';
 
 export default defineAbility((can, cannot) => {
   cannot('create', 'User')

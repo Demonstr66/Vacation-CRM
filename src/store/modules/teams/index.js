@@ -1,39 +1,30 @@
-import {defTeam} from "@/plugins/schema";
 import shortUUID from "short-uuid";
 import {asyncTryDecorator, basePathFunction, isUnique} from "@/plugins/utils";
+import {Team} from "@/plugins/servises/Team";
 
 const basePath = basePathFunction(`workspaces/{wid}/teams`)
 const test = (item, wid) => !!wid && !!item && !!item.title
-const normalize = defTeam
+const normalize = Team.normalize
 
 export default {
-  namespaced: true,
-  state: () => ({
-    teams: null,
-    ready: false
-  }),
-  getters: {
+  namespaced: true, state: () => ({
+    teams: null, ready: false
+  }), getters: {
     get: (s) => s.teams || {},
     count: (s) => Object.values(s.teams || {}).length,
     isReady: (s) => s.ready
-  },
-  mutations: {
+  }, mutations: {
     set: (s, v) => {
       if (!s.ready) s.ready = true
       s.teams = Object.freeze(v)
-    },
-    setReady: (s, v) => s.ready = v,
-    clear: (s) => s.teams = null
-  },
-  actions: {
+    }, setReady: (s, v) => s.ready = v, clear: (s) => s.teams = null
+  }, actions: {
     initialize({dispatch}) {
       return dispatch('subscribe')
-    },
-    onLogOut({dispatch, commit}) {
+    }, onLogOut({dispatch, commit}) {
       dispatch('unsubscribe')
       commit('clear')
-    },
-    create({dispatch, rootGetters, getters}, team) {
+    }, create({dispatch, rootGetters, getters}, team) {
       return asyncTryDecorator(() => {
         const wid = rootGetters['app/getWID']
 
@@ -46,8 +37,7 @@ export default {
 
         return dispatch('DB/set', {path, key, data}, {root: true})
       })
-    },
-    delete({rootGetters, dispatch}, id) {
+    }, delete({rootGetters, dispatch}, id) {
       return asyncTryDecorator(() => {
         const wid = rootGetters['app/getWID']
         if (!id || !wid) throw new Error('Что-то пошло не так: teams/delete -> test')
@@ -58,13 +48,11 @@ export default {
         dispatch('users/deleteTeamFromUsers', key, {root: true})
         return dispatch('DB/delete', {path, key}, {root: true})
       })
-    },
-    update({rootGetters, dispatch, getters}, team) {
+    }, update({rootGetters, dispatch, getters}, team) {
       return asyncTryDecorator(() => {
         const wid = rootGetters['app/getWID']
 
-        if (!test(team, wid) || !team.id) throw new Error('Что-то пошло не так: teams/update ->' +
-          ' test')
+        if (!test(team, wid) || !team.id) throw new Error('Что-то пошло не так: teams/update ->' + ' test')
         if (!isUnique(team, Object.values(getters.get))) throw new Error('Команда уже существет')
 
         const path = basePath(wid)
@@ -73,15 +61,13 @@ export default {
 
         return dispatch('DB/set', {path, key, data}, {root: true})
       })
-    },
-    subscribe({rootGetters, dispatch}) {
+    }, subscribe({rootGetters, dispatch}) {
       const wid = rootGetters['app/getWID']
       const path = basePath(wid)
       const setter = 'teams/set'
 
       return dispatch('DB/subscribe', {path, setter}, {root: true})
-    },
-    unsubscribe({dispatch, rootGetters}) {
+    }, unsubscribe({dispatch, rootGetters}) {
       const wid = rootGetters['app/getWID']
       const path = basePath(wid)
 

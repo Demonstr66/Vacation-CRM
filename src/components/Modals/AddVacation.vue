@@ -85,7 +85,7 @@ import BaseModal from "./Base.vue";
 import {dateDiff} from "@/plugins/utils";
 import AddVacationCalendar from "@/components/Modals/AddVacationCalendar";
 import {Vacation} from "@/plugins/servises/Vacation";
-import CalendarLegend from "@/views/App/CalendarLegend";
+import CalendarLegend from "@/components/CalendarLegend";
 
 export default {
   ModalController: null,

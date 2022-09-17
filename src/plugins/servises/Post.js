@@ -1,4 +1,5 @@
 import {StructureItem} from "@/plugins/servises/StructureItem";
+import {Base} from "@/plugins/servises/Base";
 
 export class Post extends StructureItem {
 
@@ -29,5 +30,14 @@ export class Post extends StructureItem {
 
   static getTitle(id) {
     return super.getTitle(id, Post.getAll())
+  }
+
+  static schema = {
+    id: '',
+    title: ''
+  }
+
+  static normalize(...args) {
+    return Base.normalize(Post.schema, args);
   }
 }

@@ -1,8 +1,7 @@
 import {Base} from "@/plugins/servises/Base";
-import {dataToGenerateFile} from "@/plugins/schema";
 import store from "@/store";
 import {Roles} from "@/plugins/servises/Roles";
-import {fullToDisplayName} from "@/plugins/utils";
+import {Team} from "@/plugins/servises/Team";
 
 const moment = require('moment')
 
@@ -13,14 +12,13 @@ export class User extends Base {
     2: {id: 2, label: 'Зарегистрирован', color: 'success', icon: 'mdi-check'},
     3: {id: 3, label: 'Заблокирован', color: 'success', icon: 'mdi-check'},
   }
-
   static schema = {
     uid: '',
     email: '',
     emailVerified: false,
     active: false,
     status: 0,
-    role: Roles.roles[0],
+    role: 'user',
     disabled: false,
 
     lastVisitAt: "",
@@ -35,26 +33,6 @@ export class User extends Base {
 
     events: '',
   }
-
-
-  constructor(args) {
-    super({
-      save: 'users/update',
-      delete: 'users/delete',
-      create: 'users/create',
-    })
-
-    Object.assign(this, User.schema, args)
-  }
-
-  static normalize(...args) {
-    return Base.normalize(User.schema, args);
-  }
-
-  static getAll() {
-    return Object.values(store.getters['users/get'])
-  }
-
   Task = {
     add: (id, silent = false) => {
       if (this.tasks && this.tasks.includes(id)) return
@@ -70,6 +48,50 @@ export class User extends Base {
 
       this.update({type: 'removeTask'}, silent, 'Задача снята')
     }
+  }
+
+  constructor(args) {
+    super({
+      save: 'users/update',
+      delete: 'users/delete',
+      create: 'users/create',
+    })
+
+    Object.assign(this, User.schema, args)
+  }
+
+  static get modelName() {
+    return 'User'
+  }
+
+  static determinateLeaders() {
+    const teams = Object.values(Team.getAll())
+    let leaders = teams
+      .map(team => team.leaderId)
+      .filter(id => !!id)
+
+    const leaderId = Roles.getRoleId('leader')
+    const userId = Roles.getRoleId('user')
+
+    const users = User.getAll()
+    users.forEach(user => {
+      const roleId = Roles.getRoleId(user.role)
+      if (roleId <= leaderId) {
+        const currentRoleId = leaders.includes(user.uid) ? leaderId : userId
+        if (currentRoleId !== roleId) {
+          user.setRole(Roles.getRoleType(currentRoleId))
+        }
+      }
+    })
+  }
+
+  static normalize(...args) {
+    return Base.normalize(User.schema, args);
+  }
+
+  static getAll() {
+    //<Array>
+    return Object.values(store.getters['users/get'])
   }
 
   // sendToApprove() {
@@ -99,6 +121,18 @@ export class User extends Base {
   //   return this.update(event)
   // }
 
+  static fullToShortName(fullName) {
+    return fullName
+      .split(/\s+/)
+      .map((w, i) => (i ? w.substring(0, 1).toUpperCase() + "." : w))
+      .join(" ");
+  }
+
+  setRole(role) {
+    this.role = role
+    this.update({}, true)
+  }
+
   create(silent = false) {
     const {team, post, tasks, fullName, role} = this
 
@@ -117,13 +151,6 @@ export class User extends Base {
 
   delete() {
     return super.delete(this.uid, 'Пользователь удалён')
-  }
-
-  static fullToShortName(fullName) {
-    return fullName
-      .split(/\s+/)
-      .map((w, i) => (i ? w.substring(0, 1).toUpperCase() + "." : w))
-      .join(" ");
   }
 
 }

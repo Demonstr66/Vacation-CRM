@@ -69,11 +69,6 @@ export const user = {
   }
 }
 
-export const appName = {
-  computed: {
-    ...mapGetters({'appName': "getAppName"}),
-  }
-}
 
 export const users = {
   computed: {

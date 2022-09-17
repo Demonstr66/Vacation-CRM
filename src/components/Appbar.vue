@@ -1,17 +1,18 @@
 <template>
-  <v-app-bar absolute app clipped-left dense flat style="position: fixed">
+  <v-app-bar absolute app clipped-left dense flat style="position: fixed; z-index: 5">
     <v-app-bar-nav-icon @click="onNavIconClick"></v-app-bar-nav-icon>
 
-    <!-- <v-app-bar-title v-if="$vuetify.breakpoint.smAndUp">{{ appName }}</v-app-bar-title> -->
-    <!-- <v-app-bar-title v-else>{{ title }}</v-app-bar-title> -->
-    <v-app-bar-title>{{ $vuetify.breakpoint.name }}</v-app-bar-title>
-
+    <v-app-bar-title v-if="$options.DEBUG">{{ $vuetify.breakpoint.name }}</v-app-bar-title>
+    <template v-else>
+      <v-app-bar-title v-if="$vuetify.breakpoint.smAndUp">{{ appName }}</v-app-bar-title>
+      <v-app-bar-title v-else>{{ title }}</v-app-bar-title>
+    </template>
     <v-spacer></v-spacer>
     <v-menu offset-y transition="slide-y-transition">
       <template v-slot:activator="{ on, attrs }">
         <v-btn color="primary" dark large text tile v-bind="attrs" v-on="on">
           <v-icon large>mdi-account</v-icon>
-          {{ user.displayName }}
+          <span v-if="$vuetify.breakpoint.smAndUp">{{ user.displayName }}</span>
         </v-btn>
       </template>
       <v-list>
@@ -36,7 +37,8 @@ import {appName, user} from "@/mixins/ComputedData";
 import {signOut} from "@/mixins/AuthMethods";
 
 export default {
-  mixins: [user, appName, signOut],
+  DEBUG: process.env.VUE_APP_DEBUG,
+  mixins: [user, signOut],
   props: {
     expand: {
       type: Boolean,
@@ -50,6 +52,11 @@ export default {
       {title: "Выход", action: "onSignOut", icon: "mdi-exit-to-app"},
     ],
   }),
+  computed: {
+    appName() {
+      return this.$store.getters['app/getAppName']
+    }
+  },
   methods: {
     onNavIconClick() {
       this.$emit("click");

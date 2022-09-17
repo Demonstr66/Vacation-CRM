@@ -36,8 +36,9 @@
 
 <script>
 import IconBtnWithTip from "../../IconBtnWithTip.vue";
+
 export default {
-  components: { IconBtnWithTip },
+  components: {IconBtnWithTip},
   props: {
     active: {
       type: Boolean,

@@ -1,10 +1,10 @@
-import {defTask} from "@/plugins/schema";
 import shortUUID from "short-uuid";
 import {asyncTryDecorator, basePathFunction, isUnique} from "@/plugins/utils";
+import {Task} from "@/plugins/servises/Task";
 
 const basePath = basePathFunction(`workspaces/{wid}/tasks`)
 const test = (item, wid) => !!wid && !!item && !!item.title
-const normalize = defTask
+const normalize = Task.normalize
 
 export default {
   namespaced: true,

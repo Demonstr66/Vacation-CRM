@@ -151,17 +151,16 @@
 
 <script>
 import BaseModal from "./Base.vue";
-import {defSchedule} from "@/plugins/schema";
 import {inputValidations} from "@/mixins/InputValidations";
 import IconBtnWithTip from "@/components/IconBtnWithTip";
 import {getShortDayLabel, normalizeDate} from "@/mixins/Filters";
 import {loadDisDates} from "@/plugins/utils";
 import ScheduleChips from "@/components/Modals/ScheduleChips";
-import {ScheduleMethods} from "@/mixins/ScheduleMethods";
+import {Schedule} from "@/plugins/servises/Schedule";
 
 
 export default {
-  mixins: [inputValidations, getShortDayLabel, normalizeDate, ScheduleMethods],
+  mixins: [inputValidations, getShortDayLabel, normalizeDate],
   components: {
     ScheduleChips,
     IconBtnWithTip,
@@ -179,7 +178,7 @@ export default {
     data: {}
   },
   data: () => ({
-    schedule: defSchedule(),
+    schedule: Schedule.normalize(),
     exception: [],
     valid: false,
     selectedDate: null,
@@ -299,16 +298,16 @@ export default {
       this.$refs.datePicker.focusDate(new Date(date))
     },
     onSubmit() {
-      let schedule = {...this.schedule}
+      let schedule = new Schedule(this.schedule)
       if (!schedule.title) schedule.title = this.defaultName
 
       schedule.endDate = `${schedule.year}-12-31`
       schedule.startDate = `${schedule.year}-01-01`
       schedule.exception = [...this.exception]
 
-      const method = !!!schedule.id ? this.createSchedule : this.updateSchedule
+      const promise = !!!schedule.id ? schedule.create() : schedule.update({type: 'edit'})
 
-      method(schedule)
+      promise
         .then(() => this.closeModal())
         .catch(er => {
         })
@@ -324,7 +323,7 @@ export default {
         this.selectedDate = null
         this.exception = []
         this.exceptionLoading = false
-        this.schedule = defSchedule()
+        this.schedule = Schedule.normalize()
       })
     },
   },

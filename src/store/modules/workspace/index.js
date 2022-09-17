@@ -1,9 +1,10 @@
 import {asyncTryDecorator, basePathFunction} from "@/plugins/utils";
 import {defWorkspace} from "@/plugins/schema";
+import {Workspace} from "@/plugins/servises/Workspace";
 
 const basePath = basePathFunction(`workspaces`)
 const test = (item, wid) => !!wid && !!item
-const normalize = defWorkspace
+const normalize = Workspace.normalize
 
 export default {
   namespaced: true,
@@ -13,6 +14,7 @@ export default {
   }),
   getters: {
     get: (s) => s.workspace || {},
+    permissions: (s) => s.workspace ? s.workspace.permissions : {},
     isReady: (s) => s.ready,
     domain: (s) => s.workspace.domain
   },
@@ -20,7 +22,7 @@ export default {
     set: (s, v) => {
       if (!s.ready) s.ready = true
 
-      s.workspace = v
+      s.workspace = new Workspace(v)
     },
     setReady: (s, v) => s.ready = v,
     clear: (s) => s.workspace = null

@@ -1,224 +1,109 @@
 <template>
-  <v-card flat>
-    <v-form v-model="valid" @submit.prevent="onSave">
-
-      <v-card-title>Кто может управлять отпусками</v-card-title>
+  <app-base-sheet>
+    <v-card flat height="100%" class="d-flex flex-column">
+      <v-card-title>Управление правами</v-card-title>
       <v-card-text>
-        <v-select
-          v-model="manageVacations"
-          :item-disabled="disItem"
-          :items="managers"
-          chips
-          dense
-          hide-details
-          multiple
-          @change.once="isChanged = true"
-        >
-          <template v-slot:selection="{item}">
-            <v-chip
-              :disabled="item.value === 0"
-              label
-              small
-            >
-              {{ item.text }}
-            </v-chip>
-          </template>
-        </v-select>
+        <v-expansion-panels mandatory>
+          <v-expansion-panel>
+            <v-expansion-panel-header>{{ $options.ROLES[0].text }}</v-expansion-panel-header>
+            <v-expansion-panel-content>
+              <app-privacy-form
+                ref="userPermission"
+                readonly
+                :privacy="permissions[0]"
+              />
+            </v-expansion-panel-content>
+          </v-expansion-panel>
+          <v-expansion-panel>
+            <v-expansion-panel-header>{{ $options.ROLES[1].text }}</v-expansion-panel-header>
+            <v-expansion-panel-content>
+              <app-privacy-form
+                ref="leaderPermission"
+                :privacy="permissions[1]"
+              />
+            </v-expansion-panel-content>
+          </v-expansion-panel>
+          <v-expansion-panel>
+            <v-expansion-panel-header>{{ $options.ROLES[2].text }}</v-expansion-panel-header>
+            <v-expansion-panel-content>
+              <app-privacy-form
+                ref="adminPermission"
+                :privacy="permissions[2]"
+              />
+            </v-expansion-panel-content>
+          </v-expansion-panel>
+          <v-expansion-panel>
+            <v-expansion-panel-header>{{ $options.ROLES[3].text }}</v-expansion-panel-header>
+            <v-expansion-panel-content>
+              <app-privacy-form
+                ref="ownerPermission"
+                readonly
+                :privacy="permissions[3]"
+              />
+            </v-expansion-panel-content>
+          </v-expansion-panel>
+        </v-expansion-panels>
+        <v-btn text small color="error" @click="sandboxOn" class="mt-2">
+          Включить режим просмотра
+        </v-btn>
       </v-card-text>
-      <v-card-title class="text-break">Кто может управлять управлять пользователями?</v-card-title>
-      <v-card-text>
-        <v-row no-gutters>
-          <v-col align-self="end" class="text-right">
-            <span class="mr-4 mb-2">Администраторы</span>
-          </v-col>
-          <v-col cols="8">
-            <v-select
-              v-model="admin.manageUsers"
-              :items="crudOptions"
-              hide-details
-              multiple
-              single-line
-              @change.once="isChanged = true"
-            >
-              <template v-slot:selection="{item}">
-                <v-chip
-                  label
-                  small
-                >
-                  {{ item.text }}
-                </v-chip>
-              </template>
-            </v-select>
-          </v-col>
-        </v-row>
-        <v-row no-gutters>
-          <v-col align-self="end" class="text-right">
-            <span class="mr-4 mb-2">Лидеры команд</span>
-          </v-col>
-          <v-col cols="8">
-            <v-select
-              v-model="teamLeader.manageUsers"
-              :items="crudOptions"
-              hide-details
-              multiple
-              @change.once="isChanged = true"
-            >
-              <template v-slot:selection="{item}">
-                <v-chip
-                  label
-                  small
-                >
-                  {{ item.text }}
-                </v-chip>
-              </template>
-            </v-select>
-          </v-col>
-        </v-row>
-      </v-card-text>
-      <v-card-title>Кто может управлять пространством</v-card-title>
-      <v-card-text>
-        <v-select
-          v-model="manageWS"
-          :item-disabled="disItem"
-          :items="managers"
-          hide-details
-          multiple
-          @change.once="isChanged = true"
-        >
-          <template v-slot:selection="{item}">
-            <v-chip
-              :disabled="item.value === 0"
-              label
-              small
-            >
-              {{ item.text }}
-            </v-chip>
-          </template>
-        </v-select>
-      </v-card-text>
-
-      <v-card-actions>
-        <v-spacer></v-spacer>
-        <v-btn :disabled="!isChanged" color="success" text type="submit">
+      <v-card-actions class="mt-auto justify-center">
+        <v-btn color="success" text @click="onSave">
           Сохранить
         </v-btn>
-        <v-spacer></v-spacer>
       </v-card-actions>
-    </v-form>
-  </v-card>
+    </v-card>
+  </app-base-sheet>
 </template>
 
 <script>
 import {WorkspaceMethods} from "@/mixins/WorkspaceMethods";
 import {appReady, workspace} from "@/mixins/ComputedData";
+import AppPrivacyForm from "@/components/workspace/AppPrivacyForm";
+import {Roles} from "@/plugins/servises/Roles";
+import AppBaseSheet from "@/layouts/AppBaseSheet";
+import {Workspace} from "@/plugins/servises/Workspace";
 
 export default {
   name: "WorkspaceSetting",
+  components: {AppBaseSheet, AppPrivacyForm},
   mixins: [WorkspaceMethods, workspace, appReady],
+  ROLES: Object.values(Roles.roles),
+  PRIVACY: Roles.defaultPermissions,
   data: () => ({
     valid: false,
-    isChanged: false,
-    fieldsOfView: [
-      {text: "Все", value: 0},
-      {text: "Коллеги по команде и задачам", value: 1},
-      {text: "Только коллеги по команде", value: 2},
-      {text: "Только коллеги по задачам", value: 3},
-      {text: "Никакие", value: 99},
-    ],
-    managers: [
-      {text: "Я", value: 0},
-      {text: "Администраторы", value: 1},
-      {text: "Лидеры команд", value: 2},
-    ],
-    crudOptions: [
-      {text: 'Редактирование', value: 'update'},
-      {text: 'Создание', value: 'create'},
-      {text: 'Удаление', value: 'delete'},
-    ],
-
-    manageVacations: [],
-    manageWS: [],
-    admin: {
-      manageUsers: []
-    },
-    teamLeader: {
-      visibility: null,
-      manageUsers: []
-    },
-    users: {
-      visibility: null
-    }
   }),
   created() {
     if (this.appReady) this.initialize()
   },
+  computed: {
+    permissions() {
+      let permissions = this.$store.getters['workspace/permissions']
+      for (let id in this.$options.ROLES) {
+        if (!permissions[id]) permissions[id] = Roles.defaultPermissions[id]
+      }
+
+      return permissions
+    }
+  },
   methods: {
+    sandboxOn() {
+      this.$store.dispatch('sandboxModeOn')
+    },
     initialize() {
-      const privacy = JSON.parse(this.workspace.privacy || "{}")
-      let manageWS = [0], manageVacations = [0]
-
-      if (privacy.admins) {
-        if (privacy.admins.manageWS) manageWS.push(1)
-        if (privacy.admins.manageVacations) manageVacations.push(1)
-        this.admin.manageUsers = privacy.admins.manageUsers
-      }
-
-      if (privacy.leaders) {
-        if (privacy.leaders.manageWS) manageWS.push(2)
-        if (privacy.leaders.manageVacations) manageVacations.push(2)
-        this.teamLeader.manageUsers = privacy.leaders.manageUsers
-        this.teamLeader.visibility = privacy.leaders.visibility
-      }else {
-        this.teamLeader.visibility = 0
-      }
-
-      if (privacy.users) {
-        this.users.visibility = privacy.users.visibility
-      }else {
-        this.users.visibility = 0
-      }
-
-      this.manageWS = manageWS
-      this.manageVacations = manageVacations
     },
-    disItem(val) {
-      return val.value === 0
-    },
+
     onSave() {
-      let groups = {
-        admins: {},
-        leaders: {},
-        users: {},
-      }
+      const ws = this.$store.getters['workspace/get']
 
-      let rules = {visibility: '', manageUsers: '', manageVacations: '', manageWS: ''}
+      this.$options.ROLES.map(role => {
+        let component = this.$refs[role.type + 'Permission']
+        if (component) {
+          ws.permissions[role.id] = component.getData()
+        }
+      })
 
-      //Administrators
-      rules.visibility = 0
-      rules.manageUsers = this.admin.manageUsers
-      rules.manageVacations = this.manageVacations.indexOf(1) !== -1
-      rules.manageWS = this.manageWS.indexOf(1) !== -1
-      groups.admins = {...rules}
-
-      //Leaders
-      rules.visibility = this.teamLeader.visibility
-      rules.manageUsers = this.teamLeader.manageUsers
-      rules.manageVacations = this.manageVacations.indexOf(2) !== -1
-      rules.manageWS = this.manageWS.indexOf(2) !== -1
-      groups.leaders = {...rules}
-
-      //Users
-      rules.visibility = this.users.visibility
-      rules.manageUsers = []
-      rules.manageVacations = []
-      rules.manageWS = []
-      groups.users = {...rules}
-
-      let ws = {...this.workspace}
-      const privacy = JSON.stringify(groups)
-      ws.privacy = privacy
-
-      this.updateWorkspace(ws)
+      ws.update(undefined, 'Правила сохранены')
     }
   },
   watch: {
@@ -228,3 +113,4 @@ export default {
   }
 }
 </script>
+

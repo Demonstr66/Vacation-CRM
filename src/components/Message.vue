@@ -38,11 +38,12 @@ export default {
 .v-snack__wrapper {
   max-width: 400px;
 }
+
 .v-snack__small .v-snack__wrapper {
   min-width: 80vw;
 }
 
 .v-snack__small .v-snack__content {
-padding-right: 0;
+  padding-right: 0;
 }
 </style>

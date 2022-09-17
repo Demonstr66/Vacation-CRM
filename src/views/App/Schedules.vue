@@ -6,7 +6,7 @@
       dense
       no-data-text="Графики ещё не добавлены"
     >
-      <template v-slot:top>
+      <template v-if="$can('create', 'Schedule')" v-slot:top>
         <v-toolbar dense flat>
           <v-spacer></v-spacer>
           <v-btn v-if="$can('create', 'Schedule')" color="primary" text
@@ -20,47 +20,64 @@
           :statuses="$options.STATUSES"
         />
       </template>
-      <template v-slot:item.isActive="{item}">
+      <template v-slot:item.isApprove="{item}">
         <v-switch
-          v-model="item.isActive"
+          :disabled="(!item.isActive && !item.isApprove) ||
+            (item.isApprove && !$can('cancel', 'Schedule')) ||
+            (!item.isApprove && !$can('approve', 'Schedule'))
+          "
+          readonly
+          v-model="item.isApprove"
           class="align-center justify-center mt-0"
           color="success"
           dense
           hide-details
           inset
-          readonly
           @click="toggleActivation(item)"
         ></v-switch>
       </template>
       <template v-slot:item.action="{item}">
         <RowActions>
           <icon-btn-with-tip
-            v-if="$can('update', 'Schedule')"
-            :disable="item.isActive || item.isLoading"
-            :icon="item.isActive ? 'mdi-pencil-lock' : 'mdi-pencil'"
+            :disable="item.isApprove || !$can('update', 'Schedule')"
+            :icon="item.isApprove ? 'mdi-pencil-lock' : 'mdi-pencil'"
             @click="gotoEditor(item)"
           >
             Редактировать
           </icon-btn-with-tip>
-          <!--suppress JSCheckFunctionSignatures -->
+
           <icon-btn-with-tip
-            v-if="$can('delete', 'Schedule')"
-            :disable="item.isActive || item.isLoading"
+            :disable="!$can('delete', 'Schedule') ||
+              (item.isActive && !$can('deactivate', 'Schedule')) ||
+              (item.isApprove && !$can('cancel', 'Schedule'))"
             color="error"
             icon="mdi-delete"
             @click="deleteAlertShow(item.id)"
           >
             Удалить
           </icon-btn-with-tip>
+          <icon-btn-with-tip
+            color="light-green darken-1"
+            icon="mdi-chart-box-outline"
+            @click="gotoStat(item.id)"
+          >
+            Статистика
+          </icon-btn-with-tip>
           <icon-btn-with-tip color="info" icon="mdi-eye" @click="gotoViewer(item.id)">
             Просмотр
           </icon-btn-with-tip>
-          <icon-btn-with-tip v-if="item.status === 0" color="success" icon="mdi-check"
-                             @click="sendToFill(item.id)">
+          <icon-btn-with-tip
+            v-if="item.isDraft"
+            :disable="!$can('activate', 'Schedule')"
+            color="success"
+            icon="mdi-check"
+            @click="sendToFill(item.id)"
+          >
             Активировать
           </icon-btn-with-tip>
           <icon-btn-with-tip
-            v-if="item.status === 1"
+            v-if="item.isActive"
+            :disable="!$can('deactivate', 'Schedule')"
             color="warning" icon="mdi-cancel"
             @click="cancelFill(item.id)"
           >
@@ -104,10 +121,10 @@ export default {
   STATUSES: Schedule.statuses,
   methods: {
     sendToFill(id) {
-      this.schedules[id].sendToFill()
+      this.schedules[id].activate()
     },
     cancelFill(id) {
-      this.schedules[id].cancelFill('')
+      this.schedules[id].deactivate()
     },
     async deleteAlertShow(id) {
       let result = await this.$refs.deletePopup.open()
@@ -116,35 +133,41 @@ export default {
         this.schedules[id].delete()
       }
     },
-    async acceptAlertShow(id) {
+    async approveAlertShow(id) {
       let result = await this.$refs.acceptPopup.open()
 
       if (result) {
-        this.schedules[id].activate()
+        this.schedules[id].approve()
       }
     },
-    async deactivateAlertShow(id) {
+    async cancelAlertShow(id) {
       let result = await this.$refs.deactivatePopup.open()
 
       if (result) {
-        this.schedules[id].deactivate()
+        this.schedules[id].cancel()
       }
     },
     toggleActivation(item) {
-      if (item.isDraft()) return
+      if (item.isDraft) return
 
-      if (item.isActive) {
-        this.deactivateAlertShow(item.id)
+      if (item.isApprove) {
+        this.cancelAlertShow(item.id)
       } else {
-        this.acceptAlertShow(item.id)
+        this.approveAlertShow(item.id)
       }
     },
     gotoEditor(item) {
       let route = {name: 'ScheduleEditor'}
 
-      if (!!item) route.params = {id: item.id}
+      if (!!item) {
+        route.name = 'ScheduleCreate'
+        route.params = {id: item.id}
+      }
 
       this.$router.push(route)
+    },
+    gotoStat(id) {
+      this.$router.push({name: 'ScheduleStatistic', params: {id: id}})
     },
     gotoViewer(id) {
       this.$router.push({name: 'Viewer1', params: {id: id}})

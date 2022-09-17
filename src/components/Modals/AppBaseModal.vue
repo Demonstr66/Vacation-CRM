@@ -1,17 +1,22 @@
 <template>
-  <v-dialog :fullscreen="$vuetify.breakpoint.smAndDown" transition="dialog-top-transition"
-            :max-width="large ? 1000 :
-  700"
-            v-model="isShow" persistent>
+  <v-dialog
+    v-model="isShow"
+    :fullscreen="$vuetify.breakpoint.smAndDown"
+    :max-width="large ? 1000 : 700"
+    persistent
+    transition="dialog-top-transition"
+  >
     <template v-slot:default>
       <v-card style="z-index: 10000 !important">
         <v-toolbar
+          v-if="title !== ''"
+          class="text-h4"
           color="accent"
           dark
-          v-if="title != ''"
-          class="text-h4"
         >
-          <span>{{ title }}</span>
+          <span>
+            {{ title }}
+          </span>
         </v-toolbar>
         <v-card-text>
           <slot/>
@@ -21,18 +26,19 @@
           <v-form @submit.prevent="onSubmit">
             <v-spacer></v-spacer>
             <v-btn
+              :disabled="cancelDisable"
               color="error"
               text
               @click="onCancel"
-              :disabled="cancelDisable"
             >
               {{ cancelText }}
             </v-btn>
             <v-btn
+              :disabled="submitDisable"
+              :loading="submiting"
               color="success"
               text
               @click="onSubmit"
-              :disabled="submitDisable"
             >
               {{ submitText }}
             </v-btn>
@@ -44,9 +50,11 @@
 </template>
 
 <script>
-import IconBtnWithTip from "../IconBtnWithTip.vue";
+import IconBtnWithTip from "../IconBtnWithTip.vue"
 
 export default {
+  name: "AppBaseModal",
+  CONTROLLER: null,
   components: {IconBtnWithTip},
   props: {
     result: {
@@ -57,6 +65,10 @@ export default {
       default: "Отмена",
     },
     cancelDisable: {
+      type: Boolean,
+      default: false,
+    },
+    submiting: {
       type: Boolean,
       default: false,
     },
@@ -72,39 +84,47 @@ export default {
       type: String,
       default: "",
     },
-    show: {
-      type: Boolean,
-      required: true,
-    },
     large: {
       type: Boolean,
       required: false,
     },
   },
-  data: () => ({}),
-  computed: {
-    isShow: {
-      get: function () {
-        return this.show;
-      },
-      set: function (val) {
-      },
-    },
-  },
+  data: () => ({
+    isShow: false
+  }),
   methods: {
+    open() {
+      let resolve, reject
+      const result = new Promise((res, rej) => {
+        resolve = res
+        reject = rej
+      })
+
+      this.isShow = true
+      this.$options.CONTROLLER = {resolve, reject}
+      return result
+    },
+    close() {
+      this.isShow = false
+      this.reset()
+    },
     onCancel() {
-      this.$emit("cancel");
-      this.reset();
+      this.$options.CONTROLLER.reject()
     },
     onSubmit() {
-      this.$emit("submit", this.result || "");
+      this.$options.CONTROLLER.resolve()
     },
     reset() {
-      this.$emit("reset");
+      this.$nextTick(() => {
+        this.$emit("reset")
+      })
     },
   },
-};
+  provide() {
+    return {
+      open: this.open,
+      close: this.close
+    }
+  },
+}
 </script>
-
-<style lang="scss" scoped>
-</style>

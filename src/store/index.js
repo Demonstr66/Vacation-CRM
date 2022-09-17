@@ -39,9 +39,15 @@ const modules = {
 Vue.use(Vuex)
 
 export default new Vuex.Store({
-  state: {},
-  getters: {},
-  mutations: {},
+  state: {
+    sandboxMode: false
+  },
+  getters: {
+    sandboxMode: (s) => s.sandboxMode
+  },
+  mutations: {
+    setSandboxMode: (s, v) => s.sandboxMode = v
+  },
   actions: {
     async initModules({dispatch}) {
       let promises = []
@@ -50,7 +56,7 @@ export default new Vuex.Store({
           if (modules[module].actions && modules[module].actions.initialize)
             promises.push(dispatch(`${module}/initialize`))
         } catch (e) {
-          continue
+
         }
       }
       return Promise.all(promises)
@@ -62,33 +68,29 @@ export default new Vuex.Store({
           if (modules[module].actions && modules[module].actions.onLogOut)
             dispatch(`${module}/onLogOut`)
         } catch (e) {
-          continue
+
         }
       }
     },
+
     initAbilities({rootGetters}) {
       const ws = rootGetters['workspace/get']
       const user = rootGetters['currentUser/get']
       let privacy
 
       if (ws.id) {
-        privacy  = ws.privacy
+        privacy = ws.privacy
       }
       console.log(user, privacy)
       return defineAbilitiesFor(user, privacy)
 
     },
-    createAndDownloadXLSX() {
-      const wb = XLSX.utils.book_new()
-      wb.SheetNames.push('testSheet')
-      wb.SheetNames.push('testSheet2')
 
-      const ws = XLSX.utils.aoa_to_sheet([['a1', 'b1'], ['a2', 'b2']])
-
-      wb.Sheets['testSheet'] = ws
-      wb.Sheets['testSheet2'] = ws
-
-      XLSX.writeFile(wb, "autoGenerateFile.xlsx");
+    sandboxModeOn({commit}) {
+      commit('setSandboxMode', true)
+    },
+    sandboxModeOff({commit}) {
+      commit('setSandboxMode', false)
     }
   },
   modules

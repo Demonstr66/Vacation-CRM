@@ -6,15 +6,14 @@ import vuetify from './plugins/vuetify'
 import {initializeApp} from "firebase/app";
 import {getAuth,} from "firebase/auth";
 import {getDatabase} from "firebase/database";
+import {getAnalytics} from "firebase/analytics";
 import {firebaseConfig} from './plugins/secure'
 import VCalendar from 'v-calendar';
 
-import { abilitiesPlugin } from '@casl/vue';
+import {abilitiesPlugin, Can} from '@casl/vue';
 import ability from '@/plugins/ability';
 
 Vue.use(abilitiesPlugin, ability);
-
-import { Can } from '@casl/vue';
 
 Vue.component('Can', Can);
 
@@ -23,6 +22,7 @@ const start = new Date()
 
 const fb = initializeApp(firebaseConfig);
 getDatabase(fb)
+const analytics = getAnalytics(app);
 
 const moment = require('moment')
 require('moment/locale/ru')

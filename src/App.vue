@@ -1,5 +1,17 @@
 <template>
   <v-app id="vuetify-app">
+    <v-system-bar v-if="sandboxMode" app class="justify-center" color="error">
+      <span class="mr-2">Выбор роли:</span>
+      <v-btn-toggle v-model="role" class="mr-2" color="warning" mandatory>
+        <v-btn v-for="role in $options.ROLES" :key="role.id" outlined text x-small>
+          {{ role.text }}
+        </v-btn>
+      </v-btn-toggle>
+      <v-btn class="white--text font-weight-bold" small text @click="sandBoxOff">
+        ЗАРКЫТЬ
+        <v-icon color="white">mdi-close</v-icon>
+      </v-btn>
+    </v-system-bar>
     <component :is="layout" :loading="!appReady" :title="title">
       <router-view></router-view>
     </component>
@@ -14,10 +26,11 @@ import EmptyLayout from "@/layouts/Empty.vue";
 import AppMessage from "@/components/Message";
 import {appReady} from "@/mixins/ComputedData";
 import {Message} from "@/plugins/servises/Message";
-
-let unsubscribe = null
+import {Roles} from "@/plugins/servises/Roles";
+import {mapGetters} from "vuex";
 
 export default {
+  ROLES: Object.values(Roles.roles),
   components: {
     MainLayout,
     EmptyLayout,
@@ -25,7 +38,11 @@ export default {
     AppMessage
   },
   mixins: [appReady],
+  data: () => ({
+    role: -1,
+  }),
   computed: {
+    ...mapGetters(['sandboxMode']),
     layout() {
       return this.$route.meta && this.$route.meta.layout || ""
     },
@@ -37,10 +54,30 @@ export default {
     Message.errorMessage(err)
     return true
   },
+  methods: {
+    sandBoxOff() {
+      this.$store.dispatch('sandboxModeOff')
+      let user = this.$store.getters['currentUser/get']
+      this.role = this.$options.ROLES.find(role => role.type === user.role).id
+    }
+  },
   watch: {
-    async appReady(val) {
+    appReady(val) {
       if (val) {
-        const rules = await this.$store.dispatch('initAbilities')
+        let user = this.$store.getters['currentUser/get']
+        if (user) {
+          this.role = this.$options.ROLES.find(role => role.type === user.role).id
+        }
+      }
+    },
+    role(val) {
+      let user = this.$store.getters['currentUser/get']
+
+      if (user) {
+        let permissions = this.$store.getters['workspace/permissions']
+        if (!permissions[val]) permissions[val] = Roles.defaultPermissions[val]
+
+        const rules = Roles.defineAbilitiesFor(user, permissions[val])
         this.$ability.update(rules)
       }
     }

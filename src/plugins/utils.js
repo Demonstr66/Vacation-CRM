@@ -1,7 +1,4 @@
-import {defPost, defTeam} from "@/plugins/schema";
 import * as XLSX from "xlsx/xlsx.mjs";
-import shortUUID from "short-uuid";
-import {Team} from "@/plugins/servises/Team";
 
 const moment = require('moment')
 
@@ -13,13 +10,6 @@ export function normalize(str) {
   return str.trim().replace(/\s\s+/g, ' ').toLowerCase()
 }
 
-export function createTeam(title) {
-  return defTeam({title, id: shortUUID().new()})
-}
-
-export function createPost(title) {
-  return defPost({title, id: shortUUID().new()})
-}
 
 export const dictionary = {
   "auth/user-not-found": "Пользователь с такими данными не найден",
@@ -32,7 +22,8 @@ export const dictionary = {
   "auth/invalid-email": "Некорректный email",
   "auth/email-not-verify": "Email не подтверждён",
   "email_confirm": "Email подтверждён",
-  "auth/network-request-failed": "Проверьте подключение к сети"
+  "auth/network-request-failed": "Проверьте подключение к сети",
+  "sandboxMode": "В режиме просмотра внесение изменений недоступно"
 }
 
 export function fullToDisplayName(fio) {
@@ -91,7 +82,7 @@ export function parseItems(users, key, existItems) {
 
   items = items.filter(title => {
     const item = existItems.find(i => i.title === title)
-    
+
     if (item) {
       users = users.map(user => {
         if (user[key] === title) user[key] = item.id
@@ -139,35 +130,6 @@ export function parseTeamsInArray(data, teams) {
       })
 
       res({users, newTeams})
-    } catch (e) {
-      rej(e)
-    }
-  })
-}
-
-export function parsePostsInArray(data, posts) {
-  return new Promise((res, rej) => {
-    try {
-      let newPosts = []
-
-      const users = data.map(d => {
-        if (!d.post) return d
-
-        const titlePost = normalize(d.post)
-        let post = Object.values(posts).find(t => normalize(t.title) == titlePost)
-
-        if (!post) post = newPosts.find(t => normalize(t.title) == titlePost)
-
-        if (!post) {
-          post = createPost(titlePost)
-          newPosts.push({...post})
-        }
-        d.post = post.id
-
-        return d
-      })
-
-      res({users, newPosts})
     } catch (e) {
       rej(e)
     }
@@ -227,8 +189,7 @@ export async function loadDisDates(year) {
       const startDate = `${year}-01-01`
       const endDate = `${year}-12-31`
       const stateDays = await api.period({
-        start: new Date(startDate),
-        end: new Date(endDate)
+        start: new Date(startDate), end: new Date(endDate)
       })
 
       let exceptions = []
@@ -236,15 +197,12 @@ export async function loadDisDates(year) {
       let day = moment(new Date(startDate))
       stateDays.map((state) => {
         let type
-        if (!!state && day.weekday() !== 5 && day.weekday() !== 6)
-          type = 'holiday'
+        if (!!state && day.weekday() !== 5 && day.weekday() !== 6) type = 'holiday'
 
-        if (!!!state && (day.weekday() === 5 || day.weekday() === 6))
-          type = 'workday'
+        if (!!!state && (day.weekday() === 5 || day.weekday() === 6)) type = 'workday'
 
         if (!!type) exceptions.push({
-          type,
-          date: moment(day).format('YYYY-MM-DD')
+          type, date: moment(day).format('YYYY-MM-DD')
         })
 
         day.add(1, 'days')
@@ -319,10 +277,13 @@ export function convertUsersToTree(users, groupBy, headers, hideEmptyGroups) {
   if (!headers) return users
 
   const key = getKey(groupBy)
-  let tree = [...headers]
+  let tree = [...headers, {id: '', title: 'Не назначена'}]
 
   tree = tree.map(node => {
-    let children = users.filter(v => v.user[key] && v.user[key].indexOf(node.id) !== -1)
+    let children = node.id !== ''
+      ? users.filter(v => v.user[key] && v.user[key].indexOf(node.id) !== -1)
+      : users.filter(v => !v.user[key] || v.user[key] === node.id)
+
     let events = []
     node.children = children.map(c => {
       c.title = c.user.displayName;
@@ -362,22 +323,15 @@ export function getCalendarAttributes({
                                       }) {
   const uid = this.uid
   const user = {...this.$store.getters['users/getUserById'](uid)}
-  let exceptionAttr = [
-    {
-      key: 'weekends',
-      dates: {
-        weekdays: [1, 7]
-      }
-    },
-    {
-      key: 'holidays',
-      dates: holidays.map(d => new Date(d.date))
-    },
-    {
-      key: 'workdays',
-      dates: workdays.map(d => new Date(d.date))
-    },
-  ]
+  let exceptionAttr = [{
+    key: 'weekends', dates: {
+      weekdays: [1, 7]
+    }
+  }, {
+    key: 'holidays', dates: holidays.map(d => new Date(d.date))
+  }, {
+    key: 'workdays', dates: workdays.map(d => new Date(d.date))
+  },]
 
 
   let normalizedUsersVacations = usersVacations.map(v => {
@@ -387,8 +341,7 @@ export function getCalendarAttributes({
     v.displayName = vacationOwner.displayName
 
 
-    if (!!vacationOwner.team && vacationOwner.team === user.team)
-      v.lvl.push(this.levels.find(lvl => lvl.key === 'team')['id'])
+    if (!!vacationOwner.team && vacationOwner.team === user.team) v.lvl.push(this.levels.find(lvl => lvl.key === 'team')['id'])
 
     if (!user.tasks || user.tasks.length === 0) return v
     if (!vacationOwner.tasks || vacationOwner.tasks.length === 0) return v
@@ -399,9 +352,7 @@ export function getCalendarAttributes({
       if (!task) return
 
       v.lvl.push(this.levels.find(lvl => lvl.key === 'task')['id'])
-      v.tasks.push(
-        this.$store.getters['tasks/getTitle'](taskId)
-      )
+      v.tasks.push(this.$store.getters['tasks/getTitle'](taskId))
     })
 
     return v
@@ -414,11 +365,9 @@ export function getCalendarAttributes({
     return level
   })
 
-  this.attributes = [
-    //Отпуска коллег
+  this.attributes = [//Отпуска коллег
     ...normalizedLevels.map(({id, dates}) => ({
-      key: `vacation-${id}`,
-      dates: dates,
+      key: `vacation-${id}`, dates: dates,
     })),
 
     //Мои отпуска
@@ -426,14 +375,11 @@ export function getCalendarAttributes({
       .filter(v => v.actually === isActually)
       .map(v => {
         return {
-          key: `currentUserVacation-${v.id}`,
-          dates: {
-            start: v.start,
-            end: v.end
+          key: `currentUserVacation-${v.id}`, dates: {
+            start: v.start, end: v.end
           }
         }
-      }),
-  ]
+      }),]
 
   return attributes
 }

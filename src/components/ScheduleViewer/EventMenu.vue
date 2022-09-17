@@ -35,6 +35,10 @@
       <VacationTools
         :status="vacation.status"
 
+        :approve-disabled="!$can('approve', normalizeVacation)"
+        :reject-disabled="!$can('reject', normalizeVacation)"
+        :cancel-disabled="!$can('cancel', normalizeVacation)"
+
         @approve="approveVacation(vacation.id)"
         @reject="rejectVacation(vacation.id)"
         @cancel="cancelVacation(vacation.id)"
@@ -61,6 +65,11 @@ export default {
   },
   data: () => ({
     statuses: Vacation.statuses
-  })
+  }),
+  computed: {
+    normalizeVacation() {
+      return new Vacation(this.vacation)
+    }
+  }
 }
 </script>

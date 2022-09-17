@@ -4,7 +4,7 @@ import {Schedule} from "@/plugins/servises/Schedule";
 
 const basePath = basePathFunction(`schedules/{wid}`)
 const test = (item, wid) => !!wid && !!item && !!item.year && !!item.title
-const normalize = (...args) => Schedule.normalize(...args)
+const normalize = Schedule.normalize
 
 export default {
   namespaced: true, state: () => ({

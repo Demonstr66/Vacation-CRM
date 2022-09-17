@@ -4,7 +4,7 @@ import {Vacation} from "@/plugins/servises/Vacation";
 
 const basePath = basePathFunction(`vacations/{wid}`)
 const test = (item, wid) => !!wid && !!item.sid && !!item.start && !!item.end && !!item.uid
-const normalize = (...args) => Vacation.normalize(...args)
+const normalize = Vacation.normalize
 
 export default {
   namespaced: true, state: () => ({

@@ -7,12 +7,12 @@ export default [
     align: 'start',
     groupable: false
   },
-  // {
-  //   text: 'Должность',
-  //   value: 'post',
-  //   class: 'text-no-wrap',
-  //   align: 'center',
-  // },
+  {
+    text: 'Должность',
+    value: 'post',
+    class: 'text-no-wrap',
+    align: 'center',
+  },
   {
     text: 'Команда',
     value: 'team',

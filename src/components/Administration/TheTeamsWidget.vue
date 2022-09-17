@@ -25,7 +25,7 @@
       :open.sync="open"
     >
       <template v-slot:label="{item}">
-        <v-form class="ma-1" @submit.prevent="onSubmit(item)">
+        <div>
           <span class="pl-2 subtitle-2">{{ item.title }}</span>
           <div class="pl-2">
             <span class="text--secondary">Лидер: </span>
@@ -34,16 +34,15 @@
               {{ getShortUserNameByUID(item.leaderId) }}
             </span>
           </div>
-        </v-form>
+        </div>
       </template>
       <template v-slot:prepend="{ item }">
         <v-icon
           v-text="`mdi-${item.root ? 'home-variant' : 'folder-network'}`"
         ></v-icon>
       </template>
-      <template v-slot:append="{item}">
-        <div
-        >
+      <template v-slot:append="{item}" v-if="$can('manage', 'Team')">
+        <div>
           <v-btn v-if="!item.root" color="error" icon small @click.stop="deleteTeam(item)">
             <v-icon>
               mdi-minus-circle-outline
@@ -120,6 +119,7 @@ import {inputValidations} from "@/mixins/InputValidations";
 import IconBtnWithTip from "@/components/IconBtnWithTip";
 import AppPopup from "@/components/AppPopup";
 import {Team} from "@/plugins/servises/Team";
+import {User} from "@/plugins/servises/User";
 
 export default {
   mixins: [teams, getUserNameById, users, workspace, inputValidations,
@@ -198,18 +198,27 @@ export default {
     async editTeam(item) {
       let result = await this.$refs.editPopup.open(item)
       if (result) {
+        let promise
         if (item.id) {
-          Team.update(Object.assign(item, result.data))
+          promise = Team.update(Object.assign(item, result.data))
         } else {
-          Team.create(Object.assign(item, result.data))
+          promise = Team.create(Object.assign(item, result.data))
         }
+
+        promise.then(() => {
+          User.determinateLeaders()
+        })
       }
     },
     async deleteTeam(item) {
       let result = await this.$refs.deletePopup.open(item)
 
       if (result) {
-        Team.delete(item.id, !!result.data.deleteChildren)
+        let promise = Team.delete(item.id, !!result.data.deleteChildren)
+
+        promise.then(() => {
+          User.determinateLeaders()
+        })
       }
     },
   },

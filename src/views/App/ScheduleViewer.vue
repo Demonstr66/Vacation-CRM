@@ -3,9 +3,9 @@
     <app-base-sheet class="d-flex flex-column justify-center">
       <span class="display-1 ml-2">{{ schedule && schedule.title }}</span>
       <div
-        :class="schedule && schedule.isActive ? 'error--text' : 'info--text'"
+        :class="schedule && schedule.isApprove ? 'error--text' : 'info--text'"
         class="caption ml-1"
-        v-text="schedule && schedule.isActive
+        v-text="schedule && schedule.isApprove
                   ? 'Редактирование не доступно'
                   : 'Доступно для редактирования'"
       >
@@ -154,17 +154,19 @@ export default {
           value: -1,
           handler: (item, val, user) => user.team === val || val === 0 && !user.team
 
+
         },
         post: {
           value: -1,
           handler: (item, val, user) => user.post === val || val === 0 && !user.post
+
 
         },
         task: {
           value: -1,
           handler: (item, val, user) =>
             user.tasks && user.tasks.includes(val) ||
-            val === 0 && !user.tasks || !user.tasks.length
+            (val === 0 && (!user.tasks || !user.tasks.length))
 
         },
       },
@@ -222,13 +224,15 @@ export default {
     },
     vacations() {
       const scheduleId = this.$route.params.id
-      const filters = this.filtersFunctions
 
       let vacations = Object.values(this.$store.getters['vacations/getBySid'](scheduleId))
 
-      // if (filters.length) {
-      //   vacations = vacations.filter(vacation => filters.every(f => f(vacation)))
-      // }
+      vacations = vacations.map(vacation => {
+        let user = this.$store.getters['users/getUserById'](vacation.uid)
+        vacation.team = user.team
+        vacation.post = user.post
+        return vacation
+      })
 
       vacations = vacations.filter(vacation => !vacation.isDraft())
 

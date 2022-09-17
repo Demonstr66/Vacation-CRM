@@ -1,37 +1,39 @@
 <template>
   <div class="d-flex flex-column fill-height">
-    <div class="d-flex">
-      <v-btn
-        class="flex-grow-1"
-        color="primary"
-        outlined
-        text
-        @click="$emit('add')"
-      >
-        Добавить
-      </v-btn>
-      <icon-btn-with-tip
-        btn-class="ml-2"
-        btn-style="border-radius: 4px; border-color: rgba(0, 0, 0, 0.12);"
-        color="primary"
-        icon="mdi-arrow-bottom-left"
-        outlined
-        @click="$emit('import')"
-      >
-        Импорт
-      </icon-btn-with-tip>
+    <Can I="create" :on="$options.someUser">
+      <div class="d-flex">
+        <v-btn
+          class="flex-grow-1"
+          color="primary"
+          outlined
+          text
+          @click="$emit('add')"
+        >
+          Добавить
+        </v-btn>
+        <icon-btn-with-tip
+          btn-class="ml-2"
+          btn-style="border-radius: 4px; border-color: rgba(0, 0, 0, 0.12);"
+          color="primary"
+          icon="mdi-arrow-bottom-left"
+          outlined
+          @click="$emit('import')"
+        >
+          Импорт
+        </icon-btn-with-tip>
 
-      <icon-btn-with-tip
-        btn-class="ml-2"
-        btn-style="border-radius: 4px; border-color: rgba(0, 0, 0, 0.12);"
-        color="primary"
-        icon="mdi-arrow-top-right"
-        outlined
-        @click="$emit('export')"
-      >
-        Экспорт
-      </icon-btn-with-tip>
-    </div>
+        <!--        <icon-btn-with-tip-->
+        <!--          btn-class="ml-2"-->
+        <!--          btn-style="border-radius: 4px; border-color: rgba(0, 0, 0, 0.12);"-->
+        <!--          color="primary"-->
+        <!--          icon="mdi-arrow-top-right"-->
+        <!--          outlined-->
+        <!--          @click="$emit('export')"-->
+        <!--        >-->
+        <!--          Экспорт-->
+        <!--        </icon-btn-with-tip>-->
+      </div>
+    </Can>
     <v-select
       v-model="selectedPost"
       :items="[$options.ALL,...Object.values(posts), $options.NONE ]"
@@ -82,9 +84,11 @@
 import IconBtnWithTip from "@/components/IconBtnWithTip"
 import {posts, tasks, teams} from "@/mixins/ComputedData";
 import AdministrationDragItems from "@/components/Administration/AdministrationDragItems";
+import {User} from "@/plugins/servises/User";
 
 export default {
   name: 'AdministrationRightSidebar',
+  someUser: new User(),
   components: {AdministrationDragItems, IconBtnWithTip},
   mixins: [teams, tasks, posts],
   NONE: {id: 'none', title: "Нет"},

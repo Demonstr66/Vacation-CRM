@@ -1,11 +1,10 @@
 <template>
-  <BaseModal
-    :show="show"
+  <app-base-modal
+    ref="modal"
     :submitDisable="!isUploadSuccessful || !!!uploadingUsers.length"
-    :title="title"
-    @cancel="onCancel"
+    title="Импорт данных"
+    :submiting="submiting"
     @reset="reset"
-    @submit="onSubmit"
   >
     <v-card-text>
       <v-row>
@@ -139,30 +138,25 @@
         Ошибка: не найдено подходящих полей
       </div>
     </v-card-text>
-  </BaseModal>
+  </app-base-modal>
 </template>
 
 <script>
-import BaseModal from "./Base.vue";
 import {IImport} from "@/plugins/servises/IImport";
+import AppBaseModal from "@/components/Modals/AppBaseModal";
 
 export default {
   components: {
-    BaseModal,
+    AppBaseModal,
   },
-  ModalController: null,
   props: {
     dataType: {
       type: String,
     },
-    title: {
-      type: String,
-      default: "Выберите файл",
-    },
   },
   data: () => ({
     availableFields: IImport.users.fields,
-    show: false,
+    submiting: false,
 
     uploadFields: [],
     uploadingTeams: [],
@@ -171,7 +165,6 @@ export default {
 
     teams: [],
     posts: [],
-
 
     isFileUploading: false,
     isUploadSuccessful: false,
@@ -196,15 +189,19 @@ export default {
   },
   methods: {
     open() {
-      let resolve, reject
-      const result = new Promise((res, rej) => {
-        resolve = res
-        reject = rej
-      })
-
-      this.show = true
-      this.$options.ModalController = {resolve, reject}
-      return result
+      this.$refs.modal.open()
+        .then(() => {
+          this.submiting = true
+          this.onSubmit().then(() => {
+            this.$refs.modal.close()
+          })
+        })
+        .catch(() => {
+          this.$refs.modal.close()
+        })
+        .finally(() => {
+          this.submiting = false
+        })
     },
     onChange() {
       this.clearError()
@@ -233,20 +230,6 @@ export default {
       this.isUploadError = false
       this.uploadError = ''
     },
-    reset() {
-      console.log('reset')
-      this.isFileUploading = false;
-      this.isUploadSuccessful = false;
-      this.uploadingUsers = []
-      this.uploadingTeams = []
-      this.teams = []
-      this.uploadingPosts = []
-      this.posts = []
-      this.uploadFields = []
-
-      this.file = null;
-      this.clearError()
-    },
     onSubmit() {
       const {uploadingUsers, uploadingTeams, uploadingPosts, teams, posts} = this
       if (!uploadingUsers.length) return
@@ -263,19 +246,21 @@ export default {
         return user
       })
 
-      IImport.users.save(users, teams, posts)
-        .then(() => {
-          this.closeModal()
-        })
+      return IImport.users.save(users, teams, posts)
+    },
+    reset() {
+      this.submiting = false
+      this.isFileUploading = false;
+      this.isUploadSuccessful = false;
+      this.uploadingUsers = []
+      this.uploadingTeams = []
+      this.teams = []
+      this.uploadingPosts = []
+      this.posts = []
+      this.uploadFields = []
 
-    },
-    onCancel() {
-      this.closeModal();
-    },
-    closeModal() {
-      this.reset()
-      this.show = false
-      this.$options.ModalController.resolve(false)
+      this.file = null;
+      this.clearError()
     },
   },
 };

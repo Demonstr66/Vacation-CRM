@@ -1,82 +1,87 @@
 <template>
-  <v-card flat>
-    <component :is="tag" ref="theUserForm" v-model="valid"
-               @submit.prevent="onSubmit">
-      <v-card-title v-if="!hideTitle">Личные данные</v-card-title>
-      <v-card-text>
-        <v-text-field
-          v-model="user.fullName"
-          :append-icon="disabled ? 'mdi-lock' : ''"
-          :disabled="disabled"
-          :rules="[blankCheck, fioCheck]"
-          label="ФИО"
+  <app-base-sheet :flat="!solo">
+    <v-card flat height="100%">
+      <component :is="tag" ref="theUserForm" v-model="valid"
+                 class="d-flex flex-column"
+                 style="height: 100%;"
+                 @submit.prevent="onSubmit">
+        <v-card-title v-if="!hideTitle">Личные данные</v-card-title>
+        <v-card-text>
+          <v-text-field
+            v-model="user.fullName"
+            :append-icon="disabled ? 'mdi-lock' : ''"
+            :disabled="disabled"
+            :rules="[blankCheck]"
+            label="ФИО"
 
-          name="fullName"
-          @change="changed"
-        >
-          <template v-slot:prepend>
-            <v-icon color="blue-grey lighten-1">mdi-account</v-icon>
-          </template>
-        </v-text-field
-        >
-        <v-text-field
-          v-if="!hideAdditionalFields"
-          v-model="user.displayName"
-          :append-icon="disabled ? 'mdi-lock' : ''"
-          :disabled="disabled"
-          :rules="[blankCheck]"
-          label="Короткое имя"
-          name="displayName"
-          @change="changed"
-        >
-          <template v-slot:prepend>
-            <v-icon color="blue-grey lighten-1">mdi-account</v-icon>
-          </template>
-        </v-text-field
-        >
-        <!--        <v-text-field-->
-        <!--          v-if="!hideAdditionalFields"-->
-        <!--          v-model="user.templateName"-->
-        <!--          :append-icon="disabled ? 'mdi-lock' : ''"-->
-        <!--          :disabled="disabled"-->
-        <!--          :rules="[fioCheck]"-->
-        <!--          hint="От: "-->
-        <!--          -->
-        <!--          label="ФИО для шаблона заявления"-->
-        <!--          name="templateName"-->
-        <!--          @change="changed"-->
-        <!--        >-->
-        <!--          <template v-slot:prepend>-->
-        <!--            <v-icon color="blue-grey lighten-1">mdi-account</v-icon>-->
-        <!--          </template>-->
-        <!--        </v-text-field-->
-        <!--        >-->
-      </v-card-text>
-      <v-card-actions v-if="!hideAction && !disabled && solo">
-        <v-spacer></v-spacer>
-        <v-btn
-          :disabled="!isChanged || !valid"
-          color="success"
-          text
-          type="submit"
-        >
-          Сохранить
-        </v-btn>
-        <v-spacer></v-spacer>
-      </v-card-actions>
-    </component>
-  </v-card>
+            name="fullName"
+            @change="changed"
+          >
+            <template v-slot:prepend>
+              <v-icon color="blue-grey lighten-1">mdi-account</v-icon>
+            </template>
+          </v-text-field
+          >
+          <v-text-field
+            v-if="!hideAdditionalFields"
+            v-model="user.displayName"
+            :append-icon="disabled ? 'mdi-lock' : ''"
+            :disabled="disabled"
+            :rules="[blankCheck]"
+            label="Короткое имя"
+            name="displayName"
+            @change="changed"
+          >
+            <template v-slot:prepend>
+              <v-icon color="blue-grey lighten-1">mdi-account</v-icon>
+            </template>
+          </v-text-field
+          >
+          <!--        <v-text-field-->
+          <!--          v-if="!hideAdditionalFields"-->
+          <!--          v-model="user.templateName"-->
+          <!--          :append-icon="disabled ? 'mdi-lock' : ''"-->
+          <!--          :disabled="disabled"-->
+          <!--          :rules="[fioCheck]"-->
+          <!--          hint="От: "-->
+          <!--          -->
+          <!--          label="ФИО для шаблона заявления"-->
+          <!--          name="templateName"-->
+          <!--          @change="changed"-->
+          <!--        >-->
+          <!--          <template v-slot:prepend>-->
+          <!--            <v-icon color="blue-grey lighten-1">mdi-account</v-icon>-->
+          <!--          </template>-->
+          <!--        </v-text-field-->
+          <!--        >-->
+        </v-card-text>
+        <v-card-actions class="mt-auto" v-if="!hideAction && !disabled && solo">
+          <v-spacer></v-spacer>
+          <v-btn
+            :disabled="!isChanged || !valid"
+            color="success"
+            text
+            type="submit"
+          >
+            Сохранить
+          </v-btn>
+          <v-spacer></v-spacer>
+        </v-card-actions>
+      </component>
+    </v-card>
+  </app-base-sheet>
 </template>
 
 <script>
 import {inputValidations} from "@/mixins/InputValidations";
-import {UserMethods} from "@/mixins/UserMethods";
 import {VForm} from "vuetify/lib/components";
+import {User} from "@/plugins/servises/User";
+import AppBaseSheet from "@/layouts/AppBaseSheet";
 
 export default {
   name: 'TheUserInfo',
-  mixins: [inputValidations, UserMethods],
-  components: {VForm},
+  mixins: [inputValidations],
+  components: {AppBaseSheet, VForm},
   props: {
     solo: {
       type: Boolean,
@@ -121,8 +126,8 @@ export default {
       this.isChanged = false;
     },
     updateData(silent = false) {
-      if (silent) this.silentUpdateUser(this.user)
-      else this.updateUser(this.user)
+      const user = new User(this.user)
+      user.update({type: 'edit'}, silent)
     },
     changed() {
       if (this.isChanged) return

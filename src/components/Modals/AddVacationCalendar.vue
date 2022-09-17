@@ -2,13 +2,14 @@
   <div>
     <vc-date-picker
       v-model="dates"
+      locale="ru"
       :attributes="[
         ...attributes,
         ...userAttributes,
         ...exceptionAttributes,
         $options.WEEKEND_ATTRIBUTES,
       ]"
-      :columns="2"
+      :columns="$vuetify.breakpoint.mdAndUp ? 2 : 1"
       :disabled-dates="disableDates"
       :max-date="new Date(`${year}-12-31`)"
       :min-date="new Date(`${year}-01-01`)"

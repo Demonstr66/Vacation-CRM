@@ -8,9 +8,7 @@ export class IImport {
 
   static users = {
     fields: [{model: 'email', title: 'E-mail', required: true, unique: true}, {
-      model: 'fullName',
-      title: 'ФИО',
-      required: true
+      model: 'fullName', title: 'ФИО', required: true
     }, {model: 'post', title: 'Должность'}, {model: 'team', title: 'Команда'},], upload: (file) => {
       let fields = [], users = [], teams = [], posts = []
       return new Promise((res, rej) => {
@@ -45,26 +43,40 @@ export class IImport {
           })
       })
     }, save: (users, teams, posts) => {
-      let promises = []
-
-      if (posts) posts.map(title => promises.push[Post.create({title}, true)])
-      if (teams) teams.map(title => promises.push[Team.create({title}, true)])
-
       return new Promise((res, rej) => {
-        Promise.all(promises)
-          .then(() => {
-            promises = []
-            if (users) users.map(data => {
-              let user = new User(data)
-              promises.push(user.create(true))
+        Promise.all(teams.map(title => Team.create({title}, true)))
+          .then((keys) => {
+            users = users.map(user => {
+              if (!user.team) return user
+              let teamIndex = teams.findIndex(team => team === user.team)
+              if (teamIndex !== -1) {
+                user.team = keys[teamIndex]
+              }
+              return user
             })
-
-            Promise.all(promises)
-              .then(() => {
-                Message.successMessage('Данные импортированы')
-                res()
-              })
-              .catch((err) => rej(err))
+          })
+          .then(() => {
+            return Promise.all(posts.map(title => Post.create({title}, true)))
+          })
+          .then((keys) => {
+            users = users.map(user => {
+              if (!user.post) return user
+              let postIndex = posts.findIndex(post => post === user.post)
+              if (postIndex !== -1) {
+                user.post = keys[postIndex]
+              }
+              return user
+            })
+          })
+          .then(() => {
+            return Promise.all(users.map(data => {
+              const user = new User(data)
+              return user.create(true)
+            }))
+          })
+          .then(() => {
+            Message.successMessage('Данные импортированы')
+            res()
           })
           .catch((err) => {
             Message.errorMessage(err)
@@ -73,5 +85,4 @@ export class IImport {
       })
     }
   }
-
 }

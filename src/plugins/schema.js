@@ -2,32 +2,6 @@ import {dateToFileFormat} from "@/plugins/utils";
 
 const moment = require('moment')
 
-export function defUser(...data) {
-  let res = {
-    uid: '',
-    email: '',
-    emailVerified: false,
-    displayName: '',
-    fullName: '',
-    templateName: '',
-    post: null,
-    tasks: [],
-    team: null,
-    workspace: '',
-    role: 'user',
-    active: false,
-    archive: false
-  }
-  //roles 'currentUser' < 'leader' < 'admin' < 'owner'
-
-
-  if (data) {
-    data.map(d => {
-      res = updateObject(res, d)
-    })
-  }
-  return res
-}
 
 export const templateFileData = {
   fullName: {test: 'Иванов Иван Иванович', description: '', title: 'ФИО'},
@@ -56,103 +30,6 @@ export function defWorkspace(...data) {
     tasks: [],
     posts: [],
     teams: []
-  }
-
-  if (data) {
-    data.map(d => {
-      res = updateObject(res, d)
-    })
-  }
-  return res
-}
-
-export function defSchedule(...data) {
-  let res = {
-    id: '',
-    title: '',
-    startDate: '',
-    endDate: '',
-    year: '',
-    isActive: false,
-    activation: {
-      timestamp: null,
-      by: null
-    },
-    exception: []
-  }
-
-  if (data) {
-    data.map(d => {
-      res = updateObject(res, d)
-    })
-  }
-  return res
-}
-
-export function defTask(...data) {
-  let res = {
-    id: '',
-    title: ''
-  }
-
-  if (data) {
-    data.map(d => {
-      res = updateObject(res, d)
-    })
-  }
-  return res
-}
-
-export function defPost(...data) {
-  let res = {
-    id: '',
-    title: ''
-  }
-
-  if (data) {
-    data.map(d => {
-      res = updateObject(res, d)
-    })
-  }
-  return res
-}
-
-export function defTeam(...data) {
-  let res = {
-    id: '',
-    title: '',
-    leaderId: '',
-    parent: ''
-  }
-
-  if (data) {
-    data.map(d => {
-      res = updateObject(res, d)
-    })
-  }
-  return res
-}
-
-export function defVacation(...data) {
-  let res = {
-    id: '',
-    uid: '',
-    sid: '',
-    //True - если отпуск фактический, и не совпадает с заявлением
-    actually: false,
-    start: null,
-    end: null,
-    days: 0,
-    approved: false,
-    createdAt: null,
-
-    //[0: draft, 1: requireApproval, 2: approved, 3: rejected]
-    status: 0,
-    statusChangeByUid: null,
-    statusChangeAt: null,
-    comment: null,
-    versions: null,
-    events: null
   }
 
   if (data) {

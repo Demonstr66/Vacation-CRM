@@ -1,10 +1,10 @@
-import {defPost} from "@/plugins/schema";
 import shortUUID from "short-uuid";
 import {asyncTryDecorator, basePathFunction, isUnique} from "@/plugins/utils";
+import {Post} from "@/plugins/servises/Post";
 
 const basePath = basePathFunction(`workspaces/{wid}/posts`)
 const test = (item, wid) => !!wid && !!item && !!item.title
-const normalize = defPost
+const normalize = Post.normalize
 
 export default {
   namespaced: true,
@@ -58,7 +58,7 @@ export default {
 
         const path = basePath(wid)
         const key = id
-        
+
         dispatch('users/deletePostFromUsers', key, {root: true})
         return dispatch('DB/delete', {path, key}, {root: true})
       })

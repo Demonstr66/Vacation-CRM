@@ -3,9 +3,9 @@
     <app-base-sheet class="flex-grow-1 d-flex flex-column justify-center">
       <span class="display-1 ml-2">{{ schedule && schedule.title }}</span>
       <div
-        :class="schedule && schedule.isActive ? 'error--text' : 'info--text'"
+        :class="schedule && schedule.isApprove ? 'error--text' : 'info--text'"
         class="caption ml-1"
-        v-text="schedule && schedule.isActive
+        v-text="schedule && schedule.isApprove
                   ? 'Редактирование не доступно'
                   : 'Доступно для редактирования'"
       >
@@ -32,10 +32,10 @@
             <template v-slot:expanded-item="{ headers, item }">
               <VacationEventsDetails :cols="headers.length" :events="item.events"/>
             </template>
-            <template v-slot:top="item">
+            <template v-if="$can('manageVacations', user)" v-slot:top="item">
               <div class="d-flex justify-end">
                 <v-btn
-                  v-if="!schedule.isActive" class="ma-2" color="primary" text
+                  v-if="schedule.isActive" class="ma-2" color="primary" text
                   @click="openAddModal()">
                   добавить отпуск
                 </v-btn>
@@ -78,55 +78,56 @@
                   :loading="item.id == downloadingItemId"
                   color="info"
                   icon="mdi-download"
-                  @click="downloadApplication(item.id)"
+                  @click="console"
                 >
                   Скачать заявление
                 </icon-btn-with-tip>
-                <icon-btn-with-tip
-                  v-if="item.status === 99"
-                  :disable="schedule.isActive"
-                  icon="mdi-content-copy"
-                  @click="openAddModal(item.id)"
-                >
-                  Предложить исправление
-                </icon-btn-with-tip>
-                <icon-btn-with-tip
-                  v-if="item.status === 0"
-                  :disable="item.approved || schedule.isActive"
-                  :icon="item.approved || schedule.isActive ? 'mdi-pencil-lock' : 'mdi-pencil'"
-                  @click="openAddModal(item.id)"
-                >
-                  Редактировать
-                </icon-btn-with-tip>
-                <Can :on="item" I='delete'>
+                <Can :on="user" I="manageVacations">
+                  <icon-btn-with-tip
+                    v-if="item.status === 99"
+                    :disable="!schedule.isActive"
+                    icon="mdi-content-copy"
+                    @click="openAddModal(item.id)"
+                  >
+                    Предложить исправление
+                  </icon-btn-with-tip>
+
                   <icon-btn-with-tip
                     v-if="item.status === 0"
-                    :disable="schedule.isActive"
+                    :disable="item.approved || !schedule.isActive"
+                    :icon="item.approved || !schedule.isActive ? 'mdi-pencil-lock' : 'mdi-pencil'"
+                    @click="openAddModal(item.id)"
+                  >
+                    Редактировать
+                  </icon-btn-with-tip>
+                  <icon-btn-with-tip
+                    v-if="item.status === 0"
+                    :disable="!schedule.isActive"
                     color="error"
                     icon="mdi-delete"
                     @click="onDelete(item.id)"
                   >
                     Удалить
                   </icon-btn-with-tip>
+                  <icon-btn-with-tip
+                    v-if="item.status === 0"
+                    :disable="!schedule.isActive"
+                    color="info"
+                    icon="mdi-send"
+                    @click="item.sendToApprove()"
+                  >
+                    Отправить на утверждение
+                  </icon-btn-with-tip>
+                  <icon-btn-with-tip
+                    v-if="item.status === 1"
+                    :disable="!schedule.isActive"
+                    color="warning"
+                    icon="mdi-cancel"
+                    @click="item.cancelSend()"
+                  >
+                    Отозвать
+                  </icon-btn-with-tip>
                 </Can>
-                <icon-btn-with-tip
-                  v-if="item.status === 0"
-                  :disable="schedule.isActive"
-                  color="info"
-                  icon="mdi-send"
-                  @click="item.sendToApprove()"
-                >
-                  Отправить на утверждение
-                </icon-btn-with-tip>
-                <icon-btn-with-tip
-                  v-if="item.status === 1"
-                  :disable="schedule.isActive"
-                  color="warning"
-                  icon="mdi-cancel"
-                  @click="item.cancelSend()"
-                >
-                  Отозвать
-                </icon-btn-with-tip>
               </RowActions>
             </template>
           </v-data-table>
@@ -181,6 +182,7 @@ import {Vacation} from "@/plugins/servises/Vacation";
 import AppPopup from "@/components/AppPopup";
 import AppBaseSheet from "@/layouts/AppBaseSheet";
 import AppBlockWithRightNavbar from "@/components/AppBlockWithRightNavbar";
+import {User} from "@/plugins/servises/User";
 
 export default {
   name: 'Vacation',
@@ -212,6 +214,10 @@ export default {
     if (this.appReady) this.initialize()
   },
   computed: {
+    testUser() {
+      const user = this.$store.getters['users/getUserById'](this.user.uid)
+      return new User(user)
+    },
     vacations() {
       const {SID, UID} = this.$options
       return this.$store.getters['vacations/getBySidByUid'](SID, UID)
@@ -231,11 +237,13 @@ export default {
     }
   },
   methods: {
+    console() {
+    },
     initialize() {
       const sid = this.$route.params.id
       const uid = this.$route.params.uid
 
-      const user = this.$store.getters['users/getUserById'](uid)
+      const user = new User(this.$store.getters['users/getUserById'](uid))
       const schedule = this.$store.getters['schedules/getById'](sid)
 
       if (!user || !schedule) this.redirect()
@@ -259,9 +267,10 @@ export default {
 
       return days
     },
-    async downloadApplication(id) {
+    downloadApplication(id) {
       this.downloadingItemId = id
-      this.vacations[id].downloadApplication().then(this.downloadingItemId = null)
+      let res = this.vacations[id].downloadApplication()
+        .then(() => this.downloadingItemId = null)
     },
     async onDelete(id) {
       let result = await this.$refs.deletePopup.open()

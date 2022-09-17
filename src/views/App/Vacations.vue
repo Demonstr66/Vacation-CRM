@@ -16,7 +16,3 @@ export default {
   mixins: [myVacations, currentUID]
 }
 </script>
-
-<style scoped>
-
-</style>

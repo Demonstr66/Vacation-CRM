@@ -1,6 +1,6 @@
 <template>
   <v-sheet
-    :elevation="$vuetify.breakpoint.mdAndUp ? 2 : 0"
+    :elevation="flat ? 0 : $vuetify.breakpoint.mdAndUp ? 2 : 0"
     rounded
     class="pa-1 pa-md-3 ma-1"
     color="white"
@@ -12,7 +12,7 @@
 export default {
   name: 'app-base-sheet',
   props: {
-    block: {
+    flat: {
       type: Boolean,
       default: false
     }

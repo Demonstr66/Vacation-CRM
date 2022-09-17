@@ -2,11 +2,11 @@
   <div>
     <v-data-table
       :custom-filter="filter"
-      :search="JSON.stringify(filters)"
       :expanded="expanded"
       :group-by.sync="groupBy"
       :headers="headers"
       :items="tree"
+      :search="JSON.stringify(filters)"
       show-expand
     >
       <template v-slot:top>
@@ -53,20 +53,23 @@
         ></vacation-status-chip>
       </template>
       <template v-slot:item.comment="{value}">
-              <span v-if="value" class="font-italic font-weight-light">
-                {{ value }}
-              </span>
+        <span v-if="value" class="font-italic font-weight-light">
+          {{ value }}
+        </span>
         <span v-else>
-                Нет
-              </span>
+          Нет
+        </span>
       </template>
       <template v-slot:item.action="{item}">
         <RowActions>
           <VacationTools
             :status="item.status"
+            :approve-disabled="!$can('approve', item)"
+            :reject-disabled="!$can('reject', item)"
+            :cancel-disabled="!$can('cancel', item)"
             @approve="approveVacation(item.id)"
-            @reject="rejectVacation(item.id)"
             @cancel="cancelVacation(item.id)"
+            @reject="rejectVacation(item.id)"
           />
         </RowActions>
       </template>
@@ -78,8 +81,10 @@
 import {
   appReady,
   currentUID,
-  getShortUserNameByUID, posts,
-  schedules, teams,
+  getShortUserNameByUID,
+  posts,
+  schedules,
+  teams,
   users,
   vacationsBySid
 } from "@/mixins/ComputedData";
@@ -87,7 +92,6 @@ import {getShortDayLabel, lowerCase, normalizeDate} from "@/mixins/Filters";
 import IconBtnWithTip from "@/components/IconBtnWithTip";
 import Alert from "@/components/Modals/Alert";
 import Manage from "@/plugins/TableHeaders/Manage";
-import {VacationMethods} from "@/mixins/VacationMethods";
 import RowActions from "@/components/RowActions";
 import VacationStatusChip from "@/components/AppStatusChip";
 import VacationTools from "@/components/ScheduleViewer/VacationTools";
@@ -125,6 +129,7 @@ export default {
   computed: {
     tree() {
       let tree = this.vacations
+      console.log(tree)
 
       return tree
     }

@@ -14,7 +14,7 @@ export default [
   },
   {
     text: 'Активация',
-    value: 'isActive',
+    value: 'isApprove',
     align: 'center'
   },
   {

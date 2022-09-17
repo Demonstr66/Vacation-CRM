@@ -1,10 +1,12 @@
 <template>
-  <v-card flat>
-    <component :is="tag" ref="form" @submit.prevent="onSubmit">
-      <v-card-title v-if="!hideTitle">Настройки Пространства</v-card-title>
-      <v-card-text>
-        <v-row no-gutters>
-          <v-col :cols="12 / cols">
+  <app-base-sheet>
+    <v-card flat height="100%">
+      <v-form ref="form" @submit.prevent="onSubmit"
+              class="d-flex flex-column"
+              style="height: 100%;">
+        <v-card-title v-if="!hideTitle">Настройки</v-card-title>
+        <v-card-text>
+          <div class="d-flex flex-column">
             <div class="d-flex align-top">
               <v-text-field
                 v-model="workspace.id"
@@ -40,8 +42,6 @@
                 </icon-btn-with-tip>
               </v-fab-transition>
             </div>
-          </v-col>
-          <v-col :cols="12 / cols">
             <v-text-field
               v-model.trim="workspace.title"
               :disabled="disabled"
@@ -55,8 +55,6 @@
                 <input-icon>mdi-sitemap</input-icon>
               </template>
             </v-text-field>
-          </v-col>
-          <v-col :cols="12 / cols">
             <v-text-field
               v-model.trim="domain"
               :disabled="disabled"
@@ -70,18 +68,22 @@
                 <v-icon color="blue-grey lighten-1">mdi-at</v-icon>
               </template>
             </v-text-field>
-          </v-col>
-        </v-row>
-      </v-card-text>
-      <v-card-actions v-if="!hideAction && !disabled && solo">
-        <v-spacer></v-spacer>
-        <v-btn :disabled="!isChanged" color="success" text type="submit">
-          Сохранить
-        </v-btn>
-        <v-spacer></v-spacer>
-      </v-card-actions>
-    </component>
-  </v-card>
+            <!--            <v-checkbox-->
+            <!--              label="Разрешить исправлять отклонённые отпуска"-->
+            <!--              hide-details-->
+            <!--            />-->
+          </div>
+        </v-card-text>
+        <v-card-actions class="mt-auto" v-if="!hideAction && !disabled">
+          <v-spacer></v-spacer>
+          <v-btn :disabled="!isChanged" color="success" text type="submit">
+            Сохранить
+          </v-btn>
+          <v-spacer></v-spacer>
+        </v-card-actions>
+      </v-form>
+    </v-card>
+  </app-base-sheet>
 </template>
 
 <script>
@@ -90,15 +92,12 @@ import {copyToClipboard} from "@/mixins/dataHelper";
 import {WorkspaceMethods} from "@/mixins/WorkspaceMethods";
 import InputIcon from "@/components/InputIcon";
 import {VForm} from "vuetify/lib/components";
+import AppBaseSheet from "@/layouts/AppBaseSheet";
 
 export default {
-  components: {InputIcon, IconBtnWithTip,VForm},
+  components: {AppBaseSheet, InputIcon, IconBtnWithTip},
   mixins: [WorkspaceMethods, copyToClipboard],
   props: {
-    solo: {
-      type: Boolean,
-      default: false
-    },
     workspace: {
       id: String,
       domain: Array,
@@ -134,9 +133,6 @@ export default {
         let needAt = val != ''
         this.workspace.domain = (!isAt && needAt ? '@' : '') + val
       }
-    },
-    tag() {
-      return this.solo ? 'VForm' : 'div'
     }
   },
   methods: {

@@ -1,5 +1,6 @@
-import store from "@/store";
 import {StructureItem} from "@/plugins/servises/StructureItem";
+import {Base} from "@/plugins/servises/Base";
+import {User} from "@/plugins/servises/User";
 
 export class Team extends StructureItem {
 
@@ -65,5 +66,27 @@ export class Team extends StructureItem {
 
   static getTitle(id) {
     return super.getTitle(id, Team.getAll())
+  }
+
+  static schema = {
+    id: '',
+    title: '',
+    leaderId: '',
+    parent: ''
+  }
+
+  static normalize(...args) {
+    return Base.normalize(Team.schema, args);
+  }
+
+  static getSubTeams(team) {
+    if (!team) return []
+
+    return []
+  }
+
+  static getTeamWhereLeader(uid) {
+    const teams = Team.getAll()
+    return teams.filter(team => team.leaderId === uid).map(team => team.id)
   }
 }
