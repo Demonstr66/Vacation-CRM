@@ -35,17 +35,15 @@ export default {
       dispatch('unsubscribe')
       commit('clear')
     },
-    create({dispatch, rootGetters, getters}, {wid, owner}) {
+    create({dispatch, rootGetters, getters}, ws) {
       return asyncTryDecorator(() => {
         // const wid = rootGetters['app/getWID']
 
-        if (!wid) throw new Error('Что-то пошло не так: workspace/create -> !wid')
+        if (!ws.id) throw new Error('Что-то пошло не так: workspace/create -> !id')
 
-        const defaultSetting = '{"admins":{"visibility":0,"manageUsers":[],"manageVacations":false,"manageWS":false},"leaders":{"visibility":0,"manageUsers":[],"manageVacations":false,"manageWS":false},"users":{"visibility":0,"manageUsers":[],"manageVacations":[],"manageWS":[]}}'
-
-        const path = basePath(wid)
-        const key = wid
-        const data = normalize({id: key, owner, privacy: defaultSetting})
+        const path = basePath(ws.id)
+        const key = ws.id
+        const data = normalize(ws)
 
         return dispatch('DB/set', {path, key, data}, {root: true})
       })

@@ -130,6 +130,7 @@ export class Roles {
   }
 
   static defineAbilitiesFor(user, permission) {
+    console.log('DEFINE ABILITY FOR', user, permission)
     // const userRoleType = user.role
     // const userRole = Object.values(Roles.roles).find(role => role.type === userRoleType)
     // const userRoleId = userRole && userRole.id || 0
@@ -153,7 +154,7 @@ export class Roles {
     cannot('manage', 'all')
     can('read', 'all')
 
-    can(['updatePersonalData', 'manageVacations', 'delete'], 'User', {uid: user.uid})
+    can(['updatePersonalData', 'manageVacations'], 'User', {uid: user.uid})
 
     if (rule.manageWorkspace) {
       can('manage', 'Workspace')

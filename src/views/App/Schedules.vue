@@ -22,10 +22,7 @@
       </template>
       <template v-slot:item.isApprove="{item}">
         <v-switch
-          :disabled="(!item.isActive && !item.isApprove) ||
-            (item.isApprove && !$can('cancel', 'Schedule')) ||
-            (!item.isApprove && !$can('approve', 'Schedule'))
-          "
+          :disabled="(!item.isActive && !item.isApprove)"
           readonly
           v-model="item.isApprove"
           class="align-center justify-center mt-0"
@@ -34,7 +31,7 @@
           hide-details
           inset
           @click="toggleActivation(item)"
-        ></v-switch>
+        />
       </template>
       <template v-slot:item.action="{item}">
         <RowActions>
@@ -148,7 +145,11 @@ export default {
       }
     },
     toggleActivation(item) {
-      if (item.isDraft) return
+      if (
+        item.isDraft &&
+        (item.isApprove && !this.$can('cancel', 'Schedule')) ||
+        (!item.isApprove && !this.$can('approve', 'Schedule'))
+      ) return
 
       if (item.isApprove) {
         this.cancelAlertShow(item.id)

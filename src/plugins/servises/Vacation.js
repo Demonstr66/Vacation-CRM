@@ -1,6 +1,8 @@
 import {Base} from "@/plugins/servises/Base";
 import {dataToGenerateFile} from "@/plugins/schema";
 import store from "@/store";
+import {api} from "@/plugins/api";
+import FileDownload from "js-file-download";
 
 const moment = require('moment')
 
@@ -108,24 +110,5 @@ export class Vacation extends Base {
 
   delete() {
     return super.delete({id: this.id, sid: this.sid})
-  }
-
-  downloadApplication() {
-    const {start, end, days, uid} = this
-    const user = store.getters['users/getUserById'](uid)
-
-    let post
-    if (user.post) {
-      post = store.getters['posts/getById'](user.post)?.title
-    }
-
-    let data = dataToGenerateFile(user, {
-      post: post || "", date: moment().format('YYYY-MM-DD'), start: start, finish: end, days: days
-    })
-
-    return Base.dispatchMethod('templateFile/downloadWithData', {
-      data,
-      fileName: 'Заявление на очередной оплачиваемый отпуск ' + store.getters['users/getDisplayNameByUID'](uid)
-    })
   }
 }

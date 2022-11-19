@@ -83,6 +83,7 @@ function defineRulesForUser(user, privacy) {
 
 export default function defineAbilitiesFor(user, privacy) {
   const {can, cannot, rules} = new AbilityBuilder();
+  console.log('PRIVACY', privacy)
   const opt = JSON.parse(privacy)
   console.log(opt)
   if (!user) {

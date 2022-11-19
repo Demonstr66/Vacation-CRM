@@ -2,6 +2,9 @@ import {Base} from "@/plugins/servises/Base";
 import store from "@/store";
 import {Roles} from "@/plugins/servises/Roles";
 import {Team} from "@/plugins/servises/Team";
+import {api} from "@/plugins/api";
+import {Message} from "@/plugins/servises/Message";
+import shortUUID from "short-uuid";
 
 const moment = require('moment')
 
@@ -29,9 +32,7 @@ export class User extends Base {
     workspace: '',
     post: '',
     tasks: '',
-    team: '',
-
-    events: '',
+    team: ''
   }
   Task = {
     add: (id, silent = false) => {
@@ -133,12 +134,19 @@ export class User extends Base {
     this.update({}, true)
   }
 
-  create(silent = false) {
-    const {team, post, tasks, fullName, role} = this
+  async create(silent = false) {
+    try {
+      const {team, post, tasks, fullName, role} = this
+      if (!this.displayName) this.displayName = User.fullToShortName(this.fullName)
+      await super.create(this, {team, post, tasks, fullName, role}, '', true);
+      await api.user.create({email: this.email, displayName: this.displayName})
 
-    if (!this.displayName) this.displayName = User.fullToShortName(this.fullName)
-
-    return super.create(this, {team, post, tasks, fullName, role}, 'Пользователь создан', silent);
+      if (!silent) Message.successMessage({code: 'auth/user-created'})
+      return Promise.resolve()
+    } catch (err) {
+      if (!silent) Message.errorMessage(err.response ? err.response.data.message : err)
+      return Promise.reject(err)
+    }
   }
 
   update(event = {}, silent = false, message = 'Данные пользователя обновлены') {
@@ -149,8 +157,18 @@ export class User extends Base {
     return super.update(this, event, message, silent);
   }
 
-  delete() {
-    return super.delete(this.uid, 'Пользователь удалён')
+  async delete() {
+    try {
+      const response = await api.user.delete(this.uid)
+      await super.delete(this.uid, '', true)
+
+      Message.successMessage('Пользователь удалён')
+
+      return response
+    } catch (err) {
+      Message.errorMessage(err?.response?.data?.message || err)
+      throw err
+    }
   }
 
 }

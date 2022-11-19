@@ -8,24 +8,18 @@
       <template #main>
         <app-base-sheet>
           <div>MAIN</div>
-          <v-select
-            :items="Object.values(teams)"
-            v-model="team"
-            item-text="title"
-            item-value="id"
-          />
-          <Can I="create" :on="testUser">
-            <div>Создание Человека</div>
-          </Can>
-          <Can I="read" :on="testUser">
-            <div>Чтение Человека</div>
-          </Can>
-          <Can I="update" :on="testUser">
-            <div>Редактирование Человека</div>
-          </Can>
-          <Can I="delete" :on="testUser">
-            <div>Удаление Человека</div>
-          </Can>
+          <v-text-field v-model.trim="email" label="Email"></v-text-field>
+          <v-text-field v-model.trim="pass" label="Pass"></v-text-field>
+          <v-text-field v-model.trim="uid" label="Uid"></v-text-field>
+          <v-btn @click="create">
+            create
+          </v-btn>
+          <v-btn @click="invite">
+            invite
+          </v-btn>
+          <v-btn @click="del">
+            delete
+          </v-btn>
         </app-base-sheet>
       </template>
       <template #navbar>
@@ -48,16 +42,19 @@ import MainTools from "@/components/user/tools/main";
 import {schedules, teams, user} from "@/mixins/ComputedData";
 import AppBlockWithRightNavbar from "@/components/AppBlockWithRightNavbar";
 import AppBaseSheet from "@/layouts/AppBaseSheet";
-import {Roles} from "@/plugins/servises/Roles";
 import {User} from "@/plugins/servises/User";
 import WorkspaceSetting from "@/components/workspace/Setting";
 import AppPrivacyForm from "@/components/workspace/AppPrivacyForm";
+import {api} from "@/plugins/api";
 
 export default {
   components: {AppPrivacyForm, WorkspaceSetting, AppBaseSheet, AppBlockWithRightNavbar, MainTools},
   mixins: [user, schedules, teams],
   data: () => ({
     team: null,
+    email: "",
+    pass: "",
+    uid: ""
   }),
   computed: {
     testUser() {
@@ -65,8 +62,14 @@ export default {
     }
   },
   methods: {
-    test() {
-      console.log(this.$can('update', this.testUser))
+    create() {
+      api.user.create(this.email, this.pass)
+    },
+    del() {
+      api.user.delete(this.uid)
+    },
+    invite() {
+      api.user.invite(this.email)
     }
   },
 };

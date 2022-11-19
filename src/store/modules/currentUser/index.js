@@ -9,17 +9,23 @@ const normalize = (...args) => User.normalize(...args)
 export default {
   namespaced: true, state: () => ({
     user: null, ready: false
-  }), getters: {
+  }),
+  getters: {
     get: (s) => s.user ? {...s.user} : {},
     uid: (s) => s.user ? s.user.uid : null,
+    role: (s) => s.user ? s.user.role : null,
     email: (s) => s.user ? s.user.email : null,
     isReady: (s) => s.ready
-  }, mutations: {
+  },
+  mutations: {
     set: (s, v) => {
       if (!s.ready) s.ready = true
       s.user = new User(v)
-    }, setReady: (s, v) => s.ready = v, clear: (s) => s.user = null
-  }, actions: {
+    },
+    setReady: (s, v) => s.ready = v,
+    clear: (s) => s.user = null
+  },
+  actions: {
     initialize({dispatch, getters}) {
       return dispatch('subscribe').then(() => {
         let user = getters['get']
@@ -62,9 +68,7 @@ export default {
         const data = normalize(user)
 
         return Promise.all([dispatch('DB/set', {
-          path,
-          key,
-          data
+          path, key, data
         }, {root: true}), dispatch('FB/updateAccountInfo', {data}, {root: true})])
       })
     }, subscribe({rootGetters, dispatch, getters}) {

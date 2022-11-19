@@ -7,10 +7,13 @@
     <div class="d-grid grid-auto-col">
       <template v-if="!appReady">
         <app-base-sheet>
-          <v-skeleton-loader loading type="image" min-height="250px"/>
+          <v-skeleton-loader loading min-height="250px" type="image"/>
         </app-base-sheet>
         <app-base-sheet>
-          <v-skeleton-loader loading type="image" min-height="250px"/>
+          <v-skeleton-loader loading min-height="250px" type="image"/>
+        </app-base-sheet>
+        <app-base-sheet>
+          <v-skeleton-loader loading min-height="250px" type="image"/>
         </app-base-sheet>
       </template>
       <template v-else>
@@ -21,8 +24,19 @@
         />
         <the-account-info
           :user="user"
+          solo
           disable-all
         />
+        <!--        <app-base-sheet>-->
+        <!--          <v-card flat>-->
+        <!--            <v-card-title>Управление</v-card-title>-->
+        <!--            <v-card-text class="d-flex flex-column align-start justify-end">-->
+        <!--              &lt;!&ndash;              <v-btn text color="error">Сменить пароль</v-btn>&ndash;&gt;-->
+        <!--              &lt;!&ndash;              <v-btn text color="error">Сменить почту</v-btn>&ndash;&gt;-->
+        <!--              <v-btn color="error" text @click="onDeleteAccount">удаление аккаунта</v-btn>-->
+        <!--            </v-card-text>-->
+        <!--          </v-card>-->
+        <!--        </app-base-sheet>-->
       </template>
     </div>
 
@@ -34,12 +48,12 @@
       <template v-if="!appReady">
         <app-base-sheet>
           <v-skeleton-loader
-            type="image" min-height="250px"
+            min-height="250px" type="image"
           />
         </app-base-sheet>
         <app-base-sheet>
           <v-skeleton-loader
-            type="image" min-height="250px"
+            min-height="250px" type="image"
           />
         </app-base-sheet>
       </template>
@@ -59,7 +73,7 @@
       </app-base-sheet>
       <app-base-sheet v-if="!appReady">
         <v-skeleton-loader
-          type="image" min-height="250px"
+          min-height="250px" type="image"
         />
       </app-base-sheet>
       <workspace-setting v-else/>
@@ -91,6 +105,26 @@ export default {
   computed: {
     user() {
       return new User(this.$store.getters['currentUser/get'])
+    }
+  },
+  methods: {
+    onDeleteAccount() {
+      const user = new User(this.user)
+      this.$store.dispatch('auth/singOut')
+        .then((res) => {
+          return this.$store.dispatch('clearModulesData')
+        })
+        .then((res) => {
+          return this.$store.dispatch('app/setLogoutState')
+        })
+        .then((res) => {
+          user.delete()
+          this.$router.push({name: 'Login'})
+        })
+        .catch((err) => {
+          this.errorMessage(err)
+        })
+
     }
   }
 };

@@ -5,67 +5,157 @@ const {initializeApp} = require('firebase-admin/app');
 const admin = require("firebase-admin");
 const serviceAccount = require("./setting.json");
 const {getAuth} = require("firebase-admin/auth");
+const nodemailer = require('nodemailer');
+const {emailAuth} = require("./config");
+const fs = require("fs");
+const handlebars = require("handlebars");
+const {appData} = require("./appConfig");
 
 const app = express();
 const PORT = 3000
 
+
+const asyncHandler = (func) => async (req, res, next) => {
+  try {
+    await func(req, res, next)
+  } catch (e) {
+    console.log('asyncHandler catch')
+    console.log(e)
+    next(createError(e))
+  }
+}
+
 initializeApp({
-    credential: admin.credential.cert(serviceAccount),
-    databaseURL: "https://vacationcrm-d3ff2-default-rtdb.asia-southeast1.firebasedatabase.app"
+  credential: admin.credential.cert(serviceAccount),
+  databaseURL: "https://vacationcrm-d3ff2-default-rtdb.asia-southeast1.firebasedatabase.app",
+  storageBucket: 'gs://vacationcrm-d3ff2.appspot.com'
 });
+const {getTemplateFile, replacement, download} = require("./download");
+const {getUserDataBy, getPermission, getUser} = require("./FB/DB");
+const {
+  accountCreateHandler, accountDeleteHandler, accountSetClaims
+} = require("./accountHedlers");
+const {inviteHandler, sendTest} = require("./mailer");
 
-function checkUser({token, uid}) {
-    console.log('findUser...')
+const db = admin.database()
 
-    if (!token && !uid) return Promise.reject({message: 'invalid parameters'})
 
-    if (token) return getAuth().verifyIdToken(token)
-    if (uid) return getAuth().getUser(uid)
+// const schedule = require('node-schedule');
+//
+// const job = schedule.scheduleJob('42 * * * * *', function () {
+//   console.log('The answer to life, the universe, and everything!' + Date.now() / 1000);
+// });
+
+
+function updateUser(uid, data) {
+  return getAuth().updateUser(uid, data)
 }
 
-function checkPermission(user) {
-    console.log('checking...')
-}
 
-app.use(cors());
-app.use(express.urlencoded());
-app.use(express.json());
+app.use(cors())
+app.use(express.urlencoded())
+app.use(express.json())
 
-app.get('/currentUser/set/permission/base', async (req, res, next) => {
-    const {u: uid, o: owner} = req.query
+app.get('/api/test', async (req, res, next) => {
+  await sendTest()
+  res.json('ok')
+})
 
-    console.log(uid)
-    console.log(req.query)
+// app.use(asyncHandler(async (req, res, next) => {
+//   const {uid, wid} = req.headers
+//
+//   if (!wid) throw createError(401, 'Invalid parameters')
+//
+//   req.wid = wid
+//
+//   if (uid) {
+//     // console.log('MIDLWARE: uid =', uid)
+//     req.user = await getUser(uid)
+//     req.userData = await getUserDataBy(wid, 'uid', uid)
+//     req.permission = await getPermission(wid, req.userData.role)
+//     // req.permission.manageUsers.delete = false
+//     // console.log('MIDLWARE: permission =', req.permission)
+//   }
+//
+//   next()
+// }))
 
-    if (!uid) return next(createError(403, 'invalid parameters'))
 
-    checkUser({uid})
-        .then(user => {
-            if (user.admin) return next(createError(402, 'access decided'))
+app.get('/api/download/', asyncHandler(getTemplateFile), asyncHandler(replacement), asyncHandler(download))
 
-            getAuth().setCustomUserClaims(user.uid, {
-                admin: owner ? true : false,
-                role: owner ? 'admin' : 'user',
-                workspace: user.photoURL
-            })
+app.get('/api/download/origin', asyncHandler(getTemplateFile), asyncHandler(download))
 
-            res.json({message: 'success'})
-        })
-        .catch(err => {
-            next(createError(401, err.message))
-        })
-});
+app.post('/api/account/create', asyncHandler(accountCreateHandler), asyncHandler(accountSetClaims))
 
+app.delete('/api/account/delete', asyncHandler(accountDeleteHandler))
+
+app.get('/api/message/invite', asyncHandler(inviteHandler))
+
+// app.get('/api/message/vacation', async (req, res, next) => {
+//   const {uid} = req.query
+//   if (!uid) return next(createError(403, 'invalid-parameters'))
+//
+//   const user = await getUserByUid(uid)
+//
+//   if (!user) return next(createError(404, 'user-not-found'))
+//   const contents = await bucket.file('temp/aC3BSzQxJjCZiC4WcrR1dq/ОБРАЗЕЦ.docx').download()
+//
+//   sendEmail(user, vacationEmail, contents[0])
+//     .then((data) => {
+//       res.json(data)
+//     })
+//     .catch((err) => next(createError(err)))
+// });
+//
+// app.get('/api/user/set/claims', async (req, res, next) => {
+//   const {uid, w} = req.query
+//
+//   if (!uid || !w) return next(createError(403, 'invalid parameters'))
+//
+//   const user = await getUserByUid(uid)
+//
+//   if (!user) next(createError(404, 'user-not-found'))
+//
+//   await getAuth().setCustomUserClaims(uid, {workspace: w})
+//   const data = await getUserByUid(uid)
+//   res.json(data)
+// });
+// app.get('/api/user/test', async (req, res, next) => {
+//   const {email} = req.query
+//   if (!email) return next(createError(403, 'invalid-parameters'))
+//
+//   // const user = await getUserByUid(uid)
+//
+//   // if (!user) return next(createError(404, 'user-not-found'))
+//   // const useremail = user.email;
+//   getAuth()
+//     .generateSignInWithEmailLink(email, {
+//       handleCodeInApp: true,
+//       url: 'http://localhost:8080/loginlink'
+//     })
+//     .then((link) => {
+//       // Construct email verification template, embed the link and send
+//       // using custom SMTP server.
+//       return res.json(link);
+//     })
+//     .catch((error) => {
+//       // Some error occurred.
+//       return next(createError(400, error));
+//     });
+// });
 
 app.use((req, res, next) => {
-    next(createError(404))
+  next(createError(404))
 })
 
 app.use((error, req, res, next) => {
-    res.status(error.status)
-    res.json(error)
+  console.log('i`m handler error')
+  console.log(error)
+  let message = error.errorInfo ? error.errorInfo.code : error
+  res.status(error.status)
+  res.json(message)
 })
 
 app.listen(PORT, () => {
-    console.log('listen port ' + PORT)
+  console.log('listen port ' + PORT + ' at: ' + Date.now() / 1000)
 });

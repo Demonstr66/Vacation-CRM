@@ -29,6 +29,13 @@
           </v-sparkline>
         </app-base-sheet>
       </template>
+      <template #navbar>
+        <app-base-sheet>
+          <v-btn color="primary" outlined block @click="onExport">
+            Экспорт
+          </v-btn>
+        </app-base-sheet>
+      </template>
     </app-block-with-right-navbar>
   </div>
 </template>
@@ -37,6 +44,8 @@
 import AppBlockWithRightNavbar from "@/components/AppBlockWithRightNavbar";
 import {appReady} from "@/mixins/ComputedData";
 import AppBaseSheet from "@/layouts/AppBaseSheet";
+import {dateToFileFormat} from "@/plugins/utils";
+import * as XLSX from "xlsx";
 
 export default {
   name: "ScheduleStatistic",
@@ -83,6 +92,23 @@ export default {
       })
 
       return stat
+    },
+    onExport() {
+      let header = ['ФИО', 'c', 'по']
+      let rows = []
+      this.vacations.forEach(vacation => {
+        if (!vacation.approved) return
+        
+        let fullName = this.$store.getters['users/getUserById'](vacation.uid).fullName
+        rows.push([fullName, this.$moment(vacation.start).format('DD.MM.YYYY'),
+          this.$moment(vacation.end).format('DD.MM.YYYY')])
+      })
+
+      rows.sort()
+      var wb = XLSX.utils.book_new();
+      var ws = XLSX.utils.aoa_to_sheet([header, ...rows])
+      XLSX.utils.book_append_sheet(wb, ws, 'Sheet1');
+      XLSX.writeFile(wb, `${this.schedule.title}.xlsx`);
     }
   },
   watch: {

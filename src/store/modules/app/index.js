@@ -1,4 +1,5 @@
 import router from '@/router'
+import axios from "axios";
 
 const DEBUG = process.env.VUE_APP_DEBUG;
 
@@ -81,7 +82,16 @@ export default {
     },
     async loadUserData({commit, dispatch}, user) {
       // commit('setAccessLevel', 2)
-      commit('setWID', user.photoURL)
+      let wid = user.photoURL
+      if (!wid) {
+        const customClaims = JSON.parse(user.reloadUserInfo.customAttributes)
+        wid = customClaims.workspace
+      }
+      console.groupEnd()
+      commit('setWID', wid)
+
+      axios.defaults.headers.common['uid'] = user.uid
+      axios.defaults.headers.common['wid'] = wid
 
       await dispatch('initModules', {}, {root: true})
     },

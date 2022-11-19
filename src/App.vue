@@ -2,7 +2,7 @@
   <v-app id="vuetify-app">
     <v-system-bar v-if="sandboxMode" app class="justify-center" color="error">
       <span class="mr-2">Выбор роли:</span>
-      <v-btn-toggle v-model="role" class="mr-2" color="warning" mandatory>
+      <v-btn-toggle v-model="sandBoxRole" class="mr-2" color="warning" mandatory>
         <v-btn v-for="role in $options.ROLES" :key="role.id" outlined text x-small>
           {{ role.text }}
         </v-btn>
@@ -39,10 +39,22 @@ export default {
   },
   mixins: [appReady],
   data: () => ({
-    role: -1,
+    sandBoxRole: -1,
   }),
   computed: {
-    ...mapGetters(['sandboxMode']),
+    ...mapGetters({'sandboxMode': 'sandboxMode', currentUserRole: 'currentUser/role'}),
+    userRole() {
+      const roleType = this.currentUserRole
+      const role = roleType && this.$options.ROLES.find(role => role.type === roleType)
+      return role ? role.id : -1
+    },
+    role() {
+      if (this.sandboxMode) {
+        return this.sandBoxRole
+      } else {
+        return this.userRole
+      }
+    },
     layout() {
       return this.$route.meta && this.$route.meta.layout || ""
     },
@@ -57,24 +69,19 @@ export default {
   methods: {
     sandBoxOff() {
       this.$store.dispatch('sandboxModeOff')
-      let user = this.$store.getters['currentUser/get']
-      this.role = this.$options.ROLES.find(role => role.type === user.role).id
     }
   },
   watch: {
-    appReady(val) {
-      if (val) {
-        let user = this.$store.getters['currentUser/get']
-        if (user) {
-          this.role = this.$options.ROLES.find(role => role.type === user.role).id
-        }
-      }
+    userRole(val) {
+      this.sandBoxRole = val
     },
     role(val) {
-      let user = this.$store.getters['currentUser/get']
+      console.log('ROLE CHANGED', val)
+      const user = this.$store.getters['currentUser/get']
 
       if (user) {
         let permissions = this.$store.getters['workspace/permissions']
+        if (!permissions) permissions = {}
         if (!permissions[val]) permissions[val] = Roles.defaultPermissions[val]
 
         const rules = Roles.defineAbilitiesFor(user, permissions[val])

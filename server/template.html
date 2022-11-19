@@ -1,0 +1,42 @@
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <style>
+        body {
+            font-family: Tahoma, Verdana;
+            text-indent: 16px;
+            font-size: 14px;
+        }
+
+        .main {
+            padding: 4px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            min-width: 80%;
+        }
+
+        a {
+            text-decoration: none;
+            color: #1976D2;
+            font-weight: 700;
+        }
+
+        a:hover {
+            color: #458ace;
+            text-decoration: underline;
+        }
+    </style>
+</head>
+<body>
+<div class="main">
+    <h3>Здравствуйте, {{ name }}!</h3>
+    <p>{{ by }} пригласил Вас в приложение <a href="{{appLink}}">{{ appName }}</a></p>
+    <div>
+        Пройдите по <a href="{{link}}">ссылке</a> чтобы завершить регистрацию
+        <br/>
+        <br/>
+        <small><a href="{{link}}">{{ link }}</a></small>
+    </div>
+</div>
+</body>
+</html>

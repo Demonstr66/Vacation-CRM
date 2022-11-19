@@ -20,7 +20,9 @@ export default [
   {
     text: 'Действия',
     value: 'action',
-    align: 'end',
-    sortable: false
+    align: 'center',
+    cellClass: 'px-0 fit-content border-left',
+    sortable: false,
+    groupable: false
   },
 ]

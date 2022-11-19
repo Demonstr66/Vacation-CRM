@@ -25,7 +25,7 @@ export class Team extends StructureItem {
 
     if (deleteChildren) {
       teamIndexes.map(id => super.delete(id, method, '', true))
-      super.delete(id, method, message, false)
+      return super.delete(id, method, message, false)
     } else {
       const teams = Team.getAll()
       const currentTeam = teams.find(t => t.id === id)
@@ -39,7 +39,7 @@ export class Team extends StructureItem {
         }
       })
 
-      super.delete(id, method, message)
+      return super.delete(id, method, message)
     }
   }
 

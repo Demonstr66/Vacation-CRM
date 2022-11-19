@@ -41,8 +41,13 @@ let app = null
 let subscribe = false
 
 getAuth().onAuthStateChanged((user) => {
-
+  if (DEBUG) {
+    console.group('AUTH STATE CHANGE')
+    console.log(user)
+    console.groupEnd()
+  }
   if (DEBUG && !subscribe) {
+
     subscribe = true
     store.subscribe(mutation => {
       console.log(`Mutation: ${mutation.type}:`, mutation.payload)

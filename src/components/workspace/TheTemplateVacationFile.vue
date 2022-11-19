@@ -27,7 +27,7 @@
                     <ul>
                       <li v-for="(tempKey, idx) in templateKeys" :key="idx">
                     <span class="font-italic">
-                      <span>&#123;</span>{{ tempKey.key }}<span>&#125;</span>
+                      <span>+++</span>{{ tempKey.key }}<span>+++</span>
                     </span> - {{ tempKey.title }}
                       </li>
                     </ul>
@@ -106,7 +106,7 @@
                       <ul class="text-left">
                         <li v-for="(tempKey, idx) in templateKeys" :key="idx">
                   <span class="font-italic">
-                    <span>&#123;</span>{{ tempKey.key }}<span>&#125;</span>
+                    <span>+++</span>{{ tempKey.key }}<span>+++</span>
                   </span> - {{ tempKey.title }}
                         </li>
                       </ul>
@@ -135,6 +135,11 @@ import {FileMethods} from "@/mixins/FileMethods";
 import {truncate30} from "@/mixins/Filters";
 import {templateFileData} from "@/plugins/schema";
 import AppBaseSheet from "@/layouts/AppBaseSheet";
+import {api} from "@/plugins/api";
+import store from "@/store";
+import FileDownload from "js-file-download";
+import {Message} from "@/plugins/servises/Message";
+import {dateToFileFormat} from "@/plugins/utils";
 
 export default {
   name: 'TheTemplateVacationFile',
@@ -182,27 +187,43 @@ export default {
       this.newTempFile = null
       this.isLoading = false
     },
-    async onDownloadFile(file) {
+    async onDownloadFile() {
       this.isDownloading = true
-      await this.downloadFile(file)
-      this.isDownloading = false
-    },
-    async downloadExample(file) {
-      this.isExampleLoading = true
+      try {
+        const fullPath = this.$store.getters['templateFile/fullPath']
 
-      let testData = templateFileData
-      for (let key in testData) {
-        let test = testData[key].test
-        testData[key] = typeof test === 'function' ? test() : test
+        const {data} = await api.file.downloadOrigin(fullPath)
+
+        const fileName = fullPath.split('/').reverse()[0]
+        await FileDownload(data, fileName)
+      } catch (e) {
+        Message.errorMessage(e)
+      } finally {
+        this.isDownloading = false
       }
+    },
+    async downloadExample() {
+      this.isExampleLoading = true
+      try {
+        const fullPath = this.$store.getters['templateFile/fullPath']
+        const {data} = await api.file.download(
+          fullPath,
+          'Иванов Иван Иванович',
+          'Специалист',
+          dateToFileFormat(Date.now()),
+          dateToFileFormat(this.$moment().add(7, 'days')),
+          '7',
+          dateToFileFormat(Date.now()),
+        )
 
-      await this.downloadWithDataFile({
-        fullPath: file.fullPath,
-        data: testData,
-        fileName: "Пример заполненного заявления"
-      })
-
-      this.isExampleLoading = false
+        const type = fullPath.split('.').reverse()[0]
+        const fileName = `Пример заполненного заявления.${type}`
+        await FileDownload(data, fileName)
+      } catch (e) {
+        Message.errorMessage(e)
+      } finally {
+        this.isExampleLoading = false
+      }
     },
     async onDeleteFile() {
       this.isDeleting = true

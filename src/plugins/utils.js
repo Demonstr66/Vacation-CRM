@@ -15,6 +15,8 @@ export const dictionary = {
   "auth/user-not-found": "Пользователь с такими данными не найден",
   "auth/wrong-password": "Пользователь с такими данными не найден",
   "auth/email-already-in-use": "Пользователь с таким email существует",
+  "auth/email-already-exists": "Пользователь с таким email существует",
+  "auth/uid-already-exists": "Пользователь с такими данными существует",
   "auth/too-many-requests": "Слишком рано, попробуйте позднее",
   "auth/operation-not-allowed": "Операция не разрешена. Попробуйсте другой email",
   "auth/weak-password": "Используйте более надёжный пароль",
@@ -22,7 +24,10 @@ export const dictionary = {
   "auth/invalid-email": "Некорректный email",
   "auth/email-not-verify": "Email не подтверждён",
   "email_confirm": "Email подтверждён",
+  "auth/user-deleted": "Пользователь удалён",
+  "auth/user-invited": "Приглашение отправлено",
   "auth/network-request-failed": "Проверьте подключение к сети",
+  "auth/user-created": "Пользователь создан",
   "sandboxMode": "В режиме просмотра внесение изменений недоступно"
 }
 

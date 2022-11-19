@@ -191,7 +191,7 @@
                 <v-chip
                   v-for="(task, index) in item.tasks"
                   :key="index"
-                  :close="$can('update', 'User')"
+                  :close="$can('updateAccountData', item)"
                   :title="getTaskTitle(task)"
                   class="mb-1 mr-1"
                   label
@@ -224,7 +224,8 @@
               :disable="!$can('updateAccountData', item)"
               color="primary"
               icon="mdi-account-plus"
-              @click="$emit('invite')"
+              @click="invite(item.uid)"
+              :loading="item.uid === invitingUID"
             >
               Пригласить
             </icon-btn-with-tip>
@@ -244,7 +245,7 @@
                 Редактировать
               </icon-btn-with-tip>
               <icon-btn-with-tip
-                :disable="!$can('delete', item)"
+                :disable="!$can('delete', item) || item.uid === currentUID"
                 color="error"
                 icon="mdi-delete"
                 @click="onDeleteUser(item.uid)"
@@ -276,7 +277,9 @@
       <app-base-sheet>
         <administration-right-sidebar
           :filter.sync="filter"
+          :inviting="invitingAll"
           @add="showEditor"
+          @invite-all="inviteAll"
           @export=""
           @import="showImport"
         />
@@ -310,6 +313,8 @@ import {Team} from "@/plugins/servises/Team";
 import {Post} from "@/plugins/servises/Post";
 import {Task} from "@/plugins/servises/Task";
 import {User} from "@/plugins/servises/User";
+import {Message} from "@/plugins/servises/Message";
+import {api} from "@/plugins/api";
 
 export default {
   name: 'UserTab',
@@ -337,9 +342,41 @@ export default {
     headers: Users,
     isDrag: false,
     groupBy: null,
+    invitingUID: null,
+    invitingAll: false,
     filter: {},
   }),
   methods: {
+    async invite(uid, silent = false) {
+      if (!silent) this.invitingUID = uid
+      try {
+        await api.user.invite(uid)
+        if (!silent) Message.successMessage({code: 'auth/user-invited'})
+      } catch (e) {
+        if (!silent) Message.errorMessage(e)
+      } finally {
+        if (!silent) this.invitingUID = null
+      }
+    },
+    async inviteAll() {
+      try {
+        this.invitingAll = true
+        let promises = []
+        for (let uid in this.users) {
+          let user = this.users[uid]
+          if (!user.active) {
+            promises.push(this.invite(user.uid, true))
+          }
+        }
+
+        await Promise.all(promises)
+        Message.successMessage('Приглашения отправлены')
+      } catch (e) {
+        Message.errorMessage(e)
+      } finally {
+        this.invitingAll = false
+      }
+    },
     getGroupHeaderText(val, [groupBy]) {
       switch (groupBy) {
         case 'active':

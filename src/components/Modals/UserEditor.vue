@@ -21,7 +21,7 @@
         ref="account"
         :cols="$vuetify.breakpoint.mdAndUp ? 2 : 1"
         :disable-team="!$can('updateTeam', user)"
-        :disabled="!$can('updateAccountData', user)"
+        :disableAll="!$can('updateAccountData', user)"
         :user="user"
         hide-action
         hide-title

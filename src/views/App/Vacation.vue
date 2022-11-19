@@ -78,7 +78,7 @@
                   :loading="item.id == downloadingItemId"
                   color="info"
                   icon="mdi-download"
-                  @click="console"
+                  @click="downloadApplication(item.id)"
                 >
                   Скачать заявление
                 </icon-btn-with-tip>
@@ -183,6 +183,11 @@ import AppPopup from "@/components/AppPopup";
 import AppBaseSheet from "@/layouts/AppBaseSheet";
 import AppBlockWithRightNavbar from "@/components/AppBlockWithRightNavbar";
 import {User} from "@/plugins/servises/User";
+import {api} from "@/plugins/api";
+import FileDownload from "js-file-download";
+import store from "@/store";
+import {Message} from "@/plugins/servises/Message";
+import {dateToFileFormat} from "@/plugins/utils";
 
 export default {
   name: 'Vacation',
@@ -267,10 +272,31 @@ export default {
 
       return days
     },
-    downloadApplication(id) {
+    async downloadApplication(id) {
       this.downloadingItemId = id
-      let res = this.vacations[id].downloadApplication()
-        .then(() => this.downloadingItemId = null)
+      try {
+        const fullPath = this.$store.getters['templateFile/fullPath']
+        const user = this.user
+        const type = fullPath.split('.').reverse()[0]
+        const {start, days, finish} = this.vacations[id]
+
+        const {data} = await api.file.download(
+          fullPath,
+          user.fullName,
+          user.post ? this.$store.getters['posts/get'][user.post].title : '',
+          dateToFileFormat(start),
+          dateToFileFormat(finish),
+          days,
+          dateToFileFormat(Date.now()),
+        )
+
+        const fileName = `Заявление на очередной оплачиваемый отпуск ${user.displayName}.${type}`
+        await FileDownload(data, fileName)
+      } catch (e) {
+        Message.errorMessage(e)
+      } finally {
+        this.downloadingItemId = null
+      }
     },
     async onDelete(id) {
       let result = await this.$refs.deletePopup.open()

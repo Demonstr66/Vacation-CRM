@@ -33,6 +33,17 @@
         <!--          Экспорт-->
         <!--        </icon-btn-with-tip>-->
       </div>
+      <v-btn
+        v-if="!isAllActive"
+        class="flex-grow-1 mt-2"
+        color="primary"
+        outlined
+        text
+        @click="$emit('invite-all')"
+        :loading="inviting"
+      >
+        Пригласить всех
+      </v-btn>
     </Can>
     <v-select
       v-model="selectedPost"
@@ -94,7 +105,11 @@ export default {
   NONE: {id: 'none', title: "Нет"},
   ALL: {id: 'all', title: "Все"},
   props: {
-    filter: {}
+    filter: {},
+    inviting: {
+      type: Boolean,
+      default: false
+    }
   },
   data: () => ({
     filterExtension: false,
@@ -102,6 +117,12 @@ export default {
     selectedTask: 'all',
     selectedPost: 'all',
   }),
+  computed: {
+    isAllActive() {
+      const users = Object.values(this.$store.getters['users/get'])
+      return !users.some(user => !user.active)
+    }
+  },
   methods: {
     reset() {
       this.selectedTask = this.$options.ALL.id

@@ -10,6 +10,7 @@ const Vacations = () => import('@/views/App/Vacations.vue')
 const Vacation = () => import('@/views/App/Vacation.vue')
 const Administration = () => import('@/views/App/Administration.vue')
 const Login = () => import('@/views/Auth/Login.vue')
+const LoginByLink = () => import('@/views/Auth/LoginByLink')
 const Account = () => import('@/views/App/Account.vue')
 const Register = () => import('@/views/Auth/Register.vue')
 const ForgetPassword = () => import('@/views/Auth/ResetPassword.vue')
@@ -214,6 +215,18 @@ const routes = [
       title: '',
       protected: {
         accessLevel: [2]
+      }
+    }
+  },
+  {
+    path: '/loginlink',
+    name: 'LoginByLink',
+    component: LoginByLink,
+    meta: {
+      layout: 'EmptyLayout',
+      title: 'Авторизация',
+      protected: {
+        accessLevel: [0, 1]
       }
     }
   },

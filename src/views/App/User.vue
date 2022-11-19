@@ -1,7 +1,7 @@
 <template>
   <v-progress-linear indeterminate v-if="!appReady"/>
   <v-row v-else no-gutters>
-    <v-col cols="12" md="4" lg="3" xl="2">
+    <v-col cols="12" md="4" lg="3" xl="3">
       <the-user-info
         :user="user"
         solo
@@ -14,7 +14,7 @@
         disable-all
       ></the-account-info>
     </v-col>
-    <v-col cols="12" md="8" lg="9" xl="10">
+    <v-col cols="12" md="8" lg="9" xl="9">
       <app-base-sheet class="text-center">
         <span class="text-h5">Отпуска</span>
       </app-base-sheet>

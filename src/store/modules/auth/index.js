@@ -6,6 +6,7 @@ import {
   signInWithEmailAndPassword,
   signOut
 } from "firebase/auth";
+import {Workspace} from "@/plugins/servises/Workspace";
 
 const BASE_URL = process.env.VUE_APP_API;
 
@@ -31,10 +32,14 @@ export default {
           if (!workspace.isNew) await dispatch('checkWorkspaceExisting', workspace)
 
           const uid = await dispatch('currentUser/create', {user, wid: workspace.id}, {root: true})
-          if (workspace.isNew) dispatch('workspace/create', {
-            wid: workspace.id,
-            owner: uid
-          }, {root: true})
+          if (workspace.isNew) {
+            const ws = new Workspace({
+              id: workspace.id,
+              owner: uid
+            })
+
+            ws.create()
+          }
 
           res()
         } catch (e) {
