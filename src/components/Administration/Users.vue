@@ -255,7 +255,7 @@
               <icon-btn-with-tip
                 color="info"
                 icon="mdi-eye"
-                @click="gotoUser(item.uid)"
+                tag="a" :to="{name: 'User', params: {uid: item.uid}}"
               >
                 Перейти в аккаунт
               </icon-btn-with-tip>

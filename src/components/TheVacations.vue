@@ -34,7 +34,7 @@
         </div>
       </div>
       <v-card-actions class="px-0">
-        <v-btn block color="primary" text @click="goto(item.id)">
+        <v-btn block color="primary" text @click="goto(item.id)" tag="a" :to="{name: 'Vacation', params: {uid, id: item.id}}">
           открыть
         </v-btn>
       </v-card-actions>

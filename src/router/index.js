@@ -123,7 +123,7 @@ const routes = [
     name: 'Schedules',
     component: Schedules,
     meta: {
-      layout: 'MainLayout',
+      layout: 'MainEmptyLayout',
       title: 'Графики отпусков',
       protected: {
         accessLevel: [2]

@@ -1,5 +1,5 @@
 <template>
-  <div>
+  <app-base-sheet>
     <v-data-table
       :headers="$options.HEADERS"
       :items="Object.values(schedules)"
@@ -60,10 +60,10 @@
           >
             Статистика
           </icon-btn-with-tip>
-          <icon-btn-with-tip color="info" icon="mdi-eye" @click="gotoViewer(item.id)">
+          <icon-btn-with-tip color="info" icon="mdi-eye"  tag="a" :to="{name: 'Viewer1', params: {id: item.id}}">
             Просмотр
           </icon-btn-with-tip>
-          <icon-btn-with-tip color="info" icon="mdi-chart-gantt" @click="gotoTimeline(item.id)">
+          <icon-btn-with-tip color="info" icon="mdi-chart-gantt" tag="a" :to="{name: 'Viewer2', params: {id: item.id}}">
             Таймлайн
           </icon-btn-with-tip>
           <icon-btn-with-tip
@@ -101,7 +101,7 @@
     >
       Отозвать график? Пользователи снова смогут вносить изменения в отпуска<br>Продолжить?
     </app-popup>
-  </div>
+  </app-base-sheet>
 </template>
 <script>
 import IconBtnWithTip from "@/components/IconBtnWithTip";
@@ -111,12 +111,13 @@ import RowActions from "@/components/RowActions";
 import VacationStatusChip from "@/components/AppStatusChip";
 import {Schedule} from "@/plugins/servises/Schedule";
 import AppPopup from "@/components/AppPopup";
+import AppBaseSheet from "@/layouts/AppBaseSheet";
 
 
 export default {
   name: 'ScheduleItem',
   mixins: [schedules],
-  components: {AppPopup, VacationStatusChip, RowActions, IconBtnWithTip},
+  components: {AppBaseSheet, AppPopup, VacationStatusChip, RowActions, IconBtnWithTip},
   HEADERS: schedulesHeaders,
   STATUSES: Schedule.statuses,
   methods: {

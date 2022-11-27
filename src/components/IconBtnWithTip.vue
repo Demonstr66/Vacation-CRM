@@ -7,6 +7,8 @@
   >
     <template v-slot:activator="{ on, attrs }">
       <v-btn
+          :tag="tag"
+          :to="to"
         :class="btnClass"
         :color="fab ? 'white' : color"
         :disabled="disable"
@@ -71,6 +73,14 @@ export default {
     outlined: {
       type: Boolean,
       default: false
+    },
+    tag: {
+      type: String,
+      default: 'button'
+    },
+    to: {
+      type: Object,
+      default: () => {}
     },
     tile: {
       type: Boolean,

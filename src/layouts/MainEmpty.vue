@@ -34,6 +34,12 @@ export default {
   data: () => ({
     expandNavigation: false,
   }),
+  created() {
+    let item = localStorage.getItem('navbarIsOpened')
+    if (item && item != '') {
+      this.expandNavigation = true
+    }
+  },
   computed: {
     route() {
       return this.$route
@@ -42,6 +48,7 @@ export default {
   methods: {
     onExpandClick() {
       this.expandNavigation = !this.expandNavigation;
+      localStorage.setItem('navbarIsOpened', 'true')
     },
   },
   watch: {
