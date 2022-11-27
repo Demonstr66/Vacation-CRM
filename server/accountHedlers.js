@@ -26,7 +26,7 @@ async function createUser(wid, data) {
 
 async function accountCreateHandler(req, res, next) {
   const {email, password} = req.body
-  if (!email) throw createError(400)
+  if (!email) throw createError(400, 'invalid parameters: Email not found')
   let data = {email}
   if (password) data.password = password
 
@@ -36,15 +36,15 @@ async function accountCreateHandler(req, res, next) {
 
 async function accountDeleteHandler(req, res, next) {
   const {uid} = req.query
-  if (!uid) throw createError(400)
-  if (!req.user) throw createError(401)
-  if (!req.permission) throw createError(403)
+  if (!uid) throw createError(400, 'Неверный запрос: email не найден')
+  if (!req.user) throw createError(401, 'Запрещено: не авторизован')
+  if (!req.permission) throw createError(403, 'Запрещено: права не определены')
 
-  if (!await isAccountExist(uid)) throw createError(404)
+  if (!await isAccountExist(uid)) throw createError(404, 'Запрашиваемый аккаунт не найден')
 
   const canDelete = req.permission.manageUsers.delete
 
-  if (!canDelete && req.user.uid !== uid) throw createError(403)
+  if (!canDelete && req.user.uid !== uid) throw createError(403, 'Запрещено: не достаточно прав')
 
   await getAuth().deleteUser(uid)
 
@@ -61,8 +61,10 @@ async function accountSetClaims(req, res, next) {
 }
 
 
+
 module.exports = {
   accountCreateHandler,
   accountDeleteHandler,
-  accountSetClaims
+  accountSetClaims,
+  createUser
 }

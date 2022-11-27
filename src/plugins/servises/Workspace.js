@@ -33,13 +33,14 @@ export class Workspace extends Base {
     Object.assign(this, Workspace.schema, args)
   }
 
-  static updateTemplateFileInfo(exist = false) {
+  static updateTemplateFileInfo(exist = false, path = '') {
     let ws = store.getters["workspace/get"]
 
     ws.update({
       templateFile: {
         exist,
-        modified: Date.now()
+        modified: Date.now(),
+        path
       }
     }, '', true)
   }

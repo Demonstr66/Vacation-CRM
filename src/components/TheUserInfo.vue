@@ -8,14 +8,14 @@
         <v-card-title v-if="!hideTitle">Личные данные</v-card-title>
         <v-card-text>
           <v-text-field
-            v-model="user.fullName"
-            :append-icon="disabled ? 'mdi-lock' : ''"
-            :disabled="disabled"
-            :rules="[blankCheck]"
-            label="ФИО"
+              v-model="user.fullName"
+              :append-icon="disabled ? 'mdi-lock' : ''"
+              :disabled="disabled"
+              :rules="[blankCheck]"
+              label="ФИО"
 
-            name="fullName"
-            @change="changed"
+              name="fullName"
+              @change="changed"
           >
             <template v-slot:prepend>
               <v-icon color="blue-grey lighten-1">mdi-account</v-icon>
@@ -23,45 +23,45 @@
           </v-text-field
           >
           <v-text-field
-            v-if="!hideAdditionalFields"
-            v-model="user.displayName"
-            :append-icon="disabled ? 'mdi-lock' : ''"
-            :disabled="disabled"
-            :rules="[blankCheck]"
-            label="Короткое имя"
-            name="displayName"
-            @change="changed"
+              v-if="!hideAdditionalFields"
+              v-model="user.displayName"
+              :append-icon="disabled ? 'mdi-lock' : ''"
+              :disabled="disabled"
+              :rules="[blankCheck]"
+              label="Короткое имя"
+              name="displayName"
+              @change="changed"
           >
             <template v-slot:prepend>
               <v-icon color="blue-grey lighten-1">mdi-account</v-icon>
             </template>
           </v-text-field
           >
-          <!--        <v-text-field-->
-          <!--          v-if="!hideAdditionalFields"-->
-          <!--          v-model="user.templateName"-->
-          <!--          :append-icon="disabled ? 'mdi-lock' : ''"-->
-          <!--          :disabled="disabled"-->
-          <!--          :rules="[fioCheck]"-->
-          <!--          hint="От: "-->
-          <!--          -->
-          <!--          label="ФИО для шаблона заявления"-->
-          <!--          name="templateName"-->
-          <!--          @change="changed"-->
-          <!--        >-->
-          <!--          <template v-slot:prepend>-->
-          <!--            <v-icon color="blue-grey lighten-1">mdi-account</v-icon>-->
-          <!--          </template>-->
-          <!--        </v-text-field-->
-          <!--        >-->
+          <v-text-field
+              v-if="!hideAdditionalFields"
+              v-model="user.templateName"
+              :append-icon="disabled ? 'mdi-lock' : ''"
+              :disabled="disabled"
+              :rules="[fioCheck]"
+              hint="От: "
+
+              label="ФИО для шаблона заявления"
+              name="templateName"
+              @change="changed"
+          >
+            <template v-slot:prepend>
+              <v-icon color="blue-grey lighten-1">mdi-account</v-icon>
+            </template>
+          </v-text-field
+          >
         </v-card-text>
-        <v-card-actions class="mt-auto" v-if="!hideAction && !disabled && solo">
+        <v-card-actions v-if="!hideAction && !disabled && solo" class="mt-auto">
           <v-spacer></v-spacer>
           <v-btn
-            :disabled="!isChanged || !valid"
-            color="success"
-            text
-            type="submit"
+              :disabled="!isChanged || !valid"
+              color="success"
+              text
+              type="submit"
           >
             Сохранить
           </v-btn>
@@ -77,6 +77,7 @@ import {inputValidations} from "@/mixins/InputValidations";
 import {VForm} from "vuetify/lib/components";
 import {User} from "@/plugins/servises/User";
 import AppBaseSheet from "@/layouts/AppBaseSheet";
+import {posts} from "@/mixins/ComputedData";
 
 export default {
   name: 'TheUserInfo',

@@ -5,6 +5,14 @@
       <template v-if="items && items.length > 0">
         <div class="text-right">
           <icon-btn-with-tip
+              v-if="action"
+              icon="mdi-plus-circle-outline"
+              color="success"
+              @click="$emit('create')"
+          >
+            Создать
+          </icon-btn-with-tip>
+          <icon-btn-with-tip
             :color="sort !== 0 ? 'primary' : ''"
             :icon="'mdi-sort-alphabetical-' + (sort !== 2 ? 'ascending' : 'descending')"
             @click="toggleSort"
@@ -22,8 +30,9 @@
           >
             <v-list-item-content>
               <v-list-item-title v-text="item.title"></v-list-item-title>
-              <slot :item="item" name="subtitle">
-              </slot>
+              <v-list-item-subtitle>
+                <slot :item="item" name="subtitle" />
+              </v-list-item-subtitle>
             </v-list-item-content>
             <v-list-item-action v-if="action" class="d-flex flex-row">
               <icon-btn-with-tip
@@ -48,46 +57,45 @@
         {{ noDataText }}
       </div>
     </template>
-    <template #actions>
-      <v-form
-        v-if="action"
-        ref="addItem"
-        v-model="valid"
-        class="mt-4"
-        style="display: block; width: 100%;"
-        @submit.prevent="saveItem"
-      >
-        <v-text-field
-          ref="inputTitle"
-          v-model="newItemTitle"
-          :rules="[blankCheck]"
-          hint="Введите название"
-          placeholder="Добавить новый элемент"
-          solo
-        >
-          <template v-slot:append>
-            <icon-btn-with-tip
-              v-if="!!newItemId"
-              color="error"
-              icon="mdi-pencil-off"
-              @click="onStopEditing"
-            >
-              Отмена
-            </icon-btn-with-tip>
-            <icon-btn-with-tip
-              :disable="!valid"
-              color="primary"
-              icon="mdi-send"
-              type="submit"
-              @click="saveItem"
-            >
-              Добавить
-            </icon-btn-with-tip>
-          </template>
-        </v-text-field>
-      </v-form>
-    </template>
-
+<!--    <template #actions>-->
+<!--      <v-form-->
+<!--        v-if="action"-->
+<!--        ref="addItem"-->
+<!--        v-model="valid"-->
+<!--        class="mt-4"-->
+<!--        style="display: block; width: 100%;"-->
+<!--        @submit.prevent="saveItem"-->
+<!--      >-->
+<!--        <v-text-field-->
+<!--          ref="inputTitle"-->
+<!--          v-model="newItemTitle"-->
+<!--          :rules="[blankCheck]"-->
+<!--          hint="Введите название"-->
+<!--          placeholder="Добавить новый элемент"-->
+<!--          solo-->
+<!--        >-->
+<!--          <template v-slot:append>-->
+<!--            <icon-btn-with-tip-->
+<!--              v-if="!!newItemId"-->
+<!--              color="error"-->
+<!--              icon="mdi-pencil-off"-->
+<!--              @click="onStopEditing"-->
+<!--            >-->
+<!--              Отмена-->
+<!--            </icon-btn-with-tip>-->
+<!--            <icon-btn-with-tip-->
+<!--              :disable="!valid"-->
+<!--              color="primary"-->
+<!--              icon="mdi-send"-->
+<!--              type="submit"-->
+<!--              @click="saveItem"-->
+<!--            >-->
+<!--              Добавить-->
+<!--            </icon-btn-with-tip>-->
+<!--          </template>-->
+<!--        </v-text-field>-->
+<!--      </v-form>-->
+<!--    </template>-->
   </widget>
 </template>
 
@@ -142,9 +150,10 @@ export default {
       this.sort = (this.sort + 1) % 3
     },
     onEditItem(item) {
-      this.newItemTitle = item.title
-      this.newItemId = item.id
-      this.$refs.inputTitle.focus();
+      // this.newItemTitle = item.title
+      // this.newItemId = item.id
+      // this.$refs.inputTitle.focus();
+      this.$emit('edit', item.id)
     },
     onStopEditing() {
       this.clearForm();

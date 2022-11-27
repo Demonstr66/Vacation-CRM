@@ -107,5 +107,6 @@ async function download(req, res, next) {
 module.exports = {
   getTemplateFile,
   replacement,
-  download
+  download,
+  getFileWithData
 }

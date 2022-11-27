@@ -63,6 +63,9 @@
           <icon-btn-with-tip color="info" icon="mdi-eye" @click="gotoViewer(item.id)">
             Просмотр
           </icon-btn-with-tip>
+          <icon-btn-with-tip color="info" icon="mdi-chart-gantt" @click="gotoTimeline(item.id)">
+            Таймлайн
+          </icon-btn-with-tip>
           <icon-btn-with-tip
             v-if="item.isDraft"
             :disable="!$can('activate', 'Schedule')"
@@ -172,6 +175,9 @@ export default {
     },
     gotoViewer(id) {
       this.$router.push({name: 'Viewer1', params: {id: id}})
+    },
+    gotoTimeline(id) {
+      this.$router.push({name: 'Viewer2', params: {id: id}})
     },
   }
 }

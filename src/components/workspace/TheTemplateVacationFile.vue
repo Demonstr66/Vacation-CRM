@@ -208,7 +208,7 @@ export default {
         const fullPath = this.$store.getters['templateFile/fullPath']
         const {data} = await api.file.download(
           fullPath,
-          'Иванов Иван Иванович',
+          'Иванова Ивана Ивановича',
           'Специалист',
           dateToFileFormat(Date.now()),
           dateToFileFormat(this.$moment().add(7, 'days')),

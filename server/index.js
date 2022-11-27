@@ -19,8 +19,6 @@ const asyncHandler = (func) => async (req, res, next) => {
   try {
     await func(req, res, next)
   } catch (e) {
-    console.log('asyncHandler catch')
-    console.log(e)
     next(createError(e))
   }
 }
@@ -31,19 +29,33 @@ initializeApp({
   storageBucket: 'gs://vacationcrm-d3ff2.appspot.com'
 });
 const {getTemplateFile, replacement, download} = require("./download");
-const {getUserDataBy, getPermission, getUser} = require("./FB/DB");
+const {getUserDataBy, getPermission, getUser, getData} = require("./FB/DB");
 const {
-  accountCreateHandler, accountDeleteHandler, accountSetClaims
+  accountCreateHandler, accountDeleteHandler, accountSetClaims, createUser
 } = require("./accountHedlers");
 const {inviteHandler, sendTest} = require("./mailer");
 
 const db = admin.database()
 
 
-// const schedule = require('node-schedule');
-//
-// const job = schedule.scheduleJob('42 * * * * *', function () {
-//   console.log('The answer to life, the universe, and everything!' + Date.now() / 1000);
+const schedule = require('node-schedule');
+const {checkVacations} = require("./checkNearVacation");
+
+// const job = schedule.scheduleJob('* * * * *', async function () {
+//   console.log('run checker')
+//   // const workspaces = await getData('workspaces')
+//   //
+//   // for(let wid in workspaces) {
+//   //   const schedules = await getData('schedules/' + wid)
+//   //
+//   //   for(let sid in schedules) {
+//   //     if (schedules[sid].status != 2) continue
+//   //
+//   //     const vacations = await getData('vacations/' + wid + '/' + sid)
+//   //
+//   //     checkVacations(wid, vacations)
+//   //   }
+//   // }
 // });
 
 
@@ -56,30 +68,57 @@ app.use(cors())
 app.use(express.urlencoded())
 app.use(express.json())
 
-app.get('/api/test', async (req, res, next) => {
-  await sendTest()
-  res.json('ok')
-})
-
-// app.use(asyncHandler(async (req, res, next) => {
-//   const {uid, wid} = req.headers
+// app.get('/api/test', async (req, res, next) => {
+//   // await sendTest()
+//   const workspaces = await getData('workspaces')
 //
-//   if (!wid) throw createError(401, 'Invalid parameters')
+//   for(let workspace in workspaces) {
+//     const users = await getData('users/' + workspace)
 //
-//   req.wid = wid
-//
-//   if (uid) {
-//     // console.log('MIDLWARE: uid =', uid)
-//     req.user = await getUser(uid)
-//     req.userData = await getUserDataBy(wid, 'uid', uid)
-//     req.permission = await getPermission(wid, req.userData.role)
-//     // req.permission.manageUsers.delete = false
-//     // console.log('MIDLWARE: permission =', req.permission)
+//     for(let uid in users) {
+//       try {
+//         await getAuth().setCustomUserClaims(uid, {workspace})
+//         console.log('uid: ' + uid +' completed')
+//       }catch (e) {
+//         console.log('err on uid: ' + uid, e)
+//       }
+//     }
 //   }
 //
-//   next()
-// }))
+//   res.json('ok')
+// })
 
+app.use(asyncHandler(async (req, res, next) => {
+  const {uid, wid} = req.headers
+
+  if (!wid) throw createError(401, 'Invalid parameters')
+
+  req.wid = wid
+
+  if (uid) {
+    req.user = await getUser(uid)
+    req.userData = await getUserDataBy(wid, 'uid', uid)
+    req.permission = await getPermission(wid, req.userData.role)
+  }
+
+  next()
+}))
+
+async function check(req, res, next) {
+  const {uid} = req.query
+  const user = await getUser(uid)
+  console.log('user: ' + user)
+
+  if (!user) {
+    console.log('uid: ' + uid)
+    let {email} = await getUserDataBy(req.wid, 'uid', uid)
+    console.log('email: ' + email)
+    await createUser(req.wid, {email, uid})
+    await getAuth().setCustomUserClaims(uid, {workspace: req.uid})
+  }
+
+  next()
+}
 
 app.get('/api/download/', asyncHandler(getTemplateFile), asyncHandler(replacement), asyncHandler(download))
 
@@ -89,7 +128,7 @@ app.post('/api/account/create', asyncHandler(accountCreateHandler), asyncHandler
 
 app.delete('/api/account/delete', asyncHandler(accountDeleteHandler))
 
-app.get('/api/message/invite', asyncHandler(inviteHandler))
+app.get('/api/message/invite', asyncHandler(check), asyncHandler(inviteHandler))
 
 // app.get('/api/message/vacation', async (req, res, next) => {
 //   const {uid} = req.query
@@ -152,7 +191,7 @@ app.use((error, req, res, next) => {
   console.log('i`m handler error')
   console.log(error)
   let message = error.errorInfo ? error.errorInfo.code : error
-  res.status(error.status)
+  res.status(error.status || 500)
   res.json(message)
 })
 

@@ -28,6 +28,7 @@ export class User extends Base {
 
     fullName: '',
     displayName: '',
+    templateName: '',
 
     workspace: '',
     post: '',

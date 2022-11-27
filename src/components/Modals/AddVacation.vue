@@ -1,30 +1,30 @@
 <template>
   <BaseModal
-    :result="dates"
-    :show="show"
-    :submitDisable="!dates"
-    large
-    title="Новый отпуск"
-    @cancel="close(false)"
-    @submit="onSubmit"
+      :result="dates"
+      :show="show"
+      :submitDisable="!dates"
+      large
+      title="Новый отпуск"
+      @cancel="close(false)"
+      @submit="onSubmit"
   >
     <v-row class="mt-2">
       <v-col cols="auto">
         <AddVacationCalendar
-          v-if="calendar"
-          v-model="dates"
+            v-if="calendar"
+            v-model="dates"
 
-          :current-user-vacations="currentUserVacations"
-          :exception="exception"
+            :current-user-vacations="currentUserVacations"
+            :exception="exception"
 
-          :uid="uid"
-          :year="year"
+            :uid="uid"
+            :year="year"
         />
 
 
       </v-col>
       <v-col class="d-flex flex-column justify-space-between">
-        <div>
+        <div class="fill-height">
           <div class="d-flex align-end">
             <span class="title">Дней выбрано:</span>
             <v-chip :color="rangeLength === 0 ? '' : 'success'" class="ml-4" label outlined>
@@ -32,21 +32,28 @@
             </v-chip>
           </div>
           <v-text-field
-            v-model="rangeLabel"
-            hide-details
-            label="Даты"
-            prepend-icon="mdi-calendar"
-            readonly
+              v-model="rangeLabel"
+              hide-details
+              label="Даты"
+              prepend-icon="mdi-calendar"
+              readonly
           ></v-text-field>
-          <v-textarea
-            v-model="comment"
-            hide-details
-            no-resize
-            label="Комментарий"
-          >
-          </v-textarea>
+          <div style="min-height: 50px">
+            <span>
+              Внимание! Праздничные дни не учитываются в подсчете отпускных дней и в заявлении. Они будут исключены <b>автоматически</b>.
+            </span>
+          </div>
         </div>
         <div>
+          <v-textarea
+              v-model="comment"
+              hide-details
+              no-resize
+              solo
+              label="Комментарий"
+              class="mb-4"
+          >
+          </v-textarea>
           <small>
             Выбранные Вами даты будут видны другим пользователям только после отправки на
             утверждение
@@ -63,9 +70,9 @@
     <v-row no-gutters>
       <v-col class="d-flex flex-row justify-start" cols="12">
         <div
-          v-for="(lvl, index) in levels"
-          :key="index"
-          class="ml-2"
+            v-for="(lvl, index) in levels"
+            :key="index"
+            class="ml-2"
         >
           <div class="mx-1 d-inline-block" style="width: 12px !important;">
             <span :style="`background-color: ${lvl.color}`" class="d-block vc-bar"></span>
@@ -138,10 +145,32 @@ export default {
 
       if (!dates) return 0
 
-      return dateDiff(dates.start, dates.end)
+      let length = dateDiff(dates.start, dates.end)
+      let excludeDays = this.getException()
+
+      length -= excludeDays.length
+      return length
     }
   },
   methods: {
+    getException() {
+      const {dates} = this
+      if (!dates) return []
+
+      let res = []
+      let currDay = this.$moment(dates.start)
+      do {
+        let fday = currDay.format('YYYY-MM-DD')
+        let exc = this.exception.find(x => x.date == fday)
+        if (exc && exc.type == 'holiday') {
+          res.push(fday)
+        }
+
+        currDay.add('1', 'days')
+      } while (currDay < this.$moment(dates.end).add('1', 'days'))
+
+      return res
+    },
     open(vacationId) {
       let resolve, reject
       const result = new Promise((res, rej) => {
@@ -184,8 +213,8 @@ export default {
 
       //Мои отпуска, кроме текущего
       this.currentUserVacations = scheduleVacations
-        .filter(v => v.uid === uid && v.id !== vacationId)
-        .filter(v => !v.isRejected())
+          .filter(v => v.uid === uid && v.id !== vacationId)
+          .filter(v => !v.isRejected())
 
       this.$nextTick(() => {
         this.calendar = true
@@ -194,11 +223,11 @@ export default {
 
     onSubmit() {
       let vacation = this.vacationId
-        ? new Vacation(this.vacation)
-        : new Vacation({
-          uid: this.uid,
-          sid: this.schedule.id,
-        })
+          ? new Vacation(this.vacation)
+          : new Vacation({
+            uid: this.uid,
+            sid: this.schedule.id,
+          })
 
       vacation.comment = this.comment
       vacation.start = this.$moment(this.dates.start).format('YYYY-MM-DD')

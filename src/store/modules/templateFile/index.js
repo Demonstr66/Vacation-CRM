@@ -70,7 +70,7 @@ export default {
         const dataRef = ref(storage, basePath(wid, data.name));
 
         return uploadBytes(dataRef, data).then(() => {
-          Workspace.updateTemplateFileInfo(true)
+          Workspace.updateTemplateFileInfo(true, basePath(wid, data.name))
           dispatch('get')
         })
       })

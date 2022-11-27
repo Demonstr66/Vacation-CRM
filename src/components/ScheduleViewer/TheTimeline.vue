@@ -217,7 +217,7 @@ export default {
     },
     placementTodayMarker() {
       if (this.year !== this.$moment().year()) {
-        marker.style.display = 'none'
+        if (marker) marker.style.display = 'none'
         return
       }
 

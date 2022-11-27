@@ -14,8 +14,8 @@ async function getInviteLink(email) {
 }
 
 const transporter = nodemailer.createTransport({
-  // service: 'Gmail', auth: emailAuth
-  host: "10.159.32.136",
+  service: 'Gmail', auth: emailAuth,
+  // host: "10.159.32.136",
   port: 25,
 });
 
@@ -68,19 +68,15 @@ function sendTest() {
 }
 
 function sendEmail(email, subject, html, replacements, attachment) {
-  console.log('sendEmail')
   try {
     const filePath = html
-    console.log('sendEmail 1')
     const source = fs.readFileSync(filePath, 'utf-8').toString();
-    console.log('sendEmail 1.1')
     const template = handlebars.compile(source);
 
-    console.log('sendEmail 2')
     replacements.appName = appData.name
     replacements.appLink = appData.link
     const htmlToSend = template(replacements);
-    console.log('sendEmail 3')
+
     let mailOptions = {
       from: 'Vacation CRM', to: email, subject, html: htmlToSend, attachments: []
     }
@@ -108,7 +104,7 @@ function sendEmail(email, subject, html, replacements, attachment) {
 
 async function inviteHandler(req, res, next) {
   const {uid} = req.query
-  if (!uid || !req.user) throw createError(400)
+  if (!uid || !req.user) throw createError(400, 'uid or user not found')
 
   const user = await getUserDataBy(req.wid, 'uid', uid)
   if (!user) throw createError(404)
@@ -123,7 +119,7 @@ async function inviteHandler(req, res, next) {
     let subTeams = []
     headOfTeams.map(async (team) => {
       subTeams.push(team)
-      teams = await getSubTeams(req.wid, team)
+      let teams = await getSubTeams(req.wid, team)
       subTeams.push(...teams)
     })
 
@@ -146,5 +142,6 @@ async function inviteHandler(req, res, next) {
 
 module.exports = {
   inviteHandler,
-  sendTest
+  sendTest,
+  sendEmail
 }

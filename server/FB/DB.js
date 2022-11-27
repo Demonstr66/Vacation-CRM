@@ -11,7 +11,6 @@ async function getData(path) {
   return snapshot && snapshot.val()
 }
 
-
 async function getUserDataBy(wid, key, val) {
   try {
     const users = await getData("users/" + wid)

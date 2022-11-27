@@ -34,7 +34,8 @@ export class Post extends StructureItem {
 
   static schema = {
     id: '',
-    title: ''
+    title: '',
+    fullTitle: ''
   }
 
   static normalize(...args) {
