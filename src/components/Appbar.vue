@@ -1,5 +1,5 @@
 <template>
-  <v-app-bar absolute app clipped-left dense flat style="position: fixed; z-index: 5">
+  <v-app-bar absolute app clipped-left dense flat style="position: fixed; z-index: 10">
     <v-app-bar-nav-icon @click="onNavIconClick"></v-app-bar-nav-icon>
 
     <v-app-bar-title v-if="$options.DEBUG">{{ $vuetify.breakpoint.name }}</v-app-bar-title>

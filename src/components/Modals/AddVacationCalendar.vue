@@ -166,101 +166,130 @@ export default {
   methods: {
     async update() {
       const {uid} = this
-
       const sid = this.$route.params.id
-
+      const currentUser = this.$store.getters['users/getUserById'](uid)
       const tasks = this.$store.getters['tasks/get']
 
-      const currentUser = this.$store.getters['users/getUserById'](uid)
+      let chiefs = await this.$store.dispatch('users/getChiefsOf', currentUser.uid)
+      chiefs = chiefs
+        .filter(user => user.uid !== uid)
 
       const taskColleagues = []
       if (currentUser.tasks) currentUser.tasks.map(task => {
         let users = this.$store.getters['users/getUsersByTask'](task)
           .filter(user => user.uid !== uid)
+          .filter(user => !chiefs.some(user2 => user.uid === user2.uid))
+
         taskColleagues.push(...users)
       })
+      let teamColleagues = []
+      if (currentUser.team) teamColleagues =
+        this.$store.getters['users/getUsersByTeam'](currentUser.team)
+          .filter(user => user.uid !== uid && !chiefs.some(user2 => user.uid === user2.uid) && !taskColleagues.some(user2 => user2.uid ===
+            user.uid))
 
+      let chiefsBar = {
+        key: `vacationChiefsBar`,
+        bar: {
+          color: colors[2],
+          style: {
+            width: '100%'
+          },
+          class: ''
+        },
+        dates: [],
+      }
 
-      const teamColleagues = this.$store.getters['users/getUsersByTeam'](currentUser.team)
-        .filter(user => user.uid !== uid && !taskColleagues.some(user2 => user2.uid === user.uid))
-      let chiefs = await this.$store.dispatch('users/getChiefsOf', currentUser.uid)
+      let taskBar = {
+        key: `vacationTaskBar`,
+        bar: {
+          color: colors[0],
+          style: {
+            width: '100%'
+          },
+          class: ''
+        },
+        dates: [],
+      }
 
-      chiefs = chiefs
-        .filter(user => user.uid !== uid)
-        .filter(user => !taskColleagues.some(user2 => user2.uid === user.uid))
-        .filter(user => !teamColleagues.some(user2 => user2.uid === user.uid))
-
-      let taskBar = taskColleagues.map(user => {
+      let teamBar = {
+        key: `vacationTeamBar`,
+        bar: {
+          color: colors[1],
+          style: {
+            width: '100%'
+          },
+          class: ''
+        },
+        dates: [],
+      }
+      chiefs.map(user => {
         let vacations = this.$store.getters['vacations/getBySidByUid'](sid, user.uid)
         vacations = Object.values(vacations)
-          .filter(vacation => !vacation.isDraft() && !vacation.isRejected())
-        let attribute = {
-          key: `vacationTask-${user.uid}`,
-          bar: {
-            color: colors[0],
-            style: {
-              width: '100%'
-            },
-            class: ''
-          },
-          dates: [],
-        }
-        Object.values(vacations).map(({start, end}) => {
-          attribute.dates.push({start, end})
-        })
+          .filter(vacation => vacation.isActual())
 
-        return attribute
+        Object.values(vacations).map(({start, end}) => {
+          chiefsBar.dates.push({start, end})
+        })
       })
 
-      let teamBar = teamColleagues.map(user => {
+      taskColleagues.map(user => {
         let vacations = this.$store.getters['vacations/getBySidByUid'](sid, user.uid)
         vacations = Object.values(vacations)
-          .filter(vacation => !vacation.isDraft() && !vacation.isRejected())
-        let attribute = {
-          key: `vacationTeam-${user.uid}`,
-          bar: {
-            color: colors[1],
-            style: {
-              width: '100%'
-            },
-            class: ''
-          },
-          dates: [],
-        }
-        Object.values(vacations).map(({start, end}) => {
-          attribute.dates.push({start, end})
-        })
+          .filter(vacation => vacation.isActual())
 
-        return attribute
+        Object.values(vacations).map(({start, end}) => {
+          taskBar.dates.push({start, end})
+        })
       })
 
-      let chiefsBar = chiefs.map(user => {
+      teamColleagues.map(user => {
         let vacations = this.$store.getters['vacations/getBySidByUid'](sid, user.uid)
         vacations = Object.values(vacations)
-          .filter(vacation => !vacation.isDraft() && !vacation.isRejected())
-        let attribute = {
-          key: `vacationChiefs-${user.uid}`,
-          bar: {
+          .filter(vacation => vacation.isActual())
+
+        Object.values(vacations).map(({start, end}) => {
+          teamBar.dates.push({start, end})
+        })
+
+      })
+
+      let chiefsPopover = chiefs.map(user => {
+        let vacations = this.$store.getters['vacations/getBySidByUid'](sid, user.uid)
+        vacations = Object.values(vacations)
+          .filter(vacation => vacation.isActual())
+
+        let attribute = (dates, vid) => ({
+          key: `chiefPopover-${user.uid}-${vid}`,
+          highlight: {
             color: colors[2],
             style: {
-              width: '100%'
+              display: 'none'
             },
-            class: ''
           },
-          dates: [],
-        }
-        Object.values(vacations).map(({start, end}) => {
-          attribute.dates.push({start, end})
+          popover: {
+            visibility: 'hover'
+          },
+          customData: {
+            name: user.displayName,
+            dates
+          },
+          dates
         })
 
-        return attribute
+        const attributes = Object.values(vacations).map(({start, end, id}) => {
+          return attribute({start, end}, id)
+        })
+
+        return attributes
       })
+
 
       //Отпуска коллег popover
       let taskPopover = taskColleagues.map(user => {
         let vacations = this.$store.getters['vacations/getBySidByUid'](sid, user.uid)
         vacations = Object.values(vacations)
-          .filter(vacation => !vacation.isDraft())
+          .filter(vacation => vacation.isActual())
 
         let attribute = (dates, vid) => ({
           key: `taskPopover-${user.uid}-${vid}`,
@@ -292,11 +321,12 @@ export default {
         return attributes
       })
 
+
       //Отпуска коллег popover
       let teamPopover = teamColleagues.map(user => {
         let vacations = this.$store.getters['vacations/getBySidByUid'](sid, user.uid)
         vacations = Object.values(vacations)
-          .filter(vacation => !vacation.isDraft())
+          .filter(vacation => vacation.isActual())
 
         let attribute = (dates, vid) => ({
           key: `teamPopover-${user.uid}-${vid}`,
@@ -323,44 +353,211 @@ export default {
         return attributes
       })
 
-      //Отпуска коллег popover
-      let chiefsPopover = chiefs.map(user => {
-        let vacations = this.$store.getters['vacations/getBySidByUid'](sid, user.uid)
-        vacations = Object.values(vacations)
-          .filter(vacation => !vacation.isDraft())
-
-        let attribute = (dates, vid) => ({
-          key: `chiefPopover-${user.uid}-${vid}`,
-          highlight: {
-            color: colors[2],
-            style: {
-              display: 'none'
-            },
-          },
-          popover: {
-            visibility: 'hover'
-          },
-          customData: {
-            name: user.displayName,
-            dates
-          },
-          dates
-        })
-
-        const attributes = Object.values(vacations).map(({start, end, id}) => {
-          return attribute({start, end}, id)
-        })
-
-        return attributes
-      })
-
-
-      let attributes = [...taskBar, ...teamBar, ...chiefsBar]
-      taskPopover.map(arr => attributes.push(...arr))
+      let attributes = [chiefsBar, taskBar, teamBar]
       teamPopover.map(arr => attributes.push(...arr))
       chiefsPopover.map(arr => attributes.push(...arr))
+      taskPopover.map(arr => attributes.push(...arr))
+
       this.attributes = attributes
     },
+    // async update2() {
+    //   const {uid} = this
+    //
+    //   const sid = this.$route.params.id
+    //
+    //   const tasks = this.$store.getters['tasks/get']
+    //
+    //   const currentUser = this.$store.getters['users/getUserById'](uid)
+    //
+    //   const taskColleagues = []
+    //   if (currentUser.tasks) currentUser.tasks.map(task => {
+    //     let users = this.$store.getters['users/getUsersByTask'](task)
+    //       .filter(user => user.uid !== uid)
+    //     taskColleagues.push(...users)
+    //   })
+    //
+    //
+    /*  const teamColleagues = this.$store.getters['users/getUsersByTeam'](currentUser.team)*/
+    /*    .filter(user => user.uid !== uid && !taskColleagues.some(user2 => user2.uid === user.uid))*/
+    /*  let chiefs = await this.$store.dispatch('users/getChiefsOf', currentUser.uid)*/
+
+    /*  console.log(chiefs)*/
+
+    /*  chiefs = chiefs*/
+    /*    .filter(user => user.uid !== uid)*/
+    /*    .filter(user => !taskColleagues.some(user2 => user2.uid === user.uid))*/
+    /*    .filter(user => !teamColleagues.some(user2 => user2.uid === user.uid))*/
+
+    /*  let taskBar = taskColleagues.map(user => {*/
+    /*    let vacations = this.$store.getters['vacations/getBySidByUid'](sid, user.uid)*/
+    /*    vacations = Object.values(vacations)*/
+    /*      .filter(vacation => !vacation.isDraft() && !vacation.isRejected())*/
+    /*    let attribute = {*/
+    /*      key: `vacationTask-${user.uid}`,*/
+    /*      bar: {*/
+    /*        color: colors[0],*/
+    /*        style: {*/
+    /*          width: '100%'*/
+    /*        },*/
+    /*        class: ''*/
+    /*      },*/
+    /*      dates: [],*/
+    /*    }*/
+    /*    Object.values(vacations).map(({start, end}) => {*/
+    /*      attribute.dates.push({start, end})*/
+    /*    })*/
+
+    /*    return attribute*/
+    /*  })*/
+
+    /*  let teamBar = teamColleagues.map(user => {*/
+    /*    let vacations = this.$store.getters['vacations/getBySidByUid'](sid, user.uid)*/
+    /*    vacations = Object.values(vacations)*/
+    /*      .filter(vacation => !vacation.isDraft() && !vacation.isRejected())*/
+    /*    let attribute = {*/
+    /*      key: `vacationTeam-${user.uid}`,*/
+    /*      bar: {*/
+    /*        color: colors[1],*/
+    /*        style: {*/
+    /*          width: '100%'*/
+    /*        },*/
+    /*        class: ''*/
+    /*      },*/
+    /*      dates: [],*/
+    /*    }*/
+    /*    Object.values(vacations).map(({start, end}) => {*/
+    /*      attribute.dates.push({start, end})*/
+    /*    })*/
+
+    /*    return attribute*/
+    /*  })*/
+
+    /*  let chiefsBar = chiefs.map(user => {*/
+    /*    let vacations = this.$store.getters['vacations/getBySidByUid'](sid, user.uid)*/
+    /*    vacations = Object.values(vacations)*/
+    /*      .filter(vacation => !vacation.isDraft() && !vacation.isRejected())*/
+    /*    let attribute = {*/
+    /*      key: `vacationChiefs-${user.uid}`,*/
+    /*      bar: {*/
+    /*        color: colors[2],*/
+    /*        style: {*/
+    /*          width: '100%'*/
+    /*        },*/
+    /*        class: ''*/
+    /*      },*/
+    /*      dates: [],*/
+    /*    }*/
+    /*    Object.values(vacations).map(({start, end}) => {*/
+    /*      attribute.dates.push({start, end})*/
+    /*    })*/
+
+    /*    return attribute*/
+    /*  })*/
+
+    /*  //Отпуска коллег popover*/
+    /*  let taskPopover = taskColleagues.map(user => {*/
+    /*    let vacations = this.$store.getters['vacations/getBySidByUid'](sid, user.uid)*/
+    /*    vacations = Object.values(vacations)*/
+    /*      .filter(vacation => !vacation.isDraft())*/
+
+    /*    let attribute = (dates, vid) => ({*/
+    /*      key: `taskPopover-${user.uid}-${vid}`,*/
+    /*      highlight: {*/
+    /*        color: colors[0],*/
+    /*        style: {*/
+    /*          display: 'none'*/
+    /*        },*/
+    /*      },*/
+    /*      popover: {*/
+    /*        visibility: 'hover'*/
+    /*      },*/
+    /*      customData: {*/
+    /*        name: user.displayName,*/
+    /*        tasks: '[ ' + user.tasks*/
+    /*          ?.filter(taskId => currentUser.tasks.includes(taskId))*/
+    /*          .map(task => tasks[task].title)*/
+    /*          .join(', ') + ' ]'*/
+    /*        ,*/
+    /*        dates*/
+    /*      },*/
+    /*      dates*/
+    /*    })*/
+
+    /*    const attributes = Object.values(vacations).map(({start, end, id}) => {*/
+    /*      return attribute({start, end}, id)*/
+    /*    })*/
+
+    /*    return attributes*/
+    /*  })*/
+
+    /*  //Отпуска коллег popover*/
+    /*  let teamPopover = teamColleagues.map(user => {*/
+    /*    let vacations = this.$store.getters['vacations/getBySidByUid'](sid, user.uid)*/
+    /*    vacations = Object.values(vacations)*/
+    /*      .filter(vacation => !vacation.isDraft())*/
+
+    /*    let attribute = (dates, vid) => ({*/
+    /*      key: `teamPopover-${user.uid}-${vid}`,*/
+    /*      highlight: {*/
+    /*        color: colors[1],*/
+    /*        style: {*/
+    /*          display: 'none'*/
+    /*        },*/
+    /*      },*/
+    /*      popover: {*/
+    /*        visibility: 'hover'*/
+    /*      },*/
+    /*      customData: {*/
+    /*        name: user.displayName,*/
+    /*        dates*/
+    /*      },*/
+    /*      dates*/
+    /*    })*/
+
+    /*    const attributes = Object.values(vacations).map(({start, end, id}) => {*/
+    /*      return attribute({start, end}, id)*/
+    /*    })*/
+
+    /*    return attributes*/
+    /*  })*/
+
+    /*  //Отпуска коллег popover*/
+    /*  let chiefsPopover = chiefs.map(user => {*/
+    /*    let vacations = this.$store.getters['vacations/getBySidByUid'](sid, user.uid)*/
+    /*    vacations = Object.values(vacations)*/
+    /*      .filter(vacation => !vacation.isDraft())*/
+
+    /*    let attribute = (dates, vid) => ({*/
+    /*      key: `chiefPopover-${user.uid}-${vid}`,*/
+    /*      highlight: {*/
+    //         color: colors[2],
+    //         style: {
+    //           display: 'none'
+    //         },
+    //       },
+    //       popover: {
+    //         visibility: 'hover'
+    //       },
+    //       customData: {
+    //         name: user.displayName,
+    //         dates
+    //       },
+    //       dates
+    //     })
+    //
+    //     const attributes = Object.values(vacations).map(({start, end, id}) => {
+    //       return attribute({start, end}, id)
+    //     })
+    //
+    //     return attributes
+    //   })
+    //
+    //   let attributes = [...taskBar, ...teamBar, ...chiefsBar]
+    //   taskPopover.map(arr => attributes.push(...arr))
+    //   teamPopover.map(arr => attributes.push(...arr))
+    //   chiefsPopover.map(arr => attributes.push(...arr))
+    //   this.attributes = attributes
+    // },
     clearSelection() {
       this.dates = null
     },

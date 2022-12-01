@@ -137,6 +137,7 @@ async function inviteHandler(req, res, next) {
   }
 
   await sendEmail(user.email, 'Приглашение', './template.html', replacements)
+  console.log(user.email + ' : success sending')
   res.json('email-sending')
 }
 

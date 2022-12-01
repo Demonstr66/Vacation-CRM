@@ -53,6 +53,14 @@ export class Vacation extends Base {
     return this.status === 1
   }
 
+  isActive() {
+    return this.status === 2
+  }
+
+  isActual() {
+    return this.isActive() || this.isSending()
+  }
+
   isRejected() {
     return this.status === 99
   }

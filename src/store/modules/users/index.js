@@ -266,6 +266,8 @@ export default {
       chiefs.push(wsOwner)
 
       chiefs = chiefs.map(uid => getters['getUserById'](uid))
+      chiefs = new Set(chiefs)
+      chiefs = Array.from(chiefs)
 
       return chiefs
     },

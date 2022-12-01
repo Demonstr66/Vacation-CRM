@@ -36,7 +36,7 @@ export default {
   }),
   created() {
     let item = localStorage.getItem('navbarIsOpened')
-    if (item && item != '') {
+    if (item && item != false) {
       this.expandNavigation = true
     }
   },
@@ -48,12 +48,14 @@ export default {
   methods: {
     onExpandClick() {
       this.expandNavigation = !this.expandNavigation;
-      localStorage.setItem('navbarIsOpened', 'true')
     },
   },
   watch: {
     route(val) {
       this.rightSidebar = !!val.meta.RightSidebar
+    },
+    expandNavigation(val) {
+      localStorage.setItem('navbarIsOpened', val)
     }
   }
 };

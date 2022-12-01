@@ -1,4 +1,5 @@
 const express = require('express');
+const winston = require('winston');
 const cors = require('cors');
 const createError = require('http-errors');
 const {initializeApp} = require('firebase-admin/app');
@@ -15,13 +16,21 @@ const app = express();
 const PORT = 3000
 
 
-const asyncHandler = (func) => async (req, res, next) => {
-  try {
-    await func(req, res, next)
-  } catch (e) {
-    next(createError(e))
-  }
-}
+// const asyncHandler = (func) => async (req, res, next) => {
+//   try {
+//     await func(req, res, next)
+//   } catch (e) {
+//     next(createError(e))
+//   }
+// }
+const asyncHandler = (fn) => (req, res, next) => Promise.resolve(fn(req, res, next)).catch(next);
+
+const logger = winston.createLogger();
+const errFiles = new winston.transports.File({filename: 'error.log', level: 'error'})
+const files = new winston.transports.File({filename: 'combined.log'})
+
+logger.clear().add(files, {'timestamp': true}).add(errFiles, {'timestamp': true})
+
 
 initializeApp({
   credential: admin.credential.cert(serviceAccount),
@@ -68,29 +77,9 @@ app.use(cors())
 app.use(express.urlencoded())
 app.use(express.json())
 
-// app.get('/api/test', async (req, res, next) => {
-//   // await sendTest()
-//   const workspaces = await getData('workspaces')
-//
-//   for(let workspace in workspaces) {
-//     const users = await getData('users/' + workspace)
-//
-//     for(let uid in users) {
-//       try {
-//         await getAuth().setCustomUserClaims(uid, {workspace})
-//         console.log('uid: ' + uid +' completed')
-//       }catch (e) {
-//         console.log('err on uid: ' + uid, e)
-//       }
-//     }
-//   }
-//
-//   res.json('ok')
-// })
-
 app.use(asyncHandler(async (req, res, next) => {
   const {uid, wid} = req.headers
-
+  throw createError(401, 'Invalid parameters')
   if (!wid) throw createError(401, 'Invalid parameters')
 
   req.wid = wid
@@ -101,20 +90,19 @@ app.use(asyncHandler(async (req, res, next) => {
     req.permission = await getPermission(wid, req.userData.role)
   }
 
+  logger.info(`wid: ${wid}; uid: ${uid}, url: ${req._parsedUrl.pathname}, query: ${JSON.stringify(req.query || {})}`)
+
   next()
 }))
 
 async function check(req, res, next) {
   const {uid} = req.query
   const user = await getUser(uid)
-  console.log('user: ' + user)
 
   if (!user) {
-    console.log('uid: ' + uid)
     let {email} = await getUserDataBy(req.wid, 'uid', uid)
-    console.log('email: ' + email)
     await createUser(req.wid, {email, uid})
-    await getAuth().setCustomUserClaims(uid, {workspace: req.uid})
+    await getAuth().setCustomUserClaims(uid, {workspace: req.wid})
   }
 
   next()
@@ -130,66 +118,13 @@ app.delete('/api/account/delete', asyncHandler(accountDeleteHandler))
 
 app.get('/api/message/invite', asyncHandler(check), asyncHandler(inviteHandler))
 
-// app.get('/api/message/vacation', async (req, res, next) => {
-//   const {uid} = req.query
-//   if (!uid) return next(createError(403, 'invalid-parameters'))
-//
-//   const user = await getUserByUid(uid)
-//
-//   if (!user) return next(createError(404, 'user-not-found'))
-//   const contents = await bucket.file('temp/aC3BSzQxJjCZiC4WcrR1dq/ОБРАЗЕЦ.docx').download()
-//
-//   sendEmail(user, vacationEmail, contents[0])
-//     .then((data) => {
-//       res.json(data)
-//     })
-//     .catch((err) => next(createError(err)))
-// });
-//
-// app.get('/api/user/set/claims', async (req, res, next) => {
-//   const {uid, w} = req.query
-//
-//   if (!uid || !w) return next(createError(403, 'invalid parameters'))
-//
-//   const user = await getUserByUid(uid)
-//
-//   if (!user) next(createError(404, 'user-not-found'))
-//
-//   await getAuth().setCustomUserClaims(uid, {workspace: w})
-//   const data = await getUserByUid(uid)
-//   res.json(data)
-// });
-// app.get('/api/user/test', async (req, res, next) => {
-//   const {email} = req.query
-//   if (!email) return next(createError(403, 'invalid-parameters'))
-//
-//   // const user = await getUserByUid(uid)
-//
-//   // if (!user) return next(createError(404, 'user-not-found'))
-//   // const useremail = user.email;
-//   getAuth()
-//     .generateSignInWithEmailLink(email, {
-//       handleCodeInApp: true,
-//       url: 'http://localhost:8080/loginlink'
-//     })
-//     .then((link) => {
-//       // Construct email verification template, embed the link and send
-//       // using custom SMTP server.
-//       return res.json(link);
-//     })
-//     .catch((error) => {
-//       // Some error occurred.
-//       return next(createError(400, error));
-//     });
-// });
 
 app.use((req, res, next) => {
   next(createError(404))
 })
 
 app.use((error, req, res, next) => {
-  console.log('i`m handler error')
-  console.log(error)
+  logger.error({error, req})
   let message = error.errorInfo ? error.errorInfo.code : error
   res.status(error.status || 500)
   res.json(message)
@@ -197,4 +132,5 @@ app.use((error, req, res, next) => {
 
 app.listen(PORT, () => {
   console.log('listen port ' + PORT + ' at: ' + Date.now() / 1000)
+  logger.info('listen port ' + PORT + ' at: ' + Date.now() / 1000)
 });

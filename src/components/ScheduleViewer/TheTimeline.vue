@@ -46,7 +46,7 @@
           </td>
         </tr>
 
-        <div id="today-marker" class="today-marker">
+        <div id="today-marker" class="today-marker" v-if="isCurrentYear">
           <span class="today-marker-dot today-marker-dot-top"></span>
           <span class="today-marker-line"></span>
           <span class="today-marker-dot today-marker-dot-bottom"></span>
@@ -140,7 +140,7 @@ export default {
       this.placementEvents()
       this.placementTodayMarker()
 
-      document.getElementById('today-marker').scrollIntoView()
+      if (this.isCurrentYear) document.getElementById('today-marker').scrollIntoView()
     })
   },
   computed: {
@@ -164,6 +164,9 @@ export default {
         }
       })
       return tree
+    },
+    isCurrentYear() {
+      return this.year === this.$moment().year()
     }
   },
   methods: {
@@ -216,29 +219,31 @@ export default {
       })
     },
     placementTodayMarker() {
-      if (this.year !== this.$moment().year()) {
-        if (marker) marker.style.display = 'none'
-        return
-      }
+      // if (this.year !== this.$moment().year()) {
+      //   if (marker) marker.style.display = 'none'
+      //
+      // } else {
 
       const wrap = document.getElementById('header-col')
       const wrapLeftEdge = wrap.getBoundingClientRect().x
 
       const marker = document.getElementById('today-marker')
 
-      const today = this.$moment().format('YYYY-MM-DD')
-      console.log(today)
-      const todayEl = document.getElementById(`header-day-${today}`)
+      if (marker) {
+        const today = this.$moment().format('YYYY-MM-DD')
 
-      const todayLeftEdge = todayEl.getBoundingClientRect().x + todayEl.clientLeft
+        const todayEl = document.getElementById(`header-day-${today}`)
 
-      const widthToday = todayEl.offsetWidth
-      const widthMarker = marker.offsetWidth
+        const todayLeftEdge = todayEl.getBoundingClientRect().x + todayEl.clientLeft
 
-      const left = todayLeftEdge - wrapLeftEdge + (wrapLeftEdge -
-        todayEl.parentNode.getBoundingClientRect().x) + widthToday / 2 - widthMarker / 2
+        const widthToday = todayEl.offsetWidth
+        const widthMarker = marker.offsetWidth
 
-      marker.style.left = left + 'px'
+        const left = todayLeftEdge - wrapLeftEdge + (wrapLeftEdge -
+          todayEl.parentNode.getBoundingClientRect().x) + widthToday / 2 - widthMarker / 2
+
+        marker.style.left = left + 'px'
+      }
     },
     calculateEventStyle(e) {
       const wrap = document.getElementById('header-col')
@@ -276,7 +281,7 @@ export default {
 
 <style lang="scss" scoped>
 $day-width: 30px;
-$row-height: 50px;
+$row-height: 40px;
 
 .today-marker {
   $marker-color: rgba(255, 0, 0, 0.94);

@@ -1,6 +1,6 @@
 import axios from "axios";
 
-const prod = true
+const prod = false
 const server = prod ? 'https://crm.tgtransfer.ru' : 'http://localhost:3000'
 
 export const api = {

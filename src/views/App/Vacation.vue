@@ -278,7 +278,7 @@ export default {
         const fullPath = this.$store.getters['templateFile/fullPath']
         const user = this.user
         const type = fullPath.split('.').reverse()[0]
-        const {start, days, finish} = this.vacations[id]
+        const {start, days, end} = this.vacations[id]
         let postTitle = ''
         if (user.post) {
           let postItem = this.$store.getters['posts/get'][user.post]
@@ -288,9 +288,9 @@ export default {
         const {data} = await api.file.download(
           fullPath,
           user.templateName || user.fullName,
-            postTitle,
+          postTitle,
           dateToFileFormat(start),
-          dateToFileFormat(finish),
+          dateToFileFormat(end),
           days,
           dateToFileFormat(Date.now()),
         )
