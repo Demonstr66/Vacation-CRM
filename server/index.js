@@ -15,14 +15,6 @@ const {appData} = require("./appConfig");
 const app = express();
 const PORT = 3000
 
-
-// const asyncHandler = (func) => async (req, res, next) => {
-//   try {
-//     await func(req, res, next)
-//   } catch (e) {
-//     next(createError(e))
-//   }
-// }
 const asyncHandler = (fn) => (req, res, next) => Promise.resolve(fn(req, res, next)).catch(next);
 
 const logger = winston.createLogger();
@@ -40,8 +32,9 @@ initializeApp({
 const {getTemplateFile, replacement, download} = require("./download");
 const {getUserDataBy, getPermission, getUser, getData} = require("./FB/DB");
 const {
-  accountCreateHandler, accountDeleteHandler, accountSetClaims, createUser
-} = require("./accountHedlers");
+  accountCreateHandler, accountDeleteHandler, accountSetClaims, createUser, createAccountHandler,
+  setClaimHandler
+} = require("./accountHandlers");
 const {inviteHandler, sendTest} = require("./mailer");
 
 const db = admin.database()
@@ -49,23 +42,6 @@ const db = admin.database()
 
 const schedule = require('node-schedule');
 const {checkVacations} = require("./checkNearVacation");
-
-// const job = schedule.scheduleJob('* * * * *', async function () {
-//   console.log('run checker')
-//   // const workspaces = await getData('workspaces')
-//   //
-//   // for(let wid in workspaces) {
-//   //   const schedules = await getData('schedules/' + wid)
-//   //
-//   //   for(let sid in schedules) {
-//   //     if (schedules[sid].status != 2) continue
-//   //
-//   //     const vacations = await getData('vacations/' + wid + '/' + sid)
-//   //
-//   //     checkVacations(wid, vacations)
-//   //   }
-//   // }
-// });
 
 
 function updateUser(uid, data) {
@@ -79,7 +55,7 @@ app.use(express.json())
 
 app.use(asyncHandler(async (req, res, next) => {
   const {uid, wid} = req.headers
-  throw createError(401, 'Invalid parameters')
+
   if (!wid) throw createError(401, 'Invalid parameters')
 
   req.wid = wid
@@ -90,7 +66,7 @@ app.use(asyncHandler(async (req, res, next) => {
     req.permission = await getPermission(wid, req.userData.role)
   }
 
-  logger.info(`wid: ${wid}; uid: ${uid}, url: ${req._parsedUrl.pathname}, query: ${JSON.stringify(req.query || {})}`)
+  logger.info(`time: ${Date.now()}; uid: ${uid}, url: ${req._parsedUrl.pathname}, query: ${JSON.stringify(req.query || {})}`)
 
   next()
 }))
@@ -108,11 +84,21 @@ async function check(req, res, next) {
   next()
 }
 
+async function createAccount(workspace, email) {
+
+}
+
 app.get('/api/download/', asyncHandler(getTemplateFile), asyncHandler(replacement), asyncHandler(download))
 
 app.get('/api/download/origin', asyncHandler(getTemplateFile), asyncHandler(download))
 
-app.post('/api/account/create', asyncHandler(accountCreateHandler), asyncHandler(accountSetClaims))
+app.post('/api/account/create',
+  asyncHandler(createAccountHandler),
+  asyncHandler(setClaimHandler),
+  asyncHandler(async (req, res, next) => {
+    res.json(req.createdUser)
+  })
+)
 
 app.delete('/api/account/delete', asyncHandler(accountDeleteHandler))
 

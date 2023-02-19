@@ -2,12 +2,42 @@ const {getAuth} = require("firebase-admin/auth");
 const {getUserDataBy} = require("./FB/DB");
 const createError = require('http-errors');
 
-async function isAccountExist(uid) {
-  try {
-    return !!await getAuth().getUser(uid)
-  } catch (e) {
-    throw createError(404, e)
+function isAccountExist(uid) {
+  return getAuth().getUser(uid)
+}
+
+function setWorkspaceClaims(wid, uid) {
+  return getAuth().setCustomUserClaims(uid, {workspace: wid})
+}
+
+async function createAccount(wid, data) {
+  if (data.email) {
+    let dataFromDB = await getUserDataBy(wid, 'email', data.email)
+    Object.assign(data, dataFromDB)
   }
+
+  return getAuth().createUser(data)
+}
+
+async function createAccountHandler(req, res, next) {
+  const {email, password} = req.body
+  if (!email) throw createError(400, 'Invalid parameters: Email required')
+
+  let data = {email}
+  if (password) data.password = password
+  req.createdUser = await createUser(req.wid, data)
+  next()
+}
+
+async function setClaimHandler(req, res, next) {
+  const uid = req.createdUser.uid
+  const wid = req.wid
+
+  if (!uid || !wid) throw createError(400, 'Invalid parameters: Wrong requested data')
+
+  await setWorkspaceClaims(wid, uid)
+
+  next()
 }
 
 async function createUser(wid, data) {
@@ -61,8 +91,20 @@ async function accountSetClaims(req, res, next) {
 }
 
 
+// module.exports = {
+//   accountCreateHandler,
+//   accountDeleteHandler,
+//   accountSetClaims,
+//   createUser
+// }
 
 module.exports = {
+  isAccountExist,
+  setWorkspaceClaims,
+  createAccount,
+  createAccountHandler,
+  setClaimHandler,
+
   accountCreateHandler,
   accountDeleteHandler,
   accountSetClaims,

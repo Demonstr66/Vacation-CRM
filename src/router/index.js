@@ -25,6 +25,13 @@ const Viewer1 = () => import('@/components/ScheduleViewer/ListView'  )
 const Viewer2 = () => import('@/components/ScheduleViewer/TimelineView'  )
 const ScheduleStatistic = () => import('@/views/App/ScheduleStatistic')
 
+const Setting = () => import('@/views/App/Account')
+const SettingProfile = () => import('@/components/Account/pages/profile')
+const SettingVacationTemplate = () => import('@/components/Account/pages/vacations/template')
+const SettingVacationTemplateData = () => import('@/components/Account/pages/vacations/template-data')
+const SettingVacationPermission = () => import('@/components/Account/pages/vacations/permission')
+const SettingVacationNotification = () => import('@/components/Account/pages/vacations/notification')
+
 
 Vue.use(VueRouter)
 
@@ -169,7 +176,7 @@ const routes = [
         name: 'Viewer1',
         meta: {
           layout: 'MainEmptyLayout',
-          title: 'Управление',
+          title: '',
           protected: {
             accessLevel: [2]
           }
@@ -180,7 +187,7 @@ const routes = [
         name: 'Viewer2',
         meta: {
           layout: 'MainEmptyLayout',
-          title: 'Управление',
+          title: '',
           protected: {
             accessLevel: [2]
           }
@@ -217,7 +224,82 @@ const routes = [
         accessLevel: [2]
       }
     }
+  }, {
+    path: '/settings',
+    component: Setting,
+    name: 'Setting',
+    children: [
+      {
+        path: '/',
+        redirect: {name: 'SettingProfile'}
+      },
+      {
+        path: 'profile',
+        component: SettingProfile,
+        name: 'SettingProfile',
+        meta: {
+          layout: 'MainEmptyLayout',
+          title: '',
+          protected: {
+            accessLevel: [2]
+          }
+        }
+      },
+
+
+      {
+        path: 'v-template-data',
+        component: SettingVacationTemplateData,
+        name: 'SettingVacationTemplateData',
+        meta: {
+          layout: 'MainEmptyLayout',
+          title: '',
+          protected: {
+            accessLevel: [2]
+          }
+        }
+      }, {
+        path: 'v-permission',
+        component: SettingVacationPermission,
+        name: 'SettingVacationPermission',
+        meta: {
+          layout: 'MainEmptyLayout',
+          title: '',
+          protected: {
+            accessLevel: [2]
+          }
+        }
+      }, {
+        path: 'v-rss',
+        component: SettingVacationNotification,
+        name: 'SettingVacationNotification',
+        meta: {
+          layout: 'MainEmptyLayout',
+          title: '',
+          protected: {
+            accessLevel: [2]
+          }
+        }
+      }, {
+        path: 'v-template',
+        component: SettingVacationTemplate,
+        name: 'SettingVacationTemplate',
+        meta: {
+          layout: 'MainEmptyLayout',
+          title: '',
+          protected: {
+            accessLevel: [2]
+          }
+        }
+      }],
+    meta: {
+      layout: 'MainEmptyLayout',
+      protected: {
+        accessLevel: [2]
+      }
+    }
   },
+
   {
     path: '/loginlink',
     name: 'LoginByLink',
@@ -297,11 +379,13 @@ router.beforeEach(async (to, from, next) => {
     console.groupEnd()
   }
   // next()
-  if (!to.meta.protected) next()
-  else {
+  if (!to.meta.protected) {
+    next()
+  } else {
     let available = to.meta.protected.accessLevel
-    if (available.some(a => a == accessLevel)) next()
-    else {
+    if (available.some(a => a == accessLevel)) {
+      next()
+    } else {
       switch (accessLevel) {
         case 0:
           next({name: 'Login'});

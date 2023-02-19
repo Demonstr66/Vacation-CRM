@@ -1,12 +1,13 @@
 import axios from "axios";
 
 const prod = false
+// const server = prod ? 'https://crm.tgtransfer.ru' : 'https://tgtransfer.ru'
 const server = prod ? 'https://crm.tgtransfer.ru' : 'http://localhost:3000'
 
 export const api = {
   user: {
     create: (data) => {
-      return axios.post(server + '/api/account/create', data)
+      return axios.post(server + '/api/private/user/create', data)
       // .then((res) => {
       //   console.log(res)
       //   console.log(res.data)
@@ -20,7 +21,7 @@ export const api = {
       // })
     },
     delete: (uid) => {
-      return axios.delete(server + '/api/account/delete', {
+      return axios.delete(server + '/api/private/user/delete', {
         params: {
           uid
         }
@@ -48,7 +49,7 @@ export const api = {
   file: {
     download: (fullPath, fullName, post, start, finish, days, date) => {
       return axios({
-        method: 'get', url: server + '/api/download', responseType: 'blob', params: {
+        method: 'get', url: server + '/api/private/download', responseType: 'blob', params: {
           fullPath, fullName, post, start, finish, days, date
         }
       })
@@ -63,7 +64,7 @@ export const api = {
 
     downloadOrigin: (fullPath) => {
       return axios({
-        method: 'get', url: server + '/api/download/origin', responseType: 'blob', params: {
+        method: 'get', url: server + '/api/private/download/origin', responseType: 'blob', params: {
           fullPath
         }
       })

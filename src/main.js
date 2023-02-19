@@ -10,6 +10,11 @@ import {getAnalytics} from "firebase/analytics";
 import {firebaseConfig} from './plugins/secure'
 import VCalendar from 'v-calendar';
 
+import RichTextEditor from 'rich-text-editor-vuetify'
+
+Vue.use(RichTextEditor)
+
+
 import {abilitiesPlugin, Can} from '@casl/vue';
 import ability from '@/plugins/ability';
 
@@ -66,12 +71,14 @@ getAuth().onAuthStateChanged((user) => {
     console.log('Load for: ' + (end - start) + 'ms')
   }
 
-  if (!app) app = new Vue({
-    router,
-    store,
-    vuetify,
-    render: h => h(App)
-  }).$mount('#app')
+  if (!app) {
+    app = new Vue({
+      router,
+      store,
+      vuetify,
+      render: h => h(App)
+    }).$mount('#app')
+  }
 
 
   store.dispatch('app/onAuthStateChanged', user)

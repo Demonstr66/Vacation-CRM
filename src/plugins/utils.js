@@ -278,7 +278,7 @@ export function mergeEvents(events) {
   return mergeEvents
 }
 
-export function convertUsersToTree(users, groupBy, headers, hideEmptyGroups) {
+export function convertUsersToTree(users, groupBy, headers, hideEmptyGroups = false) {
   if (!headers) return users
 
   const key = getKey(groupBy)
@@ -302,6 +302,7 @@ export function convertUsersToTree(users, groupBy, headers, hideEmptyGroups) {
     node.isHeader = true
     node.events = events
     node.events = mergeEvents(node.events)
+    
     return node
   })
   return tree

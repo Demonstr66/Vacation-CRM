@@ -18,6 +18,7 @@ export const templateFileData = {
     title: 'Дата конца отпуска'
   },
   days: {test: '6', description: '', title: 'Дней отпуска'},
+  calendarDaysPhrase: {title: 'Фраза "календарных дней" в нужном склонении'}
 }
 
 export function defWorkspace(...data) {

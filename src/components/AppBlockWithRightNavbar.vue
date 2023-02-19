@@ -11,18 +11,18 @@
     <!--      </v-col>-->
     <!--    </v-row>-->
 
-    <div class="d-flex flex-wrap" style="max-width: 100%; position: relative">
+    <div class="d-flex flex-wrap" :class="{'flex-row-reverse': left}" style="max-width: 100%; position: relative">
       <div
-        class="flex-shrink-1 flex-grow-1 main-block"
-        :style="!isMobile ? mainBlockMd : ''"
-        style="order: 1"
+          class="flex-shrink-1 flex-grow-1 main-block"
+          :style="!isMobile ? mainBlockMd : ''"
+          style="order: 1"
       >
         <slot name="main"/>
       </div>
       <div
-        v-if="!isMobile || noHideSidebar"
-        class="flex-grow-0 flex-shrink-0"
-        :style="sideBlock"
+          v-if="!isMobile || noHideSidebar"
+          class="flex-grow-0 flex-shrink-0"
+          :style="sideBlock"
       >
         <div class="side-block">
           <slot name="navbar"/>
@@ -30,13 +30,14 @@
       </div>
     </div>
     <v-navigation-drawer
-      v-if="isMobile && !noHideSidebar"
-      v-model="drawer"
-      app
-      clipped
-      right
-      temporary
-      touchless
+        v-if="isMobile && !noHideSidebar"
+        v-model="drawer"
+        app
+        clipped
+        :right="!bottom"
+        :bottom="bottom"
+        temporary
+        touchless
     >
       <slot name="navbar"/>
     </v-navigation-drawer>
@@ -53,10 +54,19 @@ export default {
       type: Boolean,
       default: false
     },
+    left: {
+      type: Boolean,
+      default: false
+    },
     sideBlockWidth: {
       type: [String, Number],
       default: 250
-    }
+    },
+    bottom: {
+      type: Boolean,
+      default: false
+    },
+
   },
   components: {AppBaseSheet, IconBtnWithTip},
   data: () => ({

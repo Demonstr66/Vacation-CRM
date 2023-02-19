@@ -17,10 +17,10 @@
       </template>
       <v-list>
         <v-list-item
-          v-for="(item, index) in menu"
-          :key="index"
-          link
-          @click="onMenuItemClick(item.action)"
+            v-for="(item, index) in menu"
+            :key="index"
+            link
+            @click="onMenuItemClick(item.action)"
         >
           <v-list-item-title class="d-flex flex-row justify-space-between">
             {{ item.title }}
@@ -62,7 +62,9 @@ export default {
       this.$emit("click");
     },
     onMenuItemClick(action) {
-      if (!this[action]) return;
+      if (!this[action]) {
+        return;
+      }
 
       this[action]();
     },
@@ -70,8 +72,10 @@ export default {
       this.signOut()
     },
     onAccount() {
-      if (this.$route.name == 'Account') return
-      this.$router.push({name: 'Account'});
+      if (this.$route.name == 'Account') {
+        return
+      }
+      this.$router.push({name: 'SettingProfile'});
     },
   },
 };

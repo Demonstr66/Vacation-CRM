@@ -3,39 +3,6 @@
     <app-base-sheet>
       Добро пожаловать!
     </app-base-sheet>
-<!--    <app-base-sheet>-->
-<!--      <div>HEADER</div>-->
-<!--    </app-base-sheet>-->
-<!--    <app-block-with-right-navbar>-->
-
-<!--&lt;!&ndash;      <template #main>&ndash;&gt;-->
-<!--&lt;!&ndash;        <app-base-sheet>&ndash;&gt;-->
-<!--&lt;!&ndash;          <div>MAIN</div>&ndash;&gt;-->
-<!--&lt;!&ndash;          <v-text-field v-model.trim="email" label="Email"></v-text-field>&ndash;&gt;-->
-<!--&lt;!&ndash;          <v-text-field v-model.trim="pass" label="Pass"></v-text-field>&ndash;&gt;-->
-<!--&lt;!&ndash;          <v-text-field v-model.trim="uid" label="Uid"></v-text-field>&ndash;&gt;-->
-<!--&lt;!&ndash;          <v-btn @click="create">&ndash;&gt;-->
-<!--&lt;!&ndash;            create&ndash;&gt;-->
-<!--&lt;!&ndash;          </v-btn>&ndash;&gt;-->
-<!--&lt;!&ndash;          <v-btn @click="invite">&ndash;&gt;-->
-<!--&lt;!&ndash;            invite&ndash;&gt;-->
-<!--&lt;!&ndash;          </v-btn>&ndash;&gt;-->
-<!--&lt;!&ndash;          <v-btn @click="del">&ndash;&gt;-->
-<!--&lt;!&ndash;            delete&ndash;&gt;-->
-<!--&lt;!&ndash;          </v-btn>&ndash;&gt;-->
-<!--&lt;!&ndash;        </app-base-sheet>&ndash;&gt;-->
-<!--&lt;!&ndash;      </template>&ndash;&gt;-->
-<!--&lt;!&ndash;      <template #navbar>&ndash;&gt;-->
-<!--&lt;!&ndash;        <app-base-sheet>&ndash;&gt;-->
-<!--&lt;!&ndash;          <div>NAVBAR</div>&ndash;&gt;-->
-<!--&lt;!&ndash;          <div>&ndash;&gt;-->
-<!--&lt;!&ndash;            Lorem ipsum dolor sit amet, consectetur adipisicing elit. Dicta eos natus porro&ndash;&gt;-->
-<!--&lt;!&ndash;            quibusdam repellat sit tempore voluptates? Aperiam consequuntur dignissimos ea,&ndash;&gt;-->
-<!--&lt;!&ndash;            excepturi explicabo inventore laborum minima neque non nostrum voluptates.&ndash;&gt;-->
-<!--&lt;!&ndash;          </div>&ndash;&gt;-->
-<!--&lt;!&ndash;        </app-base-sheet>&ndash;&gt;-->
-<!--&lt;!&ndash;      </template>&ndash;&gt;-->
-<!--    </app-block-with-right-navbar>-->
   </div>
 </template>
 

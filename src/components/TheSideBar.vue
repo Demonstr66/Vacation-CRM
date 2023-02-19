@@ -3,6 +3,7 @@
     v-model="isExpand"
     :mini-variant="!isExpand"
     :permanent="!$vuetify.breakpoint.mobile"
+    style="z-index: 20"
     clipped
     app
   >

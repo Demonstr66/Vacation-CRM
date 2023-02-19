@@ -19,7 +19,7 @@
         <vacation-events-details :cols="headers.length" :events="item.events"/>
       </template>
       <template v-slot:group.header="{toggle, isOpen, groupBy, group, headers, remove}">
-        <td :colspan="headers.length">
+        <td :colspan="groupBy == 'uid' ? 2 : headers.length">
           <v-btn icon small @click="toggle">
             <v-icon v-if="isOpen">mdi-minus</v-icon>
             <v-icon v-else>mdi-plus</v-icon>
@@ -31,6 +31,29 @@
             <v-icon>mdi-close</v-icon>
           </v-btn>
         </td>
+        <template v-if="groupBy == 'uid'">
+          <td class="text-center font-weight-bold info--text">
+            {{ tree.filter(node => node.uid == group).reduce((s, e) => s += e.days, 0) }}
+          </td>
+          <td>
+            <div class="text-center font-weight-bold">
+            <span class="warning--text mr-3">
+              {{
+                tree.filter(node => node.uid == group && node.status == 1).reduce((s, e) => s +=
+                  e.days, 0)
+              }}
+            </span>
+              <span class="success--text">
+                {{
+                  tree.filter(node => node.uid == group && node.status == 2).reduce((s, e) => s += e.days, 0)
+                }}
+              </span>
+            </div>
+          </td>
+          <td :colspan="headers.length-4">
+
+          </td>
+        </template>
       </template>
       <template v-slot:item.uid="{item}">
         <div class="text-no-wrap">
@@ -63,10 +86,10 @@
       <template v-slot:item.action="{item}">
         <RowActions>
           <VacationTools
-            :status="item.status"
             :approve-disabled="!$can('approve', item)"
-            :reject-disabled="!$can('reject', item)"
             :cancel-disabled="!$can('cancel', item)"
+            :reject-disabled="!$can('reject', item)"
+            :status="item.status"
             @approve="approveVacation(item.id)"
             @cancel="cancelVacation(item.id)"
             @reject="rejectVacation(item.id)"

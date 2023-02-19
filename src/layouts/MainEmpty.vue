@@ -36,7 +36,8 @@ export default {
   }),
   created() {
     let item = localStorage.getItem('navbarIsOpened')
-    if (item && item != false) {
+
+    if (item && item == 'true') {
       this.expandNavigation = true
     }
   },
