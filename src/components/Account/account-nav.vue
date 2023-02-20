@@ -1,6 +1,6 @@
 <template>
   <app-base-sheet>
-    <v-list dense subheader>
+    <v-list subheader>
       <v-list-item-group
           mandatory
           v-model="page"

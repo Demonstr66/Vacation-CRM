@@ -6,90 +6,102 @@
         <v-card-text>
           <v-row no-gutters>
             <v-col :cols="12 / cols">
-              <v-text-field
-                v-model="user.email"
-                :append-icon="disEmail ? 'mdi-lock' : ''"
-                :disabled="disEmail"
-                :rules="[blankCheck, emailCheck]"
-                label="Email"
-                name="email"
+              <setting-row label="Email" description="">
+                <v-text-field
+                    v-model="user.email"
+                    :append-icon="disEmail ? 'mdi-lock' : ''"
+                    :disabled="disEmail"
+                    :rules="[blankCheck, emailCheck]"
+                    label="Email"
+                    name="email"
 
-                @change="changed"
-              >
-                <template v-slot:prepend>
-                  <input-icon>mdi-email</input-icon>
-                </template>
-                <template v-slot:append>
-                  <v-chip
-                    v-if="!!domain && (!user.email || user.email.indexOf('@') === -1)"
-                    color="info"
-                    label
-                    outlined
-                    small
-                    v-text="domain"
-                  ></v-chip>
-                </template>
-              </v-text-field>
+                    @change="changed"
+                >
+                  <template v-slot:prepend>
+                    <input-icon>mdi-email</input-icon>
+                  </template>
+                  <template v-slot:append>
+                    <v-chip
+                        v-if="!!domain && (!user.email || user.email.indexOf('@') === -1)"
+                        color="info"
+                        label
+                        outlined
+                        small
+                        v-text="domain"
+                    ></v-chip>
+                  </template>
+                </v-text-field>
+              </setting-row>
             </v-col>
             <v-col :cols="12 / cols">
-              <v-select
-                v-model="user.post"
-                :append-icon="disPost ? 'mdi-lock' : ''"
-                :disabled="disPost"
-                :items="Object.values(posts)"
-                clearable
-                hide-selected
-                item-text="title"
-                item-value="id"
-                label="Должность"
-                name="post"
-                placeholder="Должность не указана"
-                @change="changed"
-              >
-                <template v-slot:prepend>
-                  <input-icon>mdi-account-group</input-icon>
-                </template>
-              </v-select>
+              <setting-row description="" label="Должность">
+                <v-select
+                    v-model="user.post"
+                    :append-icon="disPost ? 'mdi-lock' : ''"
+                    :disabled="disPost"
+                    :items="Object.values(posts)"
+                    clearable
+                    hide-selected
+                    item-text="title"
+                    item-value="id"
+                    label="Должность"
+                    name="post"
+                    placeholder="Должность не указана"
+                    @change="changed"
+                >
+                  <template v-slot:prepend>
+                    <input-icon>mdi-account-group</input-icon>
+                  </template>
+                </v-select>
+              </setting-row>
             </v-col>
             <v-col :cols="12 / cols">
-              <v-select
-                v-model="user.team"
-                :append-icon="disTeam ? 'mdi-lock' : ''"
-                :disabled="disTeam"
-                :items="Object.values(teams)"
-                clearable
-                item-text="title"
-                item-value="id"
-                label="Команда"
-                placeholder="Не в команде"
-                @change="changed"
-              >
-                <template v-slot:prepend>
-                  <input-icon>mdi-account-group</input-icon>
-                </template>
-              </v-select>
+              <setting-row
+                  description="Пользователь может находиться только в одной команде. Данный параметр отражает фактическое распределение сотрудников по командам"
+                  label="Команда">
+                <v-select
+                    v-model="user.team"
+                    :append-icon="disTeam ? 'mdi-lock' : ''"
+                    :disabled="disTeam"
+                    :items="Object.values(teams)"
+                    clearable
+                    item-text="title"
+                    item-value="id"
+                    label="Команда"
+                    placeholder="Не в команде"
+                    @change="changed"
+                >
+                  <template v-slot:prepend>
+                    <input-icon>mdi-account-group</input-icon>
+                  </template>
+                </v-select>
+              </setting-row>
             </v-col>
             <v-col :cols="12 / cols">
-              <v-select
-                v-model="user.tasks"
-                :append-icon="disTasks ? 'mdi-lock' : ''"
-                :disabled="disTasks"
-                :items="Object.values(tasks)"
-                clearable
-                item-text="title"
-                item-value="id"
-                label="Задачи"
-                multiple
-                placeholder="Задач нет"
-                @change="changed"
-              >
-                <template v-slot:prepend>
-                  <input-icon>
-                    mdi-format-list-bulleted-square
-                  </input-icon>
-                </template>
+              <setting-row
+                  description="Может быть несколько. Помогает при фильтрации и для отслеживания сотрудников по выполняемым задачам"
+                  label="Задача">
+                <v-select
+                    v-model="user.tasks"
+                    :append-icon="disTasks ? 'mdi-lock' : ''"
+                    :disabled="disTasks"
+                    :items="Object.values(tasks)"
+                    clearable
+                    item-text="title"
+                    item-value="id"
+                    label="Задачи"
+                    multiple
+                    placeholder="Задач нет"
+                    @change="changed"
+                >
+                  <template v-slot:prepend>
+                    <input-icon>
+                      mdi-format-list-bulleted-square
+                    </input-icon>
+                  </template>
 
-              </v-select>
+                </v-select>
+              </setting-row>
             </v-col>
           </v-row>
         </v-card-text>
@@ -112,10 +124,11 @@ import InputIcon from "@/components/InputIcon";
 import {VForm} from "vuetify/lib/components";
 import {User} from "@/plugins/servises/User";
 import AppBaseSheet from "@/layouts/AppBaseSheet";
+import SettingRow from "@/components/Account/setting-row";
 
 export default {
   name: 'TheAccountInfo',
-  components: {AppBaseSheet, InputIcon, VForm},
+  components: {SettingRow, AppBaseSheet, InputIcon, VForm},
   mixins: [inputValidations, teams, tasks, posts, domain],
   props: {
     solo: {
@@ -182,12 +195,14 @@ export default {
     },
     disSubmit() {
       return this.disableAll || this.disableEmail && this.disablePost &&
-        this.disableTeam && this.disableTasks
+          this.disableTeam && this.disableTasks
     }
   },
   methods: {
     onSubmit() {
-      if (this.disSubmit || this.noaction) return;
+      if (this.disSubmit || this.noaction) {
+        return;
+      }
 
       this.updateData()
       this.isChanged = false;
@@ -197,7 +212,9 @@ export default {
       user.update({type: 'edit'}, silent)
     },
     changed() {
-      if (this.isChanged) return
+      if (this.isChanged) {
+        return
+      }
       this.isChanged = true
     },
     reset() {

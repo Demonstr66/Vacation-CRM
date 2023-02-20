@@ -3,58 +3,48 @@
     <v-card flat height="100%">
       <v-card-title v-text="'Уведомления'"/>
       <v-card-text>
-        <v-row>
-          <v-col cols="12" lg="6">
-            <v-select
-                v-model="selectedDays"
-                :items="days"
-                item-text="text"
-                item-value="value"
-                multiple
-                label="Получать уведомления"
-                persistent-hint
-                hint="Вы можете выбрать, за сколько времени до наступления отпуска будут приходить уведомления"
-            >
-              <template v-slot:prepend>
-                <input-icon>mdi-bell</input-icon>
-              </template>
-              <template v-slot:selection="{item}">
-                <v-chip
-                    label
-                    small
-                    close
-                    @click:close="onCloseDayItem(item.value)"
-                >
-                  {{ item.text }}
-                </v-chip>
-              </template>
-            </v-select>
-            <div class="mt-6">
-              <div>
-                <input-icon class="v-input__prepend-outer">mdi-email</input-icon>
-                <span class="text-body-1">Шаблон письма</span>
-              </div>
-              <rich-text-editor :height="250" class="ml-8" :buttons-display="{imageButton: false}"/>
-            </div>
-          </v-col>
-          <v-col cols="12" lg="6">
-            <div class="mt-6">
-              <div>
-                <input-icon class="v-input__prepend-outer">mdi-key</input-icon>
-                <span class="text-body-1">Доступные подстановки</span>
-              </div>
-              <div>
-                <ul>
-                  <li v-for="(pip, idx) in pipings" :key="idx">
-                    <span class="text-body-2 font-weight-bold">{ {{ pip.key }} }</span>
-                    <span class="text-body-2"> - {{ pip.description }}</span>
-                  </li>
-                </ul>
-              </div>
-            </div>
-          </v-col>
-        </v-row>
-
+        <setting-row
+            label="Интервалы"
+            description="За сколько дней до начала отпуска присылать уведомления. Можно выбрать неограниченное число интервалов"
+        >
+          <v-select
+              v-model="selectedDays"
+              :items="days"
+              item-text="text"
+              item-value="value"
+              multiple
+              label="Получать уведомления"
+              persistent-hint
+          >
+            <template v-slot:prepend>
+              <input-icon>mdi-bell</input-icon>
+            </template>
+            <template v-slot:selection="{item}">
+              <v-chip
+                  label
+                  small
+                  close
+                  @click:close="onCloseDayItem(item.value)"
+              >
+                {{ item.text }}
+              </v-chip>
+            </template>
+          </v-select>
+        </setting-row>
+        <setting-row description="Шаблон письма. Вы можете использовать ключевые слова" label="Шаболн письма">
+          <rich-text-editor :height="250" :buttons-display="{imageButton: false}"/>
+        </setting-row>
+        <setting-row
+            description="Используйте данные ключевые слова. Они будут автоматически заменены в шаблоне. Ключевое слово можно использовать неограниченное количество раз. Обязательно вставлять в фигурных скобках."
+            label="Ключевые слова">
+          <app-keyword-text
+              v-for="val in pipings"
+              :key="val.key"
+              :keyword="val.key"
+              :label="val.description"
+              :example="val.example"
+          />
+        </setting-row>
       </v-card-text>
     </v-card>
   </app-base-sheet>
@@ -64,10 +54,12 @@
 import AppBaseSheet from "@/layouts/AppBaseSheet";
 import Template from "@/components/Account/pages/vacations/template";
 import InputIcon from "@/components/InputIcon";
+import SettingRow from "@/components/Account/setting-row";
+import AppKeywordText from "@/components/AppKeywordText";
 
 export default {
   name: "notification",
-  components: {InputIcon, Template, AppBaseSheet},
+  components: {AppKeywordText, SettingRow, InputIcon, Template, AppBaseSheet},
   data() {
     return {
       selectedDays: [],

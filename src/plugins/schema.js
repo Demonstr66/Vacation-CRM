@@ -6,31 +6,20 @@ const moment = require('moment')
 export const templateFileData = {
   fullName: {test: 'Иванов Иван Иванович', description: '', title: 'ФИО'},
   post: {test: 'Менеджер по продажам', description: '', title: 'Должность'},
-  date: {test: () => dateToFileFormat(moment()), description: '', title: 'Дата подписания'},
+  date: {test: (() => dateToFileFormat(moment()))(), description: '', title: 'Дата подписания'},
   start: {
-    test: () => dateToFileFormat(moment().add(5, 'days')),
-    description: '',
-    title: 'Дата начала отпуска'
+    test: (() => dateToFileFormat(moment().add(5, 'days')))(), description: '', title: 'Дата начала отпуска'
   },
   finish: {
-    test: () => dateToFileFormat(moment().add(10, 'days')),
-    description: '',
-    title: 'Дата конца отпуска'
+    test: (() => dateToFileFormat(moment().add(10, 'days')))(), description: '', title: 'Дата конца отпуска'
   },
   days: {test: '6', description: '', title: 'Дней отпуска'},
-  calendarDaysPhrase: {title: 'Фраза "календарных дней" в нужном склонении'}
+  calendarDaysPhrase: {title: 'Фраза "календарных дней" в нужном склонении', test: 'календарных дней'}
 }
 
 export function defWorkspace(...data) {
   let res = {
-    id: '',
-    title: '',
-    domain: '',
-    owner: '',
-    privacy: '',
-    tasks: [],
-    posts: [],
-    teams: []
+    id: '', title: '', domain: '', owner: '', privacy: '', tasks: [], posts: [], teams: []
   }
 
   if (data) {
@@ -43,12 +32,7 @@ export function defWorkspace(...data) {
 
 export function dataToGenerateFile(...data) {
   let res = {
-    fullName: '',
-    post: '',
-    date: '',
-    start: '',
-    finish: '',
-    days: '',
+    fullName: '', post: '', date: '', start: '', finish: '', days: '',
   }
 
 
@@ -58,9 +42,15 @@ export function dataToGenerateFile(...data) {
     })
   }
 
-  if (!!res.start) res.start = dateToFileFormat(res.start)
-  if (!!res.finish) res.finish = dateToFileFormat(res.finish)
-  if (!!res.date) res.date = dateToFileFormat(res.date)
+  if (!!res.start) {
+    res.start = dateToFileFormat(res.start)
+  }
+  if (!!res.finish) {
+    res.finish = dateToFileFormat(res.finish)
+  }
+  if (!!res.date) {
+    res.date = dateToFileFormat(res.date)
+  }
 
   return res
 }
@@ -69,7 +59,9 @@ export function updateObject(obj1, obj2) {
   let obj = {}
   for (let item in obj1) {
     obj[item] = obj1[item]
-    if (obj2[item] !== undefined) obj[item] = obj2[item]
+    if (obj2[item] !== undefined) {
+      obj[item] = obj2[item]
+    }
   }
   return obj
 }

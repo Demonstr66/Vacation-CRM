@@ -1,12 +1,14 @@
 <template>
   <app-base-sheet>
     <v-card flat height="100%">
-      <v-form ref="form" @submit.prevent="onSubmit"
-              class="d-flex flex-column"
-              style="height: 100%;">
-        <v-card-title v-if="!hideTitle">Настройки</v-card-title>
+      <v-form
+          ref="form"
+          @submit.prevent="onSubmit"
+          class="d-flex flex-column"
+      >
+        <v-card-title>Настройки пространства</v-card-title>
         <v-card-text>
-          <div class="d-flex flex-column">
+          <setting-row label="ID пространства" description="Поделитесь кодом, для регистрации в вашем пространстве">
             <div class="d-flex align-top">
               <v-text-field
                   v-model="workspace.id"
@@ -20,10 +22,6 @@
                   <input-icon>mdi-identifier</input-icon>
                 </template>
               </v-text-field>
-              <icon-btn-with-tip icon="mdi-help-circle-outline">
-                Код может понадобитьсья при регистрации,<br>
-                чтобы присоедениться к Вашему пространству
-              </icon-btn-with-tip>
               <v-fab-transition>
                 <icon-btn-with-tip
                     v-if="!copiedSuccessful"
@@ -33,7 +31,7 @@
                   Копировать
                 </icon-btn-with-tip>
                 <icon-btn-with-tip
-                    v-if="copiedSuccessful"
+                    v-else
                     color="success"
                     icon="mdi-check-all"
                     tooltipcolor="success"
@@ -42,6 +40,8 @@
                 </icon-btn-with-tip>
               </v-fab-transition>
             </div>
+          </setting-row>
+          <setting-row label="Название пространства" description="Название отдела или компании">
             <v-text-field
                 v-model.trim="workspace.title"
                 :disabled="disabled"
@@ -55,6 +55,9 @@
                 <input-icon>mdi-sitemap</input-icon>
               </template>
             </v-text-field>
+          </setting-row>
+          <setting-row label="Домен почты"
+                       description="Используемый Вами домен для почты. Будет предлагаться по умолчанию, для всех новых пользователей ">
             <v-text-field
                 v-model.trim="domain"
                 :disabled="disabled"
@@ -65,16 +68,12 @@
                 @change.once="onChange"
             >
               <template v-slot:prepend>
-                <v-icon color="blue-grey lighten-1">mdi-at</v-icon>
+                <input-icon>mdi-at</input-icon>
               </template>
             </v-text-field>
-            <!--            <v-checkbox-->
-            <!--              label="Разрешить исправлять отклонённые отпуска"-->
-            <!--              hide-details-->
-            <!--            />-->
-          </div>
+          </setting-row>
         </v-card-text>
-        <v-card-actions class="mt-auto" v-if="!hideAction && !disabled">
+        <v-card-actions class="mt-auto" v-if="!disabled">
           <v-spacer></v-spacer>
           <v-btn :disabled="!isChanged" color="success" text type="submit">
             Сохранить
@@ -87,40 +86,20 @@
 </template>
 
 <script>
-import IconBtnWithTip from "@/components/IconBtnWithTip";
-import {copyToClipboard} from "@/mixins/dataHelper";
-import {WorkspaceMethods} from "@/mixins/WorkspaceMethods";
-import InputIcon from "@/components/InputIcon";
 import AppBaseSheet from "@/layouts/AppBaseSheet";
+import InputIcon from "@/components/InputIcon";
+import IconBtnWithTip from "@/components/IconBtnWithTip";
+import {workspace} from "@/mixins/ComputedData";
+import {copyToClipboard} from "@/mixins/dataHelper";
+import SettingRow from "@/components/Account/setting-row";
 
 export default {
-  components: {AppBaseSheet, InputIcon, IconBtnWithTip},
-  mixins: [WorkspaceMethods, copyToClipboard],
-  props: {
-    workspace: {
-      id: String,
-      domain: Array,
-      title: String
-    },
-    disabled: {
-      type: [Boolean],
-      default: false,
-    },
-    hideTitle: {
-      type: Boolean,
-      default: false,
-    },
-    hideAction: {
-      type: Boolean,
-      default: false,
-    },
-    cols: {
-      type: Number,
-      default: 1,
-    },
-  },
+  name: "workspace",
+  components: {SettingRow, AppBaseSheet, InputIcon, IconBtnWithTip},
+  mixins: [workspace, copyToClipboard],
   data: () => ({
     isChanged: false,
+    disabled: false
   }),
   computed: {
     domain: {
@@ -160,6 +139,9 @@ export default {
       return this.$refs.form.validate()
     }
   },
-};
+}
 </script>
 
+<style scoped>
+
+</style>

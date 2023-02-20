@@ -1,17 +1,4 @@
 <template>
-  <!--  <v-row no-gutters>-->
-  <!--    <v-col cols="12" :class="{'fix-col': $vuetify.breakpoint.smAndUp}">-->
-  <!--      <app-base-sheet>-->
-  <!--        <account-nav :items="links"/>-->
-  <!--      </app-base-sheet>-->
-  <!--    </v-col>-->
-  <!--    <v-col cols="auto" sm="auto">-->
-  <!--      <app-base-sheet>-->
-  <!--        <router-view/>-->
-  <!--      </app-base-sheet>-->
-  <!--    </v-col>-->
-  <!--  </v-row>-->
-
   <app-block-with-right-navbar left side-block-width="300">
     <template v-slot:main>
       <router-view/>
@@ -133,10 +120,10 @@ export default {
       links: [
         {header: 'Основные'},
         {id: 0, text: 'Личные данные', to: {name: 'profile'}, icon: ''},
+        {id: 1, text: 'Параметры пространства', to: {name: 'workspace'}, icon: ''},
         {divider: true},
         {header: 'Отпуска'},
-        {id: 1, text: 'Шаблон для заявления', to: {name: 'v-template'}, icon: ''},
-        {id: 2, text: 'Данные для заяления', to: {name: 'v-template-data'}, icon: ''},
+        {id: 2, text: 'Шаблон для заявления', to: {name: 'v-template'}, icon: ''},
         {id: 3, text: 'Уведомления', to: {name: 'v-rss'}, icon: ''},
         {id: 4, text: 'Безопасность', to: {name: 'v-permission'}, icon: ''},
       ]

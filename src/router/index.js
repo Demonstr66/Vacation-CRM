@@ -28,9 +28,9 @@ const ScheduleStatistic = () => import('@/views/App/ScheduleStatistic')
 const Setting = () => import('@/views/App/Account')
 const SettingProfile = () => import('@/components/Account/pages/profile')
 const SettingVacationTemplate = () => import('@/components/Account/pages/vacations/template')
-const SettingVacationTemplateData = () => import('@/components/Account/pages/vacations/template-data')
 const SettingVacationPermission = () => import('@/components/Account/pages/vacations/permission')
 const SettingVacationNotification = () => import('@/components/Account/pages/vacations/notification')
+const SettingWorkspace = () => import('@/components/Account/pages/workspace')
 
 
 Vue.use(VueRouter)
@@ -234,9 +234,9 @@ const routes = [
         redirect: {name: 'SettingProfile'}
       },
       {
-        path: 'profile',
-        component: SettingProfile,
-        name: 'SettingProfile',
+        path: 'workspace',
+        component: SettingWorkspace,
+        name: 'SettingWorkspace',
         meta: {
           layout: 'MainEmptyLayout',
           title: '',
@@ -245,12 +245,10 @@ const routes = [
           }
         }
       },
-
-
       {
-        path: 'v-template-data',
-        component: SettingVacationTemplateData,
-        name: 'SettingVacationTemplateData',
+        path: 'profile',
+        component: SettingProfile,
+        name: 'SettingProfile',
         meta: {
           layout: 'MainEmptyLayout',
           title: '',
