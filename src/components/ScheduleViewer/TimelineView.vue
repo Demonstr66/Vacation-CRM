@@ -1,14 +1,14 @@
 <template>
   <div>
     <groupTools
-      v-model="groupBy"
-      :groups="groups"
+        v-model="groupBy"
+        :groups="groups"
     />
     <template v-if="!tree.length">
-      <v-divider class="mt-5"/>
+      <v-divider className="mt-5"/>
       <div
-        class="text-center my-3 subtitle-2 font-weight-regular"
-        style="color: rgba(0, 0, 0, 0.38);"
+          className="text-center my-3 subtitle-2 font-weight-regular"
+          style="color: rgba(0, 0, 0, 0.38);"
       >
         <span v-if="vacations.length">Не найдено подходящих записей</span>
         <span v-else>Отсутствуют данные</span>
@@ -16,10 +16,10 @@
       <v-divider/>
     </template>
     <the-timeline
-      v-else
-      :exception="exception || []"
-      :items="tree"
-      :year="parseInt(year)"
+        v-else
+        :exception="exception || []"
+        :items="tree"
+        :year="parseInt(year)"
     />
   </div>
 </template>
@@ -49,6 +49,7 @@ export default {
   data: () => ({
     hideEmptyGroups: true,
     groupBy: null,
+    maxTotalDays: 28,
     groups: [
       {value: 'tasks', text: 'Задачам'},
       {value: 'posts', text: 'Должноcтям'},
@@ -68,13 +69,43 @@ export default {
         tree = tree.filter(node => node.children && node.children.length)
       }
 
+      tree = tree.map(node => {
+        let active = 0,
+            sending = 0,
+            total = 0
+        node.events.map(e => {
+          if (e.status == 2) {
+            active += e.days
+          } else if (e.status == 1) {
+            sending += e.days
+          }
+        })
+
+        total = sending + active
+        let percent = Math.round(total * 100 / this.maxTotalDays)
+        if (percent > 100) {
+          percent = 100
+        }
+
+        node.total = {
+          total,
+          active,
+          sending,
+          percent
+        }
+
+        return node
+      })
+
       return tree
     },
   },
   methods: {
     filter(item) {
       const {filters} = this
-      if (!filters || !filters.length) return true
+      if (!filters || !filters.length) {
+        return true
+      }
 
       return filters.every(f => f(item))
     },
@@ -99,7 +130,9 @@ export default {
       return Object.values(users)
     },
     getHeaders(groupBy) {
-      if (['tasks', 'teams', 'posts'].indexOf(groupBy) !== -1) return Object.values(this[groupBy])
+      if (['tasks', 'teams', 'posts'].indexOf(groupBy) !== -1) {
+        return Object.values(this[groupBy])
+      }
 
       return null
     }
