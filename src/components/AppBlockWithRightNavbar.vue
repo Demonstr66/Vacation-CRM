@@ -21,7 +21,7 @@
       </div>
       <div
           v-if="!isMobile || noHideSidebar"
-          class="flex-grow-0 flex-shrink-0"
+          class="flex-grow-0 flex-shrink-0 side-block"
           :style="sideBlock"
       >
         <div class="side-block">
@@ -95,8 +95,9 @@ export default {
 }
 </script>
 
-<style scoped>
+<style lang="scss" scoped>
 .main-block {
   max-width: 100%;
 }
+
 </style>

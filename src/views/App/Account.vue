@@ -125,7 +125,9 @@ export default {
         {header: 'Отпуска'},
         {id: 2, text: 'Шаблон для заявления', to: {name: 'v-template'}, icon: ''},
         {id: 3, text: 'Уведомления', to: {name: 'v-rss'}, icon: ''},
-        {id: 4, text: 'Безопасность', to: {name: 'v-permission'}, icon: ''},
+        {divider: true},
+        {header: 'Приватность'},
+        {id: 4, text: 'Роли', to: {name: 'v-permission'}, icon: ''},
       ]
     }
   },

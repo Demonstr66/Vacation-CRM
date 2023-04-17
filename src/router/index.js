@@ -32,6 +32,8 @@ const SettingVacationPermission = () => import('@/components/Account/pages/vacat
 const SettingVacationNotification = () => import('@/components/Account/pages/vacations/notification')
 const SettingWorkspace = () => import('@/components/Account/pages/workspace')
 
+const VacationsStats = () => import('@/views/App/VacationStatistic')
+
 
 Vue.use(VueRouter)
 
@@ -56,6 +58,17 @@ const routes = [
     meta: {
       layout: 'MainEmptyLayout',
       title: 'Мои отпуска',
+      protected: {
+        accessLevel: [2]
+      }
+    }
+  },
+  {
+    path: '/stats',
+    name: 'Stats',
+    component: VacationsStats,
+    meta: {
+      layout: 'MainEmptyLayout',
       protected: {
         accessLevel: [2]
       }

@@ -1,5 +1,6 @@
 <template>
   <v-sheet
+      :outlined="outlined"
       :elevation="flat ? 0 : $vuetify.breakpoint.mdAndUp ? 2 : 0"
       rounded
       class="pa-1 pa-md-3 mx-1 my-1 mb-2"
@@ -13,6 +14,10 @@ export default {
   name: 'app-base-sheet',
   props: {
     flat: {
+      type: Boolean,
+      default: false
+    },
+    outlined: {
       type: Boolean,
       default: false
     },

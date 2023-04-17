@@ -1,16 +1,16 @@
 <template>
   <v-navigation-drawer
-    v-model="isExpand"
-    :mini-variant="!isExpand"
-    :permanent="!$vuetify.breakpoint.mobile"
-    style="z-index: 20"
-    clipped
-    app
+      v-model="isExpand"
+      :mini-variant="!isExpand"
+      :permanent="!$vuetify.breakpoint.mobile"
+      style="z-index: 20"
+      clipped
+      app
   >
     <v-list v-if="!loading" dense nav>
       <v-list-item
-        link
-        to="/"
+          link
+          to="/"
       >
         <v-list-item-icon>
           <v-icon>
@@ -23,10 +23,10 @@
       </v-list-item>
       <v-divider></v-divider>
       <v-list-item
-        v-for="(link, idx) in links"
-        :key="idx"
-        :to="{name: link.path}"
-        link
+          v-for="(link, idx) in links"
+          :key="idx"
+          :to="{name: link.path}"
+          link
       >
         <v-list-item-icon>
           <v-icon>
@@ -43,9 +43,9 @@
       </v-skeleton-loader>
       <v-divider></v-divider>
       <v-skeleton-loader
-        v-for="(link, idx) in links"
-        :key="idx"
-        type="list-item"
+          v-for="(link, idx) in links"
+          :key="idx"
+          type="list-item"
       />
     </v-list>
   </v-navigation-drawer>
@@ -67,6 +67,7 @@ export default {
   data: () => ({
     links: [
       {path: 'Schedules', icon: 'mdi-folder', title: 'Графики отпусков'},
+      {path: 'Stats', icon: 'mdi-chart-donut', title: 'Статистика сотрудников'},
       {path: 'Vacations', icon: 'mdi-star', title: 'Мои отпуска'},
       {path: 'Tab1', icon: 'mdi-account-group', title: 'Команда'},
     ]
@@ -77,7 +78,9 @@ export default {
         return this.expand;
       },
       set: function (val) {
-        if (!val) this.$emit("close");
+        if (!val) {
+          this.$emit("close");
+        }
       },
     },
   },
