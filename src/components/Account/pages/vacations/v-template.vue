@@ -29,15 +29,15 @@
               </div>
             </app-base-sheet>
             <div :class="{'grow': $vuetify.breakpoint.mdAndDown}">
-              <v-btn block small text color="warning">
+              <v-btn block small text color="warning" class="justify-start">
                 <v-icon>mdi-upload</v-icon>
                 Загрузить файл
               </v-btn>
-              <v-btn block small text color="info" :disabled="!!!templateFile.file">
+              <v-btn block small text color="info" :disabled="!!!templateFile.file" class="justify-start">
                 <v-icon>mdi-download</v-icon>
-                Скачать шаблон
+                Скачать
               </v-btn>
-              <v-btn block small text color="info" :disabled="!!!templateFile.file">
+              <v-btn block small text color="info" :disabled="!!!templateFile.file" class="justify-start">
                 <v-icon>mdi-file-download</v-icon>
                 Скачать пример
               </v-btn>
