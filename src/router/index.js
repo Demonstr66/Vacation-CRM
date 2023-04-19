@@ -26,11 +26,11 @@ const Viewer2 = () => import('@/components/ScheduleViewer/TimelineView'  )
 const ScheduleStatistic = () => import('@/views/App/ScheduleStatistic')
 
 const Setting = () => import('@/views/App/Account')
-const SettingProfile = () => import('@/components/Account/pages/profile')
-const SettingVacationTemplate = () => import('@/components/Account/pages/vacations/template')
-const SettingVacationPermission = () => import('@/components/Account/pages/vacations/permission')
-const SettingVacationNotification = () => import('@/components/Account/pages/vacations/notification')
-const SettingWorkspace = () => import('@/components/Account/pages/workspace')
+const SettingProfile = () => import('@/components/Account/pages/common/profile')
+const SettingPermission = () => import('@/components/Account/pages/common/permission')
+const SettingVacationTemplate = () => import('@/components/Account/pages/vacations/v-template')
+const SettingVacationNotification = () => import('@/components/Account/pages/vacations/v-notification')
+const SettingWorkspace = () => import('@/components/Account/pages/common/workspace')
 
 
 Vue.use(VueRouter)
@@ -256,10 +256,11 @@ const routes = [
             accessLevel: [2]
           }
         }
-      }, {
-        path: 'v-permission',
-        component: SettingVacationPermission,
-        name: 'SettingVacationPermission',
+      },
+      {
+        path: 'permission',
+        component: SettingPermission,
+        name: 'PermissionProfile',
         meta: {
           layout: 'MainEmptyLayout',
           title: '',

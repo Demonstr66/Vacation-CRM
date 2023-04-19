@@ -33,11 +33,11 @@
                 <v-icon>mdi-upload</v-icon>
                 Загрузить файл
               </v-btn>
-              <v-btn block small text color="info" :disabled="!!templateFile.file">
+              <v-btn block small text color="info" :disabled="!!!templateFile.file">
                 <v-icon>mdi-download</v-icon>
                 Скачать шаблон
               </v-btn>
-              <v-btn block small text color="info" :disabled="!!templateFile.file">
+              <v-btn block small text color="info" :disabled="!!!templateFile.file">
                 <v-icon>mdi-file-download</v-icon>
                 Скачать пример
               </v-btn>
@@ -49,11 +49,11 @@
             description="Используйте данные ключевые слова. Они будут автоматически заменены в шаблоне. Ключевое слово можно использовать неограниченное количество раз. Обязательно вставлять в фигурных скобках."
         >
           <app-keyword-text
-              v-for="[key, val] in keywords"
-              :key="key"
-              :keyword="key"
-              :label="val.title"
-              :example="val.test"
+              v-for="(keyword, idx) in keywords"
+              :key="idx"
+              :keyword="keyword[0]"
+              :label="keyword[1].title"
+              :example="keyword[1].test"
           />
         </setting-row>
       </v-card-text>
@@ -68,7 +68,7 @@ import {templateFileData} from "@/plugins/schema";
 import AppKeywordText from "@/components/AppKeywordText";
 
 export default {
-  name: "template",
+  name: "v-template",
   components: {AppKeywordText, SettingRow, AppBaseSheet},
   data() {
     return {

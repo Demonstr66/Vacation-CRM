@@ -7,7 +7,7 @@
           @change="onChangePage"
           color="primary"
       >
-        <account-nav-item v-for="item in items" :key="item.id" :item="item"/>
+        <account-nav-item v-for="(item, idx) in items" :key="idx" :item="item"/>
       </v-list-item-group>
     </v-list>
   </app-base-sheet>

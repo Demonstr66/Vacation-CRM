@@ -52,13 +52,13 @@
 
 <script>
 import AppBaseSheet from "@/layouts/AppBaseSheet";
-import Template from "@/components/Account/pages/vacations/template";
+import Template from "@/components/Account/pages/vacations/v-template";
 import InputIcon from "@/components/InputIcon";
 import SettingRow from "@/components/Account/setting-row";
 import AppKeywordText from "@/components/AppKeywordText";
 
 export default {
-  name: "notification",
+  name: "v-notification",
   components: {AppKeywordText, SettingRow, InputIcon, Template, AppBaseSheet},
   data() {
     return {
@@ -67,7 +67,7 @@ export default {
         {key: 'fullName', description: 'Полное ФИО', example: 'Иванов Иван Иванович'},
         {key: 'displayName', description: 'Сокращенное имя (если указано)', example: 'Иванов И. И.'},
         {key: 'startDate', description: 'Дата начала отпуска', example: '"20" января 1970г.'},
-        {key: 'endDate', description: 'Дата окночания отпуска', example: '"30" января 1970г.'},
+        {key: 'endDate', description: 'Дата окончания отпуска', example: '"30" января 1970г.'},
         {key: 'days', description: 'Количество дней отпуска', example: '10'},
         {key: 'daysBefore', description: 'Дней до начала отпуска', example: '3'},
       ]
