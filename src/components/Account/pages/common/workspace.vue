@@ -75,9 +75,7 @@
         </v-card-text>
         <v-card-actions class="mt-auto" v-if="!disabled">
           <v-spacer></v-spacer>
-          <v-btn :disabled="!isChanged" color="success" text type="submit">
-            Сохранить
-          </v-btn>
+          <btn-submit :disabled="!isChanged"/>
           <v-spacer></v-spacer>
         </v-card-actions>
       </v-form>
@@ -86,16 +84,17 @@
 </template>
 
 <script>
-import AppBaseSheet from "@/layouts/AppBaseSheet";
+import AppBaseSheet from "@/components/UI/app-base-sheet";
 import InputIcon from "@/components/InputIcon";
 import IconBtnWithTip from "@/components/IconBtnWithTip";
 import {workspace} from "@/mixins/ComputedData";
 import {copyToClipboard} from "@/mixins/dataHelper";
 import SettingRow from "@/components/Account/setting-row";
+import BtnSubmit from "@/components/UI/btn-submit";
 
 export default {
   name: "workspace",
-  components: {SettingRow, AppBaseSheet, InputIcon, IconBtnWithTip},
+  components: {BtnSubmit, SettingRow, AppBaseSheet, InputIcon, IconBtnWithTip},
   mixins: [workspace, copyToClipboard],
   data: () => ({
     isChanged: false,

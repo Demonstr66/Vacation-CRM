@@ -8,9 +8,9 @@
             <v-expansion-panel-header>{{ $options.ROLES[0].text }}</v-expansion-panel-header>
             <v-expansion-panel-content>
               <app-privacy-form
-                ref="userPermission"
-                readonly
-                :privacy="permissions[0]"
+                  ref="userPermission"
+                  readonly
+                  :privacy="permissions[0]"
               />
             </v-expansion-panel-content>
           </v-expansion-panel>
@@ -18,8 +18,8 @@
             <v-expansion-panel-header>{{ $options.ROLES[1].text }}</v-expansion-panel-header>
             <v-expansion-panel-content>
               <app-privacy-form
-                ref="leaderPermission"
-                :privacy="permissions[1]"
+                  ref="leaderPermission"
+                  :privacy="permissions[1]"
               />
             </v-expansion-panel-content>
           </v-expansion-panel>
@@ -27,8 +27,8 @@
             <v-expansion-panel-header>{{ $options.ROLES[2].text }}</v-expansion-panel-header>
             <v-expansion-panel-content>
               <app-privacy-form
-                ref="adminPermission"
-                :privacy="permissions[2]"
+                  ref="adminPermission"
+                  :privacy="permissions[2]"
               />
             </v-expansion-panel-content>
           </v-expansion-panel>
@@ -36,9 +36,9 @@
             <v-expansion-panel-header>{{ $options.ROLES[3].text }}</v-expansion-panel-header>
             <v-expansion-panel-content>
               <app-privacy-form
-                ref="ownerPermission"
-                readonly
-                :privacy="permissions[3]"
+                  ref="ownerPermission"
+                  readonly
+                  :privacy="permissions[3]"
               />
             </v-expansion-panel-content>
           </v-expansion-panel>
@@ -61,7 +61,7 @@ import {WorkspaceMethods} from "@/mixins/WorkspaceMethods";
 import {appReady, workspace} from "@/mixins/ComputedData";
 import AppPrivacyForm from "@/components/workspace/AppPrivacyForm";
 import {Roles} from "@/plugins/servises/Roles";
-import AppBaseSheet from "@/layouts/AppBaseSheet";
+import AppBaseSheet from "@/components/UI/app-base-sheet";
 import {Workspace} from "@/plugins/servises/Workspace";
 
 export default {
@@ -74,13 +74,17 @@ export default {
     valid: false,
   }),
   created() {
-    if (this.appReady) this.initialize()
+    if (this.appReady) {
+      this.initialize()
+    }
   },
   computed: {
     permissions() {
       let permissions = this.$store.getters['workspace/permissions']
       for (let id in this.$options.ROLES) {
-        if (!permissions[id]) permissions[id] = Roles.defaultPermissions[id]
+        if (!permissions[id]) {
+          permissions[id] = Roles.defaultPermissions[id]
+        }
       }
 
       return permissions

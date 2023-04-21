@@ -45,6 +45,7 @@
           </div>
         </setting-row>
         <setting-row
+            expanded
             label="Ключевые слова"
             description="Используйте данные ключевые слова. Они будут автоматически заменены в шаблоне. Ключевое слово можно использовать неограниченное количество раз. Обязательно вставлять в фигурных скобках."
         >
@@ -62,7 +63,7 @@
 </template>
 
 <script>
-import AppBaseSheet from "@/layouts/AppBaseSheet";
+import AppBaseSheet from "@/components/UI/app-base-sheet";
 import SettingRow from "@/components/Account/setting-row";
 import {templateFileData} from "@/plugins/schema";
 import AppKeywordText from "@/components/AppKeywordText";

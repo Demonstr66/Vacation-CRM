@@ -1,16 +1,5 @@
 <template>
   <div>
-    <!--    <v-row no-gutters>-->
-    <!--      <v-col cols="12" md="9">-->
-    <!--        <app-base-sheet>-->
-    <!--          <slot name="main"/>-->
-    <!--        </app-base-sheet>-->
-    <!--      </v-col>-->
-    <!--      <v-col v-if="$vuetify.breakpoint.mdAndUp">-->
-    <!--        <slot name="navbar"/>-->
-    <!--      </v-col>-->
-    <!--    </v-row>-->
-
     <div class="d-flex flex-wrap" :class="{'flex-row-reverse': left}" style="max-width: 100%; position: relative">
       <div
           class="flex-shrink-1 flex-grow-1 main-block"
@@ -33,11 +22,11 @@
         v-if="isMobile && !noHideSidebar"
         v-model="drawer"
         app
-        clipped
         :right="!bottom"
         :bottom="bottom"
         temporary
         touchless
+        style="z-index: 100; padding-top: 14px"
     >
       <slot name="navbar"/>
     </v-navigation-drawer>
@@ -45,10 +34,10 @@
 </template>
 <script>
 import IconBtnWithTip from "@/components/IconBtnWithTip";
-import AppBaseSheet from "@/layouts/AppBaseSheet";
+import AppBaseSheet from "@/components/UI/app-base-sheet";
 
 export default {
-  name: 'app-block-with-right-navbar',
+  name: 'app-block-sidebar',
   props: {
     noHideSidebar: {
       type: Boolean,
@@ -73,7 +62,7 @@ export default {
     drawer: false
   }),
   provide() {
-    return {openRightSidebar: this.openRightSidebar}
+    return {openSidebar: this.openSidebar}
   },
   computed: {
     isMobile() {
@@ -88,7 +77,7 @@ export default {
     }
   },
   methods: {
-    openRightSidebar() {
+    openSidebar() {
       this.drawer = true
     }
   }

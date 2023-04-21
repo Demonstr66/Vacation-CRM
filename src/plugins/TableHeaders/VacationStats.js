@@ -1,12 +1,4 @@
 export default [
-  {text: '', value: 'displayName', align: 'start'},
-  {text: 'Команда', value: '', align: 'start'},
-  {text: 'Остаток дней', value: 'vacationDays', align: 'center'},
-  {text: 'Комментарий', value: '', align: 'center'},
-  {
-    text: '',
-    value: 'action',
-    align: 'end',
-    sortable: false,
-  },
+  {text: 'Имя', value: 'fullName', align: 'start', width: '100%',},
+  {text: 'Остаток дней', value: 'vacationDays', align: 'center', class: 'text-no-wrap'},
 ]

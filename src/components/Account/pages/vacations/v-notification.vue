@@ -15,6 +15,9 @@
               multiple
               label="Получать уведомления"
               persistent-hint
+              hide-details
+              dense
+              single-line
           >
             <template v-slot:prepend>
               <input-icon>mdi-bell</input-icon>
@@ -30,15 +33,20 @@
               </v-chip>
             </template>
           </v-select>
+          <div class="d-flex">
+            <v-spacer/>
+            <btn-submit @click="saveDaysInterval()"/>
+          </div>
         </setting-row>
         <setting-row description="Шаблон письма. Вы можете использовать ключевые слова" label="Шаболн письма">
-          <rich-text-editor :height="250" :buttons-display="{imageButton: false}"/>
+          <rich-text-editor :height="250" :buttons-display="{imageButton: false}" @valid="saveEmailTemplate"/>
         </setting-row>
         <setting-row
+            expanded
             description="Используйте данные ключевые слова. Они будут автоматически заменены в шаблоне. Ключевое слово можно использовать неограниченное количество раз. Обязательно вставлять в фигурных скобках."
             label="Ключевые слова">
           <app-keyword-text
-              v-for="val in pipings"
+              v-for="val in $options.pipings"
               :key="val.key"
               :keyword="val.key"
               :label="val.description"
@@ -51,26 +59,27 @@
 </template>
 
 <script>
-import AppBaseSheet from "@/layouts/AppBaseSheet";
+import AppBaseSheet from "@/components/UI/app-base-sheet";
 import Template from "@/components/Account/pages/vacations/v-template";
 import InputIcon from "@/components/InputIcon";
 import SettingRow from "@/components/Account/setting-row";
 import AppKeywordText from "@/components/AppKeywordText";
+import BtnSubmit from "@/components/UI/btn-submit";
 
 export default {
   name: "v-notification",
-  components: {AppKeywordText, SettingRow, InputIcon, Template, AppBaseSheet},
+  components: {BtnSubmit, AppKeywordText, SettingRow, InputIcon, Template, AppBaseSheet},
+  pipings: [
+    {key: 'fullName', description: 'Полное ФИО', example: 'Иванов Иван Иванович'},
+    {key: 'displayName', description: 'Сокращенное имя (если указано)', example: 'Иванов И. И.'},
+    {key: 'startDate', description: 'Дата начала отпуска', example: '"20" января 1970г.'},
+    {key: 'endDate', description: 'Дата окончания отпуска', example: '"30" января 1970г.'},
+    {key: 'days', description: 'Количество дней отпуска', example: '10'},
+    {key: 'daysBefore', description: 'Дней до начала отпуска', example: '3'},
+  ],
   data() {
     return {
-      selectedDays: [],
-      pipings: [
-        {key: 'fullName', description: 'Полное ФИО', example: 'Иванов Иван Иванович'},
-        {key: 'displayName', description: 'Сокращенное имя (если указано)', example: 'Иванов И. И.'},
-        {key: 'startDate', description: 'Дата начала отпуска', example: '"20" января 1970г.'},
-        {key: 'endDate', description: 'Дата окончания отпуска', example: '"30" января 1970г.'},
-        {key: 'days', description: 'Количество дней отпуска', example: '10'},
-        {key: 'daysBefore', description: 'Дней до начала отпуска', example: '3'},
-      ]
+      selectedDays: []
     }
   },
   computed: {
@@ -103,6 +112,12 @@ export default {
         return two;
       }
       return five;
+    },
+    saveDaysInterval() {
+      alert('Saved days:' + this.selectedDays.join(', '))
+    },
+    saveEmailTemplate(data) {
+      alert('Save template\n' + data)
     }
   }
 }

@@ -1,8 +1,8 @@
 <template>
   <app-base-sheet
-    v-if="!filteredSchedules.length"
-    class="text-center my-5 subtitle-1"
-    style="color: black;"
+      v-if="!filteredSchedules.length"
+      class="text-center my-5 subtitle-1"
+      style="color: black;"
   >
       <span>
         Отсутсвуют данные
@@ -10,21 +10,21 @@
   </app-base-sheet>
   <div v-else class="d-grid">
     <base-widget
-      v-for="item in filteredSchedules"
-      :key="item.id"
+        v-for="item in filteredSchedules"
+        :key="item.id"
     >
       <v-card-title class="justify-space-between text-no-wrap text-truncate">
         <span :title="item.title">{{ item.title }}</span>
         <app-status-chip
-          :status="item.status"
-          :statuses="$options.STATUSES"
+            :status="item.status"
+            :statuses="$options.STATUSES"
         ></app-status-chip>
       </v-card-title>
       <div class="d-flex flex-wrap">
         <div
-          v-for="(field, index) in fields"
-          :key="index"
-          class="flex-basis-250 d-flex flex-nowrap justify-space-between mx-2 align-baseline"
+            v-for="(field, index) in fields"
+            :key="index"
+            class="flex-basis-250 d-flex flex-nowrap justify-space-between mx-2 align-baseline"
         >
           <span class="pa-0">{{ field.title }}:</span>
           <v-spacer class="mx-1 border-bottom-dotted"/>
@@ -34,7 +34,8 @@
         </div>
       </div>
       <v-card-actions class="px-0">
-        <v-btn block color="primary" text @click="goto(item.id)" tag="a" :to="{name: 'Vacation', params: {uid, id: item.id}}">
+        <v-btn block color="primary" text @click="goto(item.id)" tag="a"
+               :to="{name: 'Vacation', params: {uid, id: item.id}}">
           открыть
         </v-btn>
       </v-card-actions>
@@ -49,7 +50,7 @@ import TheCalendar from "@/components/TheCalendar";
 import {schedules} from "@/mixins/ComputedData";
 import BaseWidget from "@/components/Administration/BaseWidget";
 import IconBtnWithTip from "@/components/IconBtnWithTip";
-import AppBaseSheet from "@/layouts/AppBaseSheet";
+import AppBaseSheet from "@/components/UI/app-base-sheet";
 import {Schedule} from "@/plugins/servises/Schedule";
 import AppStatusChip from "@/components/AppStatusChip";
 
@@ -115,8 +116,12 @@ export default {
     getVacations(id, isSending, isApproved) {
       let currentVacations = Object.values(this.vacations[id] || {})
 
-      if (isSending) currentVacations = currentVacations.filter(v => v.isSending())
-      if (isApproved) currentVacations = currentVacations.filter(v => v.approved)
+      if (isSending) {
+        currentVacations = currentVacations.filter(v => v.isSending())
+      }
+      if (isApproved) {
+        currentVacations = currentVacations.filter(v => v.approved)
+      }
 
       return currentVacations
     },
@@ -126,9 +131,9 @@ export default {
     getVacationsDays(id, isSending = false, isApproved = false) {
       const vacations = this.getVacations(id, isSending, isApproved)
       return vacations
-        .reduce((sum, val) => {
-          return sum + val.days
-        }, 0)
+          .reduce((sum, val) => {
+            return sum + val.days
+          }, 0)
     },
     goto(id) {
       this.$router.push({name: 'Vacation', params: {uid: this.uid, id}})

@@ -132,7 +132,7 @@ import {templateFile} from "@/mixins/ComputedData";
 import {FileMethods} from "@/mixins/FileMethods";
 import {truncate30} from "@/mixins/Filters";
 import {templateFileData} from "@/plugins/schema";
-import AppBaseSheet from "@/layouts/AppBaseSheet";
+import AppBaseSheet from "@/components/UI/app-base-sheet";
 import {api} from "@/plugins/api";
 import store from "@/store";
 import FileDownload from "js-file-download";

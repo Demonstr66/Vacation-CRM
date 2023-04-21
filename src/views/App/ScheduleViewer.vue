@@ -3,9 +3,9 @@
     <app-base-sheet class="d-flex flex-column justify-center">
       <span class="display-1 ml-2">{{ schedule && schedule.title }}</span>
       <div
-        :class="schedule && schedule.isApprove ? 'error--text' : 'info--text'"
-        class="caption ml-1"
-        v-text="schedule && schedule.isApprove
+          :class="schedule && schedule.isApprove ? 'error--text' : 'info--text'"
+          class="caption ml-1"
+          v-text="schedule && schedule.isApprove
                   ? 'Редактирование не доступно'
                   : 'Доступно для редактирования'"
       >
@@ -13,11 +13,11 @@
     </app-base-sheet>
     <app-base-sheet>
       <v-tabs
-        v-model="activeTab"
+          v-model="activeTab"
       >
         <v-tab
-          v-for="view in viewers"
-          :key="view.id"
+            v-for="view in viewers"
+            :key="view.id"
         >
           {{ view.name }}
         </v-tab>
@@ -33,11 +33,11 @@
       <template v-slot:main>
         <app-base-sheet>
           <router-view
-            :exception="schedule.exception"
-            :vacations="vacations"
-            :filters="filtersFunctions"
+              :exception="schedule.exception"
+              :vacations="vacations"
+              :filters="filtersFunctions"
 
-            :year="schedule.year"
+              :year="schedule.year"
           />
         </app-base-sheet>
       </template>
@@ -45,53 +45,53 @@
         <app-base-sheet>
           <v-card-title class="justify-center">Фильтры</v-card-title>
           <v-select
-            v-model="filters.status.value"
-            :items="statuses"
-            class="mt-8"
-            dense
-            hide-details
-            item-text="label"
-            item-value="id"
-            label="Статус"
+              v-model="filters.status.value"
+              :items="statuses"
+              class="mt-8"
+              dense
+              hide-details
+              item-text="label"
+              item-value="id"
+              label="Статус"
           />
           <v-select
-            v-model="filters.team.value"
-            :items="teams"
-            class="mt-8"
-            dense
-            hide-details
-            item-text="title"
-            item-value="id"
-            label="Команда"
+              v-model="filters.team.value"
+              :items="teams"
+              class="mt-8"
+              dense
+              hide-details
+              item-text="title"
+              item-value="id"
+              label="Команда"
           />
           <v-select
-            v-model="filters.post.value"
-            :items="posts"
-            item-text="title"
-            item-value="id"
-            class="mt-8"
-            dense
-            hide-details
-            label="Должность"
+              v-model="filters.post.value"
+              :items="posts"
+              item-text="title"
+              item-value="id"
+              class="mt-8"
+              dense
+              hide-details
+              label="Должность"
           />
           <v-select
-            v-model="filters.task.value"
-            :items="tasks"
-            item-text="title"
-            item-value="id"
-            class="mt-8"
-            dense
-            hide-details
-            label="Задача"
+              v-model="filters.task.value"
+              :items="tasks"
+              item-text="title"
+              item-value="id"
+              class="mt-8"
+              dense
+              hide-details
+              label="Задача"
           />
           <v-btn
-            block
-            class="mt-2"
-            color="secondary"
-            left
-            small
-            text
-            @click="reset"
+              block
+              class="mt-2"
+              color="secondary"
+              left
+              small
+              text
+              @click="reset"
           >
             сброс
           </v-btn>
@@ -102,19 +102,19 @@
     <!--    </v-tabs-items>-->
 
     <app-popup
-      ref="rejectPopup"
-      show-comment
+        ref="rejectPopup"
+        show-comment
     >
       Отпуск будет отклонён. Продолжить?
     </app-popup>
     <app-popup
-      ref="approvePopup"
+        ref="approvePopup"
     >
       Утвердить отпуск?
     </app-popup>
     <app-popup
-      ref="cancelPopup"
-      show-comment
+        ref="cancelPopup"
+        show-comment
     >
       Отозвать решение?
     </app-popup>
@@ -123,11 +123,11 @@
 
 <script>
 import {appReady, schedules} from "@/mixins/ComputedData";
-import AppBlockWithRightNavbar from "@/components/AppBlockWithRightNavbar";
+import AppBlockWithRightNavbar from "@/components/UI/app-block-with-sidebar";
 import AppPopup from "@/components/AppPopup";
 import TimelineView from "@/components/ScheduleViewer/TimelineView";
 import ListView from "@/components/ScheduleViewer/ListView";
-import AppBaseSheet from "@/layouts/AppBaseSheet";
+import AppBaseSheet from "@/components/UI/app-base-sheet";
 import {Vacation} from "@/plugins/servises/Vacation";
 import {Team} from "@/plugins/servises/Team";
 import {Post} from "@/plugins/servises/Post";
@@ -165,8 +165,8 @@ export default {
         task: {
           value: -1,
           handler: (item, val, user) =>
-            user.tasks && user.tasks.includes(val) ||
-            (val === 0 && (!user.tasks || !user.tasks.length))
+              user.tasks && user.tasks.includes(val) ||
+              (val === 0 && (!user.tasks || !user.tasks.length))
 
         },
       },
@@ -182,11 +182,15 @@ export default {
     }
   },
   created() {
-    if (this.appReady) this.initialize()
+    if (this.appReady) {
+      this.initialize()
+    }
 
     const name = this.$route.name
     const id = this.viewers.findIndex(view => view.route === name)
-    if (this.activeTab !== id) this.activeTab = id
+    if (this.activeTab !== id) {
+      this.activeTab = id
+    }
   },
   computed: {
     teams() {
@@ -250,7 +254,9 @@ export default {
     initialize() {
       const id = this.$route.params.id
       this.schedule = this.schedules[id]
-      if (!this.schedule) this.$router.push({name: 'Schedules'})
+      if (!this.schedule) {
+        this.$router.push({name: 'Schedules'})
+      }
     },
     async onReject(id) {
       let result = await this.$refs.rejectPopup.open()
@@ -274,7 +280,9 @@ export default {
       }
     },
     reset() {
-      for (let key in this.filters) this.filters[key].value = -1
+      for (let key in this.filters) {
+        this.filters[key].value = -1
+      }
     }
     // mergeByAlex(data) {
     //   let n = data.length
@@ -329,7 +337,9 @@ export default {
     },
     activeTab(id) {
       const name = this.viewers[id].route
-      if (this.$route.name !== name) this.$router.replace({name})
+      if (this.$route.name !== name) {
+        this.$router.replace({name})
+      }
     },
   }
 }

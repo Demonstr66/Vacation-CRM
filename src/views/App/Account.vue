@@ -17,9 +17,9 @@ import TheAccountInfo from "@/components/TheAccountInfo";
 import TheUserInfo from "@/components/TheUserInfo";
 import WorkspaceSetting from "@/components/workspace/Setting";
 import {User} from "@/plugins/servises/User";
-import AppBaseSheet from "@/layouts/AppBaseSheet";
+import AppBaseSheet from "@/components/UI/app-base-sheet";
 import AccountNav from "@/components/Account/account-nav";
-import AppBlockWithRightNavbar from "@/components/AppBlockWithRightNavbar";
+import AppBlockWithRightNavbar from "@/components/UI/app-block-with-sidebar";
 
 export default {
   name: 'Account',
@@ -38,11 +38,13 @@ export default {
     {header: 'Основные'},
     {text: 'Личные данные', to: {name: 'profile'}, icon: ''},
     {text: 'Параметры пространства', to: {name: 'workspace'}, icon: ''},
-    {text: 'Настройка прав', to: {name: 'permission'}, icon: ''},
     {divider: true},
     {header: 'Отпуска'},
     {text: 'Шаблон для заявления', to: {name: 'v-template'}, icon: ''},
     {text: 'Уведомления', to: {name: 'v-rss'}, icon: ''},
+    {header: 'Общие'},
+    {divider: true},
+    {text: 'Разрешения', to: {name: 'permission'}, icon: ''},
   ],
   data() {
     return {}

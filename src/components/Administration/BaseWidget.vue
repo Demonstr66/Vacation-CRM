@@ -1,9 +1,9 @@
 <template>
   <app-base-sheet>
     <v-card
-      class="pa-0 d-flex flex-column justify-start"
-      flat
-      style="height: 100%"
+        class="pa-0 d-flex flex-column justify-start"
+        flat
+        style="height: 100%"
     >
       <v-card-title v-if="title != ''" :title="title" class="justify-center pb-0">
         {{ title | truncate }}
@@ -20,7 +20,7 @@
 
 <script>
 import IconBtnWithTip from "@/components/IconBtnWithTip";
-import AppBaseSheet from "@/layouts/AppBaseSheet";
+import AppBaseSheet from "@/components/UI/app-base-sheet";
 
 export default {
   components: {AppBaseSheet, IconBtnWithTip},
@@ -43,7 +43,9 @@ export default {
   filters: {
     truncate(val) {
       const max = 35
-      if (val.length <= max) return val
+      if (val.length <= max) {
+        return val
+      }
       return val.slice(0, max - 3) + '...'
     }
   }

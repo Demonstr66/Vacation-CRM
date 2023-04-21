@@ -1,72 +1,71 @@
 <template>
-  <app-base-sheet>
-    <v-card flat height="100%">
-      <v-card-title v-text="'Общие'"/>
-      <v-card-text>
-        <setting-row label="Управление пространством" description="Измение настроек и параметров пространства">
-          <v-select
-              :items="$options.userGroups"
-              item-text="text"
-              item-value="level"
-              label="Кто может"
-              hide-details
-              persistent-hint
-          >
-            <template v-slot:prepend>
-              <input-icon>mdi-account-group</input-icon>
-            </template>
-          </v-select>
-        </setting-row>
-        <setting-row label="Управление структурой" description="Управление задачами и командами">
-          <v-select
-              :items="$options.userGroups"
-              item-text="text"
-              item-value="level"
-              label="Кто может"
-              hide-details
-              persistent-hint
-          >
-            <template v-slot:prepend>
-              <input-icon>mdi-account-group</input-icon>
-            </template>
-          </v-select>
-        </setting-row>
-        <setting-row label="Управление пользователями" description="Создание, редактирование и удаление пользователей">
-          <v-select
-              :items="$options.userGroups"
-              item-text="text"
-              item-value="level"
-              label="Кто может"
-              hide-details
-              persistent-hint
-          >
-            <template v-slot:prepend>
-              <input-icon>mdi-account-group</input-icon>
-            </template>
-          </v-select>
-        </setting-row>
-      </v-card-text>
-    </v-card>
-  </app-base-sheet>
+  <div>
+    <app-base-sheet>
+      <v-card flat height="100%">
+        <v-card-title v-text="'Общие'"/>
+        <v-card-text>
+          <setting-row label="Управление пространством" description="Измение настроек и параметров пространства">
+            <account-permission-select v-model="commonRules.workspace"/>
+          </setting-row>
+          <setting-row label="Управление структурой" description="Управление задачами и командами">
+            <account-permission-select v-model="commonRules.structure"/>
+          </setting-row>
+          <setting-row label="Управление пользователями"
+                       description="Создание, редактирование и удаление пользователей">
+            <account-permission-select v-model="commonRules.users"/>
+          </setting-row>
+        </v-card-text>
+        <v-card-actions>
+          <v-spacer/>
+          <btn-submit @click="save('common', commonRules)"/>
+          <v-spacer/>
+        </v-card-actions>
+      </v-card>
+    </app-base-sheet>
+    <app-base-sheet>
+      <v-card flat height="100%">
+        <v-card-title v-text="'Модуль отпусков'"/>
+        <v-card-text>
+          <setting-row label="Управление графиком" description="Создание, измениени и удаления графика отпусков">
+            <account-permission-select v-model="vacationRules.schedule"/>
+          </setting-row>
+        </v-card-text>
+        <v-card-actions>
+          <v-spacer/>
+          <btn-submit @click="save('vacation', vacationRules)"/>
+          <v-spacer/>
+        </v-card-actions>
+      </v-card>
+    </app-base-sheet>
+  </div>
 </template>
 
 <script>
-import AppBaseSheet from "@/layouts/AppBaseSheet";
-import WorkspaceSetting from "@/components/workspace/Setting";
+import AppBaseSheet from "@/components/UI/app-base-sheet";
 import SettingRow from "@/components/Account/setting-row";
 import InputIcon from "@/components/InputIcon";
+import AccountPermissionSelect from "@/components/Account/account-permission-select";
+import BtnSubmit from "@/components/UI/btn-submit";
 
 export default {
   name: "permission",
-  components: {InputIcon, SettingRow, WorkspaceSetting, AppBaseSheet},
-  userGroups: [
-    {text: 'Только владелец', level: 0},
-    {text: 'Владелец и администраторы', level: 1},
-    {text: 'Все, кроме пользователей', level: 2},
-  ],
+  components: {BtnSubmit, AccountPermissionSelect, InputIcon, SettingRow, AppBaseSheet},
   data() {
     return {
-      readonly: true
+      readonly: true,
+      commonRules: {
+        workspace: [4],
+        structure: [4],
+        users: [4]
+      },
+      vacationRules: {
+        schedule: [4]
+      }
+    }
+  },
+  methods: {
+    save(key, data) {
+      alert(`Save ${key} rules: \n${Object.entries(data).map(([key, val]) => `${key}: ${val}`).join('\n')}`)
     }
   }
 }

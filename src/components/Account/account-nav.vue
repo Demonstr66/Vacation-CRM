@@ -18,7 +18,7 @@
 import AccountNavItem from "@/components/Account/account-nav-item";
 import AccountNavHeader from "@/components/Account/account-nav-header";
 import AccountNavItemProvider from "@/components/Account/account-nav-item-provider";
-import AppBaseSheet from "@/layouts/AppBaseSheet";
+import AppBaseSheet from "@/components/UI/app-base-sheet";
 
 export default {
   name: "account-nav",

@@ -17,7 +17,7 @@
   </app-base-sheet>
 </template>
 <script>
-import AppBaseSheet from "@/layouts/AppBaseSheet";
+import AppBaseSheet from "@/components/UI/app-base-sheet";
 
 export default {
   name: 'app-shield',

@@ -1,8 +1,8 @@
 <template>
   <div>
     <SideNavigation
-      :expand="expandNavigation"
-      @close="expandNavigation = false"
+        :expand="expandNavigation"
+        @close="expandNavigation = false"
     />
     <Appbar :expand="expandNavigation" :title="title" app @click="onExpandClick"/>
     <the-app-loader v-if="loading"></the-app-loader>
@@ -17,8 +17,8 @@
 </template>
 
 <script>
-import SideNavigation from "../components/TheSideBar.vue";
-import Appbar from "../components/Appbar.vue";
+import SideNavigation from "../components/layout/app-navigation.vue";
+import Appbar from "../components/layout/app-bar.vue";
 import TheAppLoader from "@/components/TheAppLoader";
 
 export default {

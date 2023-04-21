@@ -3,9 +3,9 @@
     <app-base-sheet class="flex-grow-1 d-flex flex-column justify-center">
       <span class="display-1 ml-2">{{ schedule && schedule.title }}</span>
       <div
-        :class="schedule && schedule.isApprove ? 'error--text' : 'info--text'"
-        class="caption ml-1"
-        v-text="schedule && schedule.isApprove
+          :class="schedule && schedule.isApprove ? 'error--text' : 'info--text'"
+          class="caption ml-1"
+          v-text="schedule && schedule.isApprove
                   ? 'Редактирование не доступно'
                   : 'Доступно для редактирования'"
       >
@@ -14,20 +14,20 @@
 
     <v-progress-linear v-if="!appReady" indeterminate></v-progress-linear>
     <app-block-with-right-navbar
-      v-else
-      no-hide-sidebar
-      side-block-width="200"
+        v-else
+        no-hide-sidebar
+        side-block-width="200"
     >
       <template #main>
         <app-base-sheet>
           <v-data-table
-            :expanded="expanded"
-            :headers="$options.HEADERS"
-            :items="Object.values(vacations)"
-            :items-per-page="-1"
-            hide-default-footer
-            no-data-text="Отпуска ещё не добавлены"
-            show-expand
+              :expanded="expanded"
+              :headers="$options.HEADERS"
+              :items="Object.values(vacations)"
+              :items-per-page="-1"
+              hide-default-footer
+              no-data-text="Отпуска ещё не добавлены"
+              show-expand
           >
             <template v-slot:expanded-item="{ headers, item }">
               <VacationEventsDetails :cols="headers.length" :events="item.events"/>
@@ -35,8 +35,8 @@
             <template v-if="$can('manageVacations', user)" v-slot:top="item">
               <div class="d-flex justify-end">
                 <v-btn
-                  v-if="schedule.isActive" class="ma-2" color="primary" text
-                  @click="openAddModal()">
+                    v-if="schedule.isActive" class="ma-2" color="primary" text
+                    @click="openAddModal()">
                   добавить отпуск
                 </v-btn>
               </div>
@@ -46,9 +46,9 @@
             </template>
             <template v-slot:item.status="{item}">
               <app-status-chip
-                :id="'state_' + item.id"
-                :status="item.status"
-                :statuses="$options.STATUSES"
+                  :id="'state_' + item.id"
+                  :status="item.status"
+                  :statuses="$options.STATUSES"
               />
 
               <v-tooltip v-if="item.statusChangeByUid" :activator="'#state_'+item.id" bottom>
@@ -73,57 +73,57 @@
             <template v-slot:item.action="{item}">
               <RowActions>
                 <icon-btn-with-tip
-                  v-if="!!templateFile"
-                  :disable="item.actually"
-                  :loading="item.id == downloadingItemId"
-                  color="info"
-                  icon="mdi-download"
-                  @click="downloadApplication(item.id)"
+                    v-if="!!templateFile"
+                    :disable="item.actually"
+                    :loading="item.id == downloadingItemId"
+                    color="info"
+                    icon="mdi-download"
+                    @click="downloadApplication(item.id)"
                 >
                   Скачать заявление
                 </icon-btn-with-tip>
                 <Can :on="user" I="manageVacations">
                   <icon-btn-with-tip
-                    v-if="item.status === 99"
-                    :disable="!schedule.isActive"
-                    icon="mdi-content-copy"
-                    @click="openAddModal(item.id)"
+                      v-if="item.status === 99"
+                      :disable="!schedule.isActive"
+                      icon="mdi-content-copy"
+                      @click="openAddModal(item.id)"
                   >
                     Предложить исправление
                   </icon-btn-with-tip>
 
                   <icon-btn-with-tip
-                    v-if="item.status === 0"
-                    :disable="item.approved || !schedule.isActive"
-                    :icon="item.approved || !schedule.isActive ? 'mdi-pencil-lock' : 'mdi-pencil'"
-                    @click="openAddModal(item.id)"
+                      v-if="item.status === 0"
+                      :disable="item.approved || !schedule.isActive"
+                      :icon="item.approved || !schedule.isActive ? 'mdi-pencil-lock' : 'mdi-pencil'"
+                      @click="openAddModal(item.id)"
                   >
                     Редактировать
                   </icon-btn-with-tip>
                   <icon-btn-with-tip
-                    v-if="item.status === 0"
-                    :disable="!schedule.isActive"
-                    color="error"
-                    icon="mdi-delete"
-                    @click="onDelete(item.id)"
+                      v-if="item.status === 0"
+                      :disable="!schedule.isActive"
+                      color="error"
+                      icon="mdi-delete"
+                      @click="onDelete(item.id)"
                   >
                     Удалить
                   </icon-btn-with-tip>
                   <icon-btn-with-tip
-                    v-if="item.status === 0"
-                    :disable="!schedule.isActive"
-                    color="info"
-                    icon="mdi-send"
-                    @click="item.sendToApprove()"
+                      v-if="item.status === 0"
+                      :disable="!schedule.isActive"
+                      color="info"
+                      icon="mdi-send"
+                      @click="item.sendToApprove()"
                   >
                     Отправить на утверждение
                   </icon-btn-with-tip>
                   <icon-btn-with-tip
-                    v-if="item.status === 1"
-                    :disable="!schedule.isActive"
-                    color="warning"
-                    icon="mdi-cancel"
-                    @click="item.cancelSend()"
+                      v-if="item.status === 1"
+                      :disable="!schedule.isActive"
+                      color="warning"
+                      icon="mdi-cancel"
+                      @click="item.cancelSend()"
                   >
                     Отозвать
                   </icon-btn-with-tip>
@@ -136,34 +136,34 @@
       <template #navbar>
         <div :class="{'flex-column': $vuetify.breakpoint.mdAndUp}" class="d-flex justify-start">
           <app-shield
-            :text="addDayLabel(approvedDaysCount)"
-            header="Одобрено"
-            icon="mdi-calendar"
-            icon-color="success"
+              :text="addDayLabel(approvedDaysCount)"
+              header="Одобрено"
+              icon="mdi-calendar"
+              icon-color="success"
           />
           <app-shield
-            :text="addDayLabel(allDaysCount)"
-            footer="дней добавлено"
-            header="Всего"
-            icon="mdi-calendar"
+              :text="addDayLabel(allDaysCount)"
+              footer="дней добавлено"
+              header="Всего"
+              icon="mdi-calendar"
           />
           <app-shield
-            :text="addDayLabel(rejectedDaysCount)"
-            header="Отклонено"
-            icon="mdi-calendar"
-            icon-color="error"
+              :text="addDayLabel(rejectedDaysCount)"
+              header="Отклонено"
+              icon="mdi-calendar"
+              icon-color="error"
           />
         </div>
       </template>
     </app-block-with-right-navbar>
 
     <app-popup
-      ref="deletePopup"
+        ref="deletePopup"
     >
       Отпуск будет удалён. Продолжить?
     </app-popup>
     <add-vacation
-      ref="addVacationModal"
+        ref="addVacationModal"
     ></add-vacation>
   </div>
 </template>
@@ -180,8 +180,8 @@ import AppStatusChip from "@/components/AppStatusChip";
 import RowActions from "@/components/RowActions";
 import {Vacation} from "@/plugins/servises/Vacation";
 import AppPopup from "@/components/AppPopup";
-import AppBaseSheet from "@/layouts/AppBaseSheet";
-import AppBlockWithRightNavbar from "@/components/AppBlockWithRightNavbar";
+import AppBaseSheet from "@/components/UI/app-base-sheet";
+import AppBlockWithRightNavbar from "@/components/UI/app-block-with-sidebar";
 import {User} from "@/plugins/servises/User";
 import {api} from "@/plugins/api";
 import FileDownload from "js-file-download";
@@ -216,7 +216,9 @@ export default {
     expanded: [],
   }),
   created() {
-    if (this.appReady) this.initialize()
+    if (this.appReady) {
+      this.initialize()
+    }
   },
   computed: {
     testUser() {
@@ -232,12 +234,12 @@ export default {
     },
     approvedDaysCount() {
       let vacations = Object.values(this.vacations)
-        .filter(v => v.approved)
+          .filter(v => v.approved)
       return this.sumDays(vacations)
     },
     rejectedDaysCount() {
       let vacations = Object.values(this.vacations)
-        .filter(v => v.isRejected())
+          .filter(v => v.isRejected())
       return this.sumDays(vacations)
     }
   },
@@ -251,7 +253,9 @@ export default {
       const user = new User(this.$store.getters['users/getUserById'](uid))
       const schedule = this.$store.getters['schedules/getById'](sid)
 
-      if (!user || !schedule) this.redirect()
+      if (!user || !schedule) {
+        this.redirect()
+      }
 
       this.schedule = schedule
       this.user = user
@@ -259,9 +263,15 @@ export default {
       this.$options.SID = sid
     },
     addDayLabel(days) {
-      if (days % 100 >= 10 && days % 100 <= 20 || days % 10 === 0) return days + ' дней'
-      if (days % 10 === 1) return days + ' день'
-      if (days % 10 <= 4) return days + ' дня'
+      if (days % 100 >= 10 && days % 100 <= 20 || days % 10 === 0) {
+        return days + ' дней'
+      }
+      if (days % 10 === 1) {
+        return days + ' день'
+      }
+      if (days % 10 <= 4) {
+        return days + ' дня'
+      }
 
       return days + ' дней'
     },
@@ -286,13 +296,13 @@ export default {
         }
 
         const {data} = await api.file.download(
-          fullPath,
-          user.templateName || user.fullName,
-          postTitle,
-          dateToFileFormat(start),
-          dateToFileFormat(end),
-          days,
-          dateToFileFormat(Date.now()),
+            fullPath,
+            user.templateName || user.fullName,
+            postTitle,
+            dateToFileFormat(start),
+            dateToFileFormat(end),
+            days,
+            dateToFileFormat(Date.now()),
         )
 
         const fileName = `Заявление на очередной оплачиваемый отпуск ${user.displayName}.${type}`

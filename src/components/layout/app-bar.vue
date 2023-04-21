@@ -37,6 +37,7 @@ import {appName, user} from "@/mixins/ComputedData";
 import {signOut} from "@/mixins/AuthMethods";
 
 export default {
+  name: 'app-bar',
   DEBUG: process.env.VUE_APP_DEBUG,
   mixins: [user, signOut],
   props: {

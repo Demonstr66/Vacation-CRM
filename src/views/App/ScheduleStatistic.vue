@@ -3,9 +3,9 @@
     <app-base-sheet class="d-flex flex-column justify-center">
       <span class="display-1 ml-2">{{ schedule && schedule.title }}</span>
       <div
-        :class="schedule && schedule.isApprove ? 'error--text' : 'info--text'"
-        class="caption ml-1"
-        v-text="schedule && schedule.isApprove
+          :class="schedule && schedule.isApprove ? 'error--text' : 'info--text'"
+          class="caption ml-1"
+          v-text="schedule && schedule.isApprove
                   ? 'Редактирование не доступно'
                   : 'Доступно для редактирования'"
       >
@@ -15,16 +15,16 @@
       <template #main>
         <app-base-sheet>
           <v-sparkline
-            :labels="$options.MONTHS"
-            :value="daysByMonth"
-            :gradient="['#f72047', '#ffd200', '#0f0']"
-            auto-draw
-            color="info"
-            show-labels
-            line-width="2"
-            label-size="5"
-            padding="8"
-            smooth="16"
+              :labels="$options.MONTHS"
+              :value="daysByMonth"
+              :gradient="['#f72047', '#ffd200', '#0f0']"
+              auto-draw
+              color="info"
+              show-labels
+              line-width="2"
+              label-size="5"
+              padding="8"
+              smooth="16"
           >
           </v-sparkline>
         </app-base-sheet>
@@ -41,9 +41,9 @@
 </template>
 
 <script>
-import AppBlockWithRightNavbar from "@/components/AppBlockWithRightNavbar";
+import AppBlockWithRightNavbar from "@/components/UI/app-block-with-sidebar";
 import {appReady} from "@/mixins/ComputedData";
-import AppBaseSheet from "@/layouts/AppBaseSheet";
+import AppBaseSheet from "@/components/UI/app-base-sheet";
 import {dateToFileFormat} from "@/plugins/utils";
 import * as XLSX from "xlsx";
 
@@ -59,7 +59,9 @@ export default {
     daysByMonth: []
   }),
   created() {
-    if (this.appReady) this.initialize()
+    if (this.appReady) {
+      this.initialize()
+    }
   },
   methods: {
     initialize() {
@@ -97,8 +99,10 @@ export default {
       let header = ['ФИО', 'c', 'по']
       let rows = []
       this.vacations.forEach(vacation => {
-        if (!vacation.approved) return
-        
+        if (!vacation.approved) {
+          return
+        }
+
         let fullName = this.$store.getters['users/getUserById'](vacation.uid).fullName
         rows.push([fullName, this.$moment(vacation.start).format('DD.MM.YYYY'),
           this.$moment(vacation.end).format('DD.MM.YYYY')])

@@ -3,15 +3,15 @@
   <v-row v-else no-gutters>
     <v-col cols="12" md="4" lg="3" xl="3">
       <the-user-info
-        :user="user"
-        solo
-        disabled
-        hide-additional-fields
+          :user="user"
+          solo
+          disabled
+          hide-additional-fields
       ></the-user-info>
       <the-account-info
-        solo
-        :user="user"
-        disable-all
+          solo
+          :user="user"
+          disable-all
       ></the-account-info>
     </v-col>
     <v-col cols="12" md="8" lg="9" xl="9">
@@ -19,8 +19,8 @@
         <span class="text-h5">Отпуска</span>
       </app-base-sheet>
       <TheVacations
-        :uid="user ? user.uid : null"
-        :vacations="vacations"
+          :uid="user ? user.uid : null"
+          :vacations="vacations"
       ></TheVacations>
     </v-col>
   </v-row>
@@ -32,7 +32,7 @@ import TheVacations from "@/components/TheVacations";
 
 import TheAccountInfo from "@/components/TheAccountInfo";
 import TheUserInfo from "@/components/TheUserInfo";
-import AppBaseSheet from "@/layouts/AppBaseSheet";
+import AppBaseSheet from "@/components/UI/app-base-sheet";
 
 export default {
   name: "User",
@@ -43,7 +43,9 @@ export default {
     vacations: []
   }),
   created() {
-    if (appReady) this.initialize()
+    if (appReady) {
+      this.initialize()
+    }
   },
   methods: {
     initialize() {
@@ -54,7 +56,9 @@ export default {
   },
   watch: {
     appReady(val) {
-      if (val) this.initialize()
+      if (val) {
+        this.initialize()
+      }
     }
   }
 }

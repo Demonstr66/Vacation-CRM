@@ -3,46 +3,23 @@
     <template v-slot:main>
       <app-base-sheet>
         <v-data-table
-          :custom-filter="customFilter"
-          :group-by.sync="groupBy"
-          :headers="headers"
-          :item-class="() => 'dropRow'"
-          class="th-xs-pa-0 table-d-block"
-          :items="Object.values(users)"
-          :search="JSON.stringify({filter})"
-          dense
-          item-key="uid"
+            :items="Object.values(users)"
+            :search="JSON.stringify(filters)"
+            :custom-filter="CUSTOM_USER_FILTER"
+
+            :group-by="groupBy"
+            :headers="headers"
+            :item-class="() => 'dropRow'"
+            class="th-xs-pa-0 table-d-block"
+            dense
+            item-key="uid"
         >
           <template v-slot:top>
-            <group-tools
-              v-model="groupBy"
-              :groups="$options.GROUPS"
-            />
+            <app-group-toolbar v-model="groupBy">
+              <btn-open-sidebar/>
+            </app-group-toolbar>
           </template>
           <template v-if="!$vuetify.breakpoint.smAndUp" v-slot:item="{item}">
-            <!--            <div class="d-flex justify-space-between align-center mt-2">-->
-            <!--              <div class="d-flex flex-column justify-start fill-height" style="max-width: 90%;">-->
-            <!--                <span class="subtitle-1 text-truncate font-weight-medium">-->
-            <!--                  {{ item.fullName }}-->
-
-            <!--                  <span v-if="item.uid === currentUID" class="font-italic">(Вы)</span>-->
-            <!--                </span>-->
-            <!--                <span class="text&#45;&#45;secondary">-->
-            <!--                  <span class="font-weight-bold">Должность: </span>-->
-            <!--                  <span v-if="item.post">-->
-            <!--                    {{ getPostTitle(item.post) }}-->
-            <!--                  </span>-->
-            <!--                  <small v-else class="text&#45;&#45;secondary font-italic">Не назнчена</small>-->
-            <!--                </span>-->
-            <!--                <span class="text&#45;&#45;secondary text-no-wrap text-truncate">-->
-            <!--                  <span class="font-weight-bold">Email: </span>-->
-            <!--                  <a :href="'mailto:'+item.email" class="text&#45;&#45;secondary">-->
-            <!--                    {{ item.email }}-->
-            <!--                  </a>-->
-            <!--                </span>-->
-            <!--              </div>-->
-
-            <!--            </div>-->
             <div style="max-width: 100%" class="d-flex justify-space-between align-center mt-2">
               <div style="max-width: 100%" class=" text-truncate">
                 <div class="text-subtitle-2 text-no-wrap px-2">
@@ -67,11 +44,11 @@
                 <div class="text-body-2 text-no-wrap px-2 text-center">
                   <v-chip-group v-if="item.tasks && item.tasks.length" column>
                     <v-chip
-                      v-for="task in item.tasks"
-                      :key="task + item.uid"
-                      class="mx-1"
-                      small
-                      label
+                        v-for="task in item.tasks"
+                        :key="task + item.uid"
+                        class="mx-1"
+                        small
+                        label
                     >
                       {{ getTaskTitle(task) }}
                     </v-chip>
@@ -80,45 +57,45 @@
               </div>
               <row-actions>
                 <icon-btn-with-tip
-                  v-if="item.active"
-                  color="success"
-                  icon="mdi-check-decagram"
+                    v-if="item.active"
+                    color="success"
+                    icon="mdi-check-decagram"
                 >
                   Зарегистрирован
                 </icon-btn-with-tip>
                 <icon-btn-with-tip
-                  v-else
-                  :disable="!$can('updateAccountData', item)"
-                  color="primary"
-                  icon="mdi-account-plus"
-                  @click="$emit('invite')"
+                    v-else
+                    :disable="!$can('updateAccountData', item)"
+                    color="primary"
+                    icon="mdi-account-plus"
+                    @click="$emit('invite')"
                 >
                   Пригласить
                 </icon-btn-with-tip>
                 <icon-btn-with-tip
-                  :disable="
+                    :disable="
                               !$can('updateAccountData', item) &&
                               !$can('updatePersonalData', item) &&
                               !$can('updateUserRole', item) &&
                               !$can('updateTeam', item)"
-                  color="primary"
-                  icon="mdi-account-edit"
-                  @click="showEditor(item.uid)"
+                    color="primary"
+                    icon="mdi-account-edit"
+                    @click="showEditor(item.uid)"
                 >
                   Редактировать
                 </icon-btn-with-tip>
                 <icon-btn-with-tip
-                  :disable="!$can('delete', item)"
-                  color="error"
-                  icon="mdi-delete"
-                  @click="onDeleteUser(item.uid)"
+                    :disable="!$can('delete', item)"
+                    color="error"
+                    icon="mdi-delete"
+                    @click="onDeleteUser(item.uid)"
                 >
                   Удалить
                 </icon-btn-with-tip>
                 <icon-btn-with-tip
-                  color="info"
-                  icon="mdi-eye"
-                  @click="gotoUser(item.uid)"
+                    color="info"
+                    icon="mdi-eye"
+                    @click="gotoUser(item.uid)"
                 >
                   Перейти в аккаунт
                 </icon-btn-with-tip>
@@ -126,19 +103,8 @@
             </div>
             <v-divider/>
           </template>
-          <template v-slot:group.header="{toggle, isOpen,groupBy, group, remove, headers}">
-            <td :colspan="headers.length">
-              <v-btn icon small @click="toggle">
-                <v-icon v-if="isOpen">mdi-minus</v-icon>
-                <v-icon v-else>mdi-plus</v-icon>
-              </v-btn>
-              <span>
-                {{ getGroupHeaderText(group, groupBy) }}
-              </span>
-              <v-btn icon small @click="remove">
-                <v-icon>mdi-close</v-icon>
-              </v-btn>
-            </td>
+          <template v-slot:group.header="data">
+            <app-table-group-header :data="data" :header="getGroupHeaderText(data.group, data.groupBy)"/>
           </template>
           <template v-slot:item.fullName="{item}">
             <div class="d-flex flex-column justify-start fill-height">
@@ -148,8 +114,8 @@
               <span v-if="item.uid === currentUID" class="font-italic">(Вы)</span>
             </span>
               <span
-                v-if="$vuetify.breakpoint.mdAndDown"
-                class="text--secondary"
+                  v-if="$vuetify.breakpoint.mdAndDown"
+                  class="text--secondary"
               >
               <span class="font-weight-bold">Должность: </span>
               <span v-if="item.post">
@@ -168,7 +134,7 @@
           <template v-slot:item.post="{item}">
            <span v-if="item.post">
                 {{ getPostTitle(item.post) }}
-              </span>
+           </span>
             <small v-else class="text--secondary font-italic">Не назнчена</small>
           </template>
           <template v-slot:item.team="{item}">
@@ -179,25 +145,25 @@
           </template>
           <template v-slot:item.tasks="{item}">
             <div
-              :class="{'droppable': isDrag}"
-              @drop="onDrop(item.uid, $event)"
-              @dragleave.prevent="onDragLeave"
-              @dragover.prevent="onDragOver"
+                :class="{'droppable': isDrag}"
+                @drop="onDrop(item.uid, $event)"
+                @dragleave.prevent="onDragLeave"
+                @dragover.prevent="onDragOver"
             >
               <div
-                v-if="item.tasks && item.tasks.length !== 0"
-                class="d-flex flex-wrap mt-2 mt-md-1 justify-start justify-md-end"
+                  v-if="item.tasks && item.tasks.length !== 0"
+                  class="d-flex flex-wrap mt-2 mt-md-1 justify-start justify-md-end"
               >
                 <v-chip
-                  v-for="(task, index) in item.tasks"
-                  :key="index"
-                  :close="$can('updateAccountData', item)"
-                  :title="getTaskTitle(task)"
-                  class="mb-1 mr-1"
-                  label
-                  small
-                  style="max-width: 150px"
-                  @click:close="onDeleteTask(item.uid, task)"
+                    v-for="(task, index) in item.tasks"
+                    :key="index"
+                    :close="$can('updateAccountData', item)"
+                    :title="getTaskTitle(task)"
+                    class="mb-1 mr-1"
+                    label
+                    small
+                    style="max-width: 150px"
+                    @click:close="onDeleteTask(item.uid, task)"
                 >
                   <span class="text-truncate">
                     {{ getTaskTitle(task) }}
@@ -213,19 +179,19 @@
           </template>
           <template v-slot:item.active="{item}">
             <icon-btn-with-tip
-              v-if="item.active"
-              color="success"
-              icon="mdi-check-decagram"
+                v-if="item.active"
+                color="success"
+                icon="mdi-check-decagram"
             >
               Зарегистрирован
             </icon-btn-with-tip>
             <icon-btn-with-tip
-              v-else
-              :disable="!$can('updateAccountData', item)"
-              color="primary"
-              icon="mdi-account-plus"
-              @click="invite(item.uid)"
-              :loading="item.uid === invitingUID"
+                v-else
+                :disable="!$can('updateAccountData', item)"
+                color="primary"
+                icon="mdi-account-plus"
+                @click="invite(item.uid)"
+                :loading="item.uid === invitingUID"
             >
               Пригласить
             </icon-btn-with-tip>
@@ -233,29 +199,29 @@
           <template v-slot:item.action="{item}">
             <row-actions>
               <icon-btn-with-tip
-                :disable="
+                  :disable="
                   !$can('updateAccountData', item) &&
                   !$can('updatePersonalData', item) &&
                   !$can('updateUserRole', item) &&
                   !$can('updateTeam', item)"
-                color="primary"
-                icon="mdi-account-edit"
-                @click="showEditor(item.uid)"
+                  color="primary"
+                  icon="mdi-account-edit"
+                  @click="showEditor(item.uid)"
               >
                 Редактировать
               </icon-btn-with-tip>
               <icon-btn-with-tip
-                :disable="!$can('delete', item) || item.uid === currentUID"
-                color="error"
-                icon="mdi-delete"
-                @click="onDeleteUser(item.uid)"
+                  :disable="!$can('delete', item) || item.uid === currentUID"
+                  color="error"
+                  icon="mdi-delete"
+                  @click="onDeleteUser(item.uid)"
               >
                 Удалить
               </icon-btn-with-tip>
               <icon-btn-with-tip
-                color="info"
-                icon="mdi-eye"
-                tag="a" :to="{name: 'User', params: {uid: item.uid}}"
+                  color="info"
+                  icon="mdi-eye"
+                  tag="a" :to="{name: 'User', params: {uid: item.uid}}"
               >
                 Перейти в аккаунт
               </icon-btn-with-tip>
@@ -264,7 +230,7 @@
         </v-data-table>
       </app-base-sheet>
       <app-popup
-        ref="deleteUser"
+          ref="deleteUser"
       >
         Пользователь и все его данные будут удалены. <br>Продолжить?
       </app-popup>
@@ -274,21 +240,19 @@
       </Can>
     </template>
     <template v-slot:navbar>
-      <app-base-sheet>
-        <administration-right-sidebar
-          :filter.sync="filter"
+      <administration-right-sidebar
+          :filters.sync="filters"
           :inviting="invitingAll"
           @add="showEditor"
           @invite-all="inviteAll"
           @export=""
           @import="showImport"
-        />
-      </app-base-sheet>
+      />
       <Can :on="$options.someUser" I="updateAccountData">
         <app-base-sheet v-if="Object.values(tasks).length">
           <administration-drag-items
-            :drag.sync="isDrag"
-            :items="Object.values(tasks)"
+              :drag.sync="isDrag"
+              :items="Object.values(tasks)"
           />
         </app-base-sheet>
       </Can>
@@ -302,10 +266,10 @@ import IconBtnWithTip from "@/components/IconBtnWithTip";
 import UserEditor from "@/components/Modals/UserEditor";
 import AppPopup from "@/components/AppPopup";
 import AdministrationRightSidebar from "@/components/Administration/AdministrationRightSidebar";
-import AppBlockWithRightNavbar from "@/components/AppBlockWithRightNavbar";
+import AppBlockWithRightNavbar from "@/components/UI/app-block-with-sidebar";
 import GroupTools from "@/components/ScheduleViewer/GroupTools";
 import RowActions from "@/components/RowActions";
-import AppBaseSheet from "@/layouts/AppBaseSheet";
+import AppBaseSheet from "@/components/UI/app-base-sheet";
 import AdministrationDragItems from "@/components/Administration/AdministrationDragItems";
 import Users from "@/plugins/TableHeaders/Users";
 import ImportModal from "@/components/Modals/ImportModal";
@@ -315,12 +279,21 @@ import {Task} from "@/plugins/servises/Task";
 import {User} from "@/plugins/servises/User";
 import {Message} from "@/plugins/servises/Message";
 import {api} from "@/plugins/api";
+import AppGroupToolbar from "@/components/UI/app-group-toolbar";
+import AppFilters from "@/components/UI/app-filters";
+import {CUSTOM_USER_FILTER} from "@/mixins/Filters";
+import AppTableGroupHeader from "@/components/UI/app-table-group-header";
+import BtnOpenSidebar from "@/components/UI/btn-open-sidebar";
 
 export default {
   name: 'UserTab',
   someUser: new User(),
-  mixins: [users, tasks, user, currentUID],
+  mixins: [users, tasks, user, currentUID, CUSTOM_USER_FILTER],
   components: {
+    BtnOpenSidebar,
+    AppTableGroupHeader,
+    AppFilters,
+    AppGroupToolbar,
     ImportModal,
     AdministrationDragItems,
     AppBaseSheet,
@@ -333,11 +306,6 @@ export default {
     UserEditor,
 
   },
-  GROUPS: [
-    {value: 'post', text: 'Должноcтям'},
-    {value: 'team', text: 'Командам'},
-    {value: 'active', text: 'Статусу'}
-  ],
   data: () => ({
     headers: Users,
     isDrag: false,
@@ -345,17 +313,26 @@ export default {
     invitingUID: null,
     invitingAll: false,
     filter: {},
+    filters: {}
   }),
   methods: {
     async invite(uid, silent = false) {
-      if (!silent) this.invitingUID = uid
+      if (!silent) {
+        this.invitingUID = uid
+      }
       try {
         await api.user.invite(uid)
-        if (!silent) Message.successMessage({code: 'auth/user-invited'})
+        if (!silent) {
+          Message.successMessage({code: 'auth/user-invited'})
+        }
       } catch (e) {
-        if (!silent) Message.errorMessage(e)
+        if (!silent) {
+          Message.errorMessage(e)
+        }
       } finally {
-        if (!silent) this.invitingUID = null
+        if (!silent) {
+          this.invitingUID = null
+        }
       }
     },
     async inviteAll() {
@@ -385,7 +362,6 @@ export default {
           return this.getTeamTitle(val)
         case 'post':
           return this.getPostTitle(val)
-
         default:
           return groupBy
       }
@@ -404,24 +380,6 @@ export default {
     },
     gotoUser(uid) {
       this.$router.push({name: 'User', params: {uid}})
-    },
-    customFilter(value, json, item) {
-      const {filter} = JSON.parse(json || "")
-
-      if (!filter) return true
-
-      return Object.entries(filter).every(([key, val]) => {
-        if (val === 'all') return true
-        if (val === 'none') return !!!item[key]
-
-        let itemVal = item[key]
-
-        if (Array.isArray(itemVal)) {
-          return itemVal.some(x => x === val)
-        }
-
-        return itemVal === val
-      })
     },
     onDragOver(e) {
       e.target.classList.add('droppable--active')

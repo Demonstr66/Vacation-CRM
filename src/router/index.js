@@ -32,6 +32,10 @@ const SettingVacationTemplate = () => import('@/components/Account/pages/vacatio
 const SettingVacationNotification = () => import('@/components/Account/pages/vacations/v-notification')
 const SettingWorkspace = () => import('@/components/Account/pages/common/workspace')
 
+const Intervals = () => import('@/views/App/Goals/Intervals')
+const GoalViewer = () => import('@/views/App/Goals/GoalViewer')
+const Goals = () => import('@/views/App/Goals/Goals')
+
 const VacationsStats = () => import('@/views/App/VacationStatistic')
 
 
@@ -46,6 +50,66 @@ const routes = [
     meta: {
       layout: 'MainEmptyLayout',
       title: 'Главная',
+      protected: {
+        accessLevel: [2]
+      }
+    }
+  },
+  {
+    path: '/vacations',
+    name: 'Vacations',
+    component: Vacations,
+    meta: {
+      layout: 'MainEmptyLayout',
+      title: 'Мои отпуска',
+      protected: {
+        accessLevel: [2]
+      }
+    }
+  },
+  {
+    path: '/goals',
+    name: 'Goals',
+    component: Goals,
+    meta: {
+      layout: 'MainEmptyLayout',
+      title: 'Мои цели',
+      protected: {
+        accessLevel: [2]
+      }
+    }
+  },
+  {
+    path: '/intervals',
+    name: 'Intervals',
+    component: Intervals,
+    meta: {
+      layout: 'MainEmptyLayout',
+      title: 'Период',
+      protected: {
+        accessLevel: [2]
+      }
+    }
+  },
+  {
+    path: '/goalviewer',
+    name: 'GoalViewer',
+    component: GoalViewer,
+    meta: {
+      layout: 'MainEmptyLayout',
+      title: 'Просмотр целей',
+      protected: {
+        accessLevel: [2]
+      }
+    }
+  },
+  {
+    path: '/vacations',
+    name: 'Vacations',
+    component: Vacations,
+    meta: {
+      layout: 'MainEmptyLayout',
+      title: 'Мои отпуска',
       protected: {
         accessLevel: [2]
       }

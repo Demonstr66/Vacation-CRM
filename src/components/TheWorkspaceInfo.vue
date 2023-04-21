@@ -91,7 +91,7 @@ import IconBtnWithTip from "@/components/IconBtnWithTip";
 import {copyToClipboard} from "@/mixins/dataHelper";
 import {WorkspaceMethods} from "@/mixins/WorkspaceMethods";
 import InputIcon from "@/components/InputIcon";
-import AppBaseSheet from "@/layouts/AppBaseSheet";
+import AppBaseSheet from "@/components/UI/app-base-sheet";
 
 export default {
   components: {AppBaseSheet, InputIcon, IconBtnWithTip},

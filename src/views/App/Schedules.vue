@@ -1,10 +1,10 @@
 <template>
   <app-base-sheet>
     <v-data-table
-      :headers="$options.HEADERS"
-      :items="Object.values(schedules)"
-      dense
-      no-data-text="Графики ещё не добавлены"
+        :headers="$options.HEADERS"
+        :items="Object.values(schedules)"
+        dense
+        no-data-text="Графики ещё не добавлены"
     >
       <template v-if="$can('create', 'Schedule')" v-slot:top>
         <v-toolbar dense flat>
@@ -16,70 +16,70 @@
       </template>
       <template v-slot:item.status="{item}">
         <vacation-status-chip
-          :status="item.status"
-          :statuses="$options.STATUSES"
+            :status="item.status"
+            :statuses="$options.STATUSES"
         />
       </template>
       <template v-slot:item.isApprove="{item}">
         <v-switch
-          :disabled="(!item.isActive && !item.isApprove)"
-          readonly
-          v-model="item.isApprove"
-          class="align-center justify-center mt-0"
-          color="success"
-          dense
-          hide-details
-          inset
-          @click="toggleActivation(item)"
+            :disabled="(!item.isActive && !item.isApprove)"
+            readonly
+            v-model="item.isApprove"
+            class="align-center justify-center mt-0"
+            color="success"
+            dense
+            hide-details
+            inset
+            @click="toggleActivation(item)"
         />
       </template>
       <template v-slot:item.action="{item}">
         <RowActions>
           <icon-btn-with-tip
-            :disable="item.isApprove || !$can('update', 'Schedule')"
-            :icon="item.isApprove ? 'mdi-pencil-lock' : 'mdi-pencil'"
-            @click="gotoEditor(item)"
+              :disable="item.isApprove || !$can('update', 'Schedule')"
+              :icon="item.isApprove ? 'mdi-pencil-lock' : 'mdi-pencil'"
+              @click="gotoEditor(item)"
           >
             Редактировать
           </icon-btn-with-tip>
 
           <icon-btn-with-tip
-            :disable="!$can('delete', 'Schedule') ||
+              :disable="!$can('delete', 'Schedule') ||
               (item.isActive && !$can('deactivate', 'Schedule')) ||
               (item.isApprove && !$can('cancel', 'Schedule'))"
-            color="error"
-            icon="mdi-delete"
-            @click="deleteAlertShow(item.id)"
+              color="error"
+              icon="mdi-delete"
+              @click="deleteAlertShow(item.id)"
           >
             Удалить
           </icon-btn-with-tip>
           <icon-btn-with-tip
-            color="light-green darken-1"
-            icon="mdi-chart-box-outline"
-            @click="gotoStat(item.id)"
+              color="light-green darken-1"
+              icon="mdi-chart-box-outline"
+              @click="gotoStat(item.id)"
           >
             Статистика
           </icon-btn-with-tip>
-          <icon-btn-with-tip color="info" icon="mdi-eye"  tag="a" :to="{name: 'Viewer1', params: {id: item.id}}">
+          <icon-btn-with-tip color="info" icon="mdi-eye" tag="a" :to="{name: 'Viewer1', params: {id: item.id}}">
             Просмотр
           </icon-btn-with-tip>
           <icon-btn-with-tip color="info" icon="mdi-chart-gantt" tag="a" :to="{name: 'Viewer2', params: {id: item.id}}">
             Таймлайн
           </icon-btn-with-tip>
           <icon-btn-with-tip
-            v-if="item.isDraft"
-            :disable="!$can('activate', 'Schedule')"
-            color="success"
-            icon="mdi-check"
-            @click="sendToFill(item.id)"
+              v-if="item.isDraft"
+              :disable="!$can('activate', 'Schedule')"
+              color="success"
+              icon="mdi-check"
+              @click="sendToFill(item.id)"
           >
             Активировать
           </icon-btn-with-tip>
           <icon-btn-with-tip
-            v-if="item.isActive"
-            :disable="!$can('deactivate', 'Schedule')"
-            color="warning" icon="mdi-cancel"
-            @click="cancelFill(item.id)"
+              v-if="item.isActive"
+              :disable="!$can('deactivate', 'Schedule')"
+              color="warning" icon="mdi-cancel"
+              @click="cancelFill(item.id)"
           >
             Деактивировать
           </icon-btn-with-tip>
@@ -87,17 +87,17 @@
       </template>
     </v-data-table>
     <app-popup
-      ref="deletePopup"
+        ref="deletePopup"
     >
       Вы хотите удалить график. Так же будут удалены все прикреплённые к нему отпуска<br>Продолжить?
     </app-popup>
     <app-popup
-      ref="acceptPopup"
+        ref="acceptPopup"
     >
       Утвердить график? Пользователи больше не смогут вносить изменения в отпуска<br>Продолжить?
     </app-popup>
     <app-popup
-      ref="deactivatePopup"
+        ref="deactivatePopup"
     >
       Отозвать график? Пользователи снова смогут вносить изменения в отпуска<br>Продолжить?
     </app-popup>
@@ -111,7 +111,7 @@ import RowActions from "@/components/RowActions";
 import VacationStatusChip from "@/components/AppStatusChip";
 import {Schedule} from "@/plugins/servises/Schedule";
 import AppPopup from "@/components/AppPopup";
-import AppBaseSheet from "@/layouts/AppBaseSheet";
+import AppBaseSheet from "@/components/UI/app-base-sheet";
 
 
 export default {
@@ -150,10 +150,12 @@ export default {
     },
     toggleActivation(item) {
       if (
-        item.isDraft &&
-        (item.isApprove && !this.$can('cancel', 'Schedule')) ||
-        (!item.isApprove && !this.$can('approve', 'Schedule'))
-      ) return
+          item.isDraft &&
+          (item.isApprove && !this.$can('cancel', 'Schedule')) ||
+          (!item.isApprove && !this.$can('approve', 'Schedule'))
+      ) {
+        return
+      }
 
       if (item.isApprove) {
         this.cancelAlertShow(item.id)

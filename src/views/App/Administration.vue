@@ -2,11 +2,11 @@
   <div>
     <app-base-sheet>
       <v-tabs
-        v-model="activeTab"
+          v-model="activeTab"
       >
         <v-tab
-          v-for="tab in tabs"
-          :key="tab.id"
+            v-for="tab in tabs"
+            :key="tab.id"
         >
           {{ tab.name }}
         </v-tab>
@@ -14,8 +14,8 @@
     </app-base-sheet>
     <v-tabs-items v-model="activeTab" style="background: inherit">
       <v-tab-item
-        v-for="tab in tabs"
-        :key="tab.id"
+          v-for="tab in tabs"
+          :key="tab.id"
       >
         <component :is="tab.component"/>
       </v-tab-item>
@@ -27,7 +27,7 @@
 
 import Users from "@/components/Administration/Users";
 import Structure from "@/components/Administration/Structure";
-import AppBaseSheet from "@/layouts/AppBaseSheet";
+import AppBaseSheet from "@/components/UI/app-base-sheet";
 
 export default {
   name: "Administration",
@@ -45,12 +45,16 @@ export default {
   created() {
     const name = this.$route.name
     const id = this.tabs.findIndex(tab => tab.route === name)
-    if (this.activeTab !== id) this.activeTab = id
+    if (this.activeTab !== id) {
+      this.activeTab = id
+    }
   },
   watch: {
     activeTab(id) {
       const name = this.tabs[id].route
-      if (this.$route.name !== name) this.$router.replace({name})
+      if (this.$route.name !== name) {
+        this.$router.replace({name})
+      }
     }
   }
 };

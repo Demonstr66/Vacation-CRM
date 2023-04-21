@@ -15,6 +15,31 @@ export const normalizeDate = {
   }
 }
 
+const prepareUserKey = (key => {
+  return [key, key.replace('user', '').toLowerCase()]
+})
+
+export const CUSTOM_USER_FILTER = {
+  methods: {
+    CUSTOM_USER_FILTER(value, search, user) {
+      const filters = JSON.parse(search || "")
+
+      let filterKeys = Object.keys(filters).filter(f => filters[f] !== null)
+      if (!filterKeys.length) {
+        return true
+      }
+      let preparedKeys = filterKeys.map(prepareUserKey)
+      return preparedKeys.every(([origKey, key]) => {
+        if (Array.isArray(user[key])) {
+          return user[key].indexOf(filters[origKey]) !== -1
+        } else {
+          return user[key] === filters[origKey]
+        }
+      })
+    }
+  }
+}
+
 export const lowerCase = {
   filters: {
     lowerCase(val) {
@@ -23,9 +48,13 @@ export const lowerCase = {
   }
 }
 const truncate = (val, n) => {
-  if (!val) return
+  if (!val) {
+    return
+  }
   const maxLength = n
-  if (val.length <= maxLength) return val
+  if (val.length <= maxLength) {
+    return val
+  }
 
   const reverseArr = val.split('').reverse()
   const format = reverseArr.slice(0, reverseArr.indexOf('.') + 4).reverse().join('')

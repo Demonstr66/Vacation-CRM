@@ -115,14 +115,7 @@
         </v-card-text>
         <v-card-actions v-if="!hideAction && !disabled && solo" class="mt-auto">
           <v-spacer></v-spacer>
-          <v-btn
-              :disabled="!isChanged || !valid"
-              color="success"
-              text
-              type="submit"
-          >
-            Сохранить
-          </v-btn>
+          <btn-submit :disabled="!isChanged || !valid"/>
           <v-spacer></v-spacer>
         </v-card-actions>
       </component>
@@ -134,14 +127,15 @@
 import {inputValidations} from "@/mixins/InputValidations";
 import {VForm} from "vuetify/lib/components";
 import {User} from "@/plugins/servises/User";
-import AppBaseSheet from "@/layouts/AppBaseSheet";
+import AppBaseSheet from "@/components/UI/app-base-sheet";
 import {posts} from "@/mixins/ComputedData";
 import SettingRow from "@/components/Account/setting-row";
+import BtnSubmit from "@/components/UI/btn-submit";
 
 export default {
   name: 'TheUserInfo',
   mixins: [inputValidations],
-  components: {SettingRow, AppBaseSheet, VForm},
+  components: {BtnSubmit, SettingRow, AppBaseSheet, VForm},
   props: {
     solo: {
       type: Boolean,
