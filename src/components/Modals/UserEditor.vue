@@ -1,44 +1,45 @@
 <template>
   <BaseModal
-    :show="show"
-    :submitDisable="!valid"
-    :title="title"
-    @cancel="close"
-    @reset="reset"
-    @submit="onSubmit"
+      :show="show"
+      :submitDisable="!valid"
+      :title="title"
+      large
+      @cancel="close"
+      @reset="reset"
+      @submit="onSubmit"
   >
     <v-form ref="form" v-model="valid" class="mt-4">
       <the-user-info
-        ref="user"
-        :disabled="!$can('updatePersonalData', user)"
-        :user="user"
-        hide-action
-        hide-additional-fields
-        hide-title
+          ref="user"
+          :disabled="!$can('updatePersonalData', user)"
+          :user="user"
+          hide-action
+          hide-additional-fields
+          hide-title
       >
       </the-user-info>
       <the-account-info
-        ref="account"
-        :cols="$vuetify.breakpoint.mdAndUp ? 2 : 1"
-        :disable-team="!$can('updateTeam', user)"
-        :disableAll="!$can('updateAccountData', user)"
-        :user="user"
-        hide-action
-        hide-title
+          ref="account"
+          :cols="$vuetify.breakpoint.mdAndUp ? 1 : 1"
+          :disable-team="!$can('updateTeam', user)"
+          :disableAll="!$can('updateAccountData', user)"
+          :user="user"
+          hide-action
+          hide-title
       >
       </the-account-info>
     </v-form>
     <Can I="updateUserRole" :this="user">
       <div>
         <v-switch
-          v-model="role"
-          class="ml-auto"
-          color="error"
-          flat
-          hide-details
-          inset
-          label="Администратор"
-          style="width: 200px"
+            v-model="role"
+            class="ml-auto"
+            color="error"
+            flat
+            hide-details
+            inset
+            label="Администратор"
+            style="width: 200px"
         />
       </div>
     </Can>
@@ -71,7 +72,8 @@ export default {
   },
   methods: {
     open(uid) {
-      let resolve, reject
+      let resolve,
+          reject
       const result = new Promise((res, rej) => {
         resolve = res
         reject = rej
@@ -90,11 +92,11 @@ export default {
     },
     async onSubmit() {
       let user = new User(
-        {
-          ...this.user,
-          ...this.$refs.account.getData(),
-          ...this.$refs.user.getData()
-        }
+          {
+            ...this.user,
+            ...this.$refs.account.getData(),
+            ...this.$refs.user.getData()
+          }
       )
 
       let shouldDeterminateRole = false
@@ -110,7 +112,9 @@ export default {
       const promise = user.uid ? user.update() : user.create()
 
       promise.then(() => {
-        if (shouldDeterminateRole) User.determinateLeaders()
+        if (shouldDeterminateRole) {
+          User.determinateLeaders()
+        }
         this.close()
       })
     },

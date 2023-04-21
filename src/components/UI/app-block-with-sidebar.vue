@@ -10,7 +10,7 @@
       </div>
       <div
           v-if="!isMobile || noHideSidebar"
-          class="flex-grow-0 flex-shrink-0 side-block"
+          class="flex-grow-0 flex-shrink-0"
           :style="sideBlock"
       >
         <div class="side-block">
@@ -87,6 +87,12 @@ export default {
 <style lang="scss" scoped>
 .main-block {
   max-width: 100%;
+}
+
+.side-block {
+  position: sticky;
+  position: -webkit-sticky;
+  top: 56px;
 }
 
 </style>

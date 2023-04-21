@@ -5,8 +5,9 @@
           v-model="activeTab"
       >
         <v-tab
-            v-for="tab in tabs"
+            v-for="tab in $options.TABS"
             :key="tab.id"
+
         >
           {{ tab.name }}
         </v-tab>
@@ -14,7 +15,7 @@
     </app-base-sheet>
     <v-tabs-items v-model="activeTab" style="background: inherit">
       <v-tab-item
-          v-for="tab in tabs"
+          v-for="tab in $options.TABS"
           :key="tab.id"
       >
         <component :is="tab.component"/>
@@ -25,9 +26,14 @@
 
 <script>
 
-import Users from "@/components/Administration/Users";
-import Structure from "@/components/Administration/Structure";
+import Users from "@/components/Organization/Users";
+import Structure from "@/components/Organization/Structure";
 import AppBaseSheet from "@/components/UI/app-base-sheet";
+
+const TABS = [
+  {id: 1, name: "Сотрудники", route: 'OrganizationUsers', component: 'Users'},
+  {id: 2, name: "Структура", route: 'OrganizationStructure', component: 'Structure'}
+]
 
 export default {
   name: "Administration",
@@ -35,33 +41,37 @@ export default {
   props: {
     sidebarData: {}
   },
+  TABS,
   data: () => ({
-    activeTab: 0,
-    tabs: [
-      {id: 1, name: "Сотрудники", route: 'Tab1', component: 'Users'},
-      {id: 2, name: "Структура", route: 'Tab2', component: 'Structure'}
-    ]
+    activeTab: 1,
   }),
   created() {
     const name = this.$route.name
-    const id = this.tabs.findIndex(tab => tab.route === name)
+    const id = this.$options.TABS.findIndex(tab => tab.route === name)
     if (this.activeTab !== id) {
       this.activeTab = id
     }
   },
   watch: {
     activeTab(id) {
-      const name = this.tabs[id].route
+      const name = this.$options.TABS[id]?.route
       if (this.$route.name !== name) {
-        this.$router.replace({name})
+        this.$router.push({name})
       }
     }
   }
 };
 </script>
 
-<style lang="css">
+<style scoped>
 .v-slide-group__prev--disabled {
   display: none !important;
+}
+
+.v-window,
+.v-window__container,
+.v-window * {
+  overflow: initial !important;
+  overflow-x: clip !important;
 }
 </style>

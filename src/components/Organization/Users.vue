@@ -7,7 +7,7 @@
             :search="JSON.stringify(filters)"
             :custom-filter="CUSTOM_USER_FILTER"
 
-            :group-by="groupBy"
+            :group-by.sync="groupBy"
             :headers="headers"
             :item-class="() => 'dropRow'"
             class="th-xs-pa-0 table-d-block"
@@ -74,10 +74,10 @@
                 </icon-btn-with-tip>
                 <icon-btn-with-tip
                     :disable="
-                              !$can('updateAccountData', item) &&
-                              !$can('updatePersonalData', item) &&
-                              !$can('updateUserRole', item) &&
-                              !$can('updateTeam', item)"
+                                !$can('updateAccountData', item) &&
+                                !$can('updatePersonalData', item) &&
+                                !$can('updateUserRole', item) &&
+                                !$can('updateTeam', item)"
                     color="primary"
                     icon="mdi-account-edit"
                     @click="showEditor(item.uid)"
@@ -108,39 +108,39 @@
           </template>
           <template v-slot:item.fullName="{item}">
             <div class="d-flex flex-column justify-start fill-height">
-            <span class="subtitle-1 text-truncate font-weight-medium">
-              {{ item.fullName }}
+              <span class="subtitle-1 text-truncate font-weight-medium">
+                {{ item.fullName }}
 
-              <span v-if="item.uid === currentUID" class="font-italic">(Вы)</span>
-            </span>
+                <span v-if="item.uid === currentUID" class="font-italic">(Вы)</span>
+              </span>
               <span
                   v-if="$vuetify.breakpoint.mdAndDown"
                   class="text--secondary"
               >
-              <span class="font-weight-bold">Должность: </span>
-              <span v-if="item.post">
-                {{ getPostTitle(item.post) }}
+                <span class="font-weight-bold">Должность: </span>
+                <span v-if="item.post">
+                  {{ getPostTitle(item.post) }}
+                </span>
+                <small v-else class="text--secondary font-italic">Не назнчена</small>
               </span>
-              <small v-else class="text--secondary font-italic">Не назнчена</small>
-            </span>
               <span class="text--secondary">
-              <span class="font-weight-bold">Email: </span>
-              <a :href="'mailto:'+item.email" class="text--secondary">
-                {{ item.email }}
-              </a>
-            </span>
+                <span class="font-weight-bold">Email: </span>
+                <a :href="'mailto:'+item.email" class="text--secondary">
+                  {{ item.email }}
+                </a>
+              </span>
             </div>
           </template>
           <template v-slot:item.post="{item}">
-           <span v-if="item.post">
-                {{ getPostTitle(item.post) }}
-           </span>
+             <span v-if="item.post">
+                  {{ getPostTitle(item.post) }}
+             </span>
             <small v-else class="text--secondary font-italic">Не назнчена</small>
           </template>
           <template v-slot:item.team="{item}">
-          <span v-if="!!item.team">
-            {{ getTeamTitle(item.team) }}
-          </span>
+            <span v-if="!!item.team">
+              {{ getTeamTitle(item.team) }}
+            </span>
             <small v-else class="text--secondary font-italic">Команды нет</small>
           </template>
           <template v-slot:item.tasks="{item}">
@@ -165,9 +165,9 @@
                     style="max-width: 150px"
                     @click:close="onDeleteTask(item.uid, task)"
                 >
-                  <span class="text-truncate">
-                    {{ getTaskTitle(task) }}
-                  </span>
+                    <span class="text-truncate">
+                      {{ getTaskTitle(task) }}
+                    </span>
                 </v-chip>
               </div>
               <div v-else>
@@ -200,10 +200,10 @@
             <row-actions>
               <icon-btn-with-tip
                   :disable="
-                  !$can('updateAccountData', item) &&
-                  !$can('updatePersonalData', item) &&
-                  !$can('updateUserRole', item) &&
-                  !$can('updateTeam', item)"
+                    !$can('updateAccountData', item) &&
+                    !$can('updatePersonalData', item) &&
+                    !$can('updateUserRole', item) &&
+                    !$can('updateTeam', item)"
                   color="primary"
                   icon="mdi-account-edit"
                   @click="showEditor(item.uid)"
@@ -265,12 +265,12 @@ import {currentUID, tasks, user, users} from "@/mixins/ComputedData";
 import IconBtnWithTip from "@/components/IconBtnWithTip";
 import UserEditor from "@/components/Modals/UserEditor";
 import AppPopup from "@/components/AppPopup";
-import AdministrationRightSidebar from "@/components/Administration/AdministrationRightSidebar";
+import AdministrationRightSidebar from "@/components/Organization/AdministrationRightSidebar";
 import AppBlockWithRightNavbar from "@/components/UI/app-block-with-sidebar";
 import GroupTools from "@/components/ScheduleViewer/GroupTools";
 import RowActions from "@/components/RowActions";
 import AppBaseSheet from "@/components/UI/app-base-sheet";
-import AdministrationDragItems from "@/components/Administration/AdministrationDragItems";
+import AdministrationDragItems from "@/components/Organization/AdministrationDragItems";
 import Users from "@/plugins/TableHeaders/Users";
 import ImportModal from "@/components/Modals/ImportModal";
 import {Team} from "@/plugins/servises/Team";

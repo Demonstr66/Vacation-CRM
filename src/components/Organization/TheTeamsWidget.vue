@@ -3,9 +3,9 @@
     <v-divider></v-divider>
     <div class="text-right">
       <icon-btn-with-tip
-        :color="sort !== 0 ? 'primary' : ''"
-        :icon="'mdi-sort-alphabetical-' + (sort !== 2 ? 'ascending' : 'descending')"
-        @click="toggleSort"
+          :color="sort !== 0 ? 'primary' : ''"
+          :icon="'mdi-sort-alphabetical-' + (sort !== 2 ? 'ascending' : 'descending')"
+          @click="toggleSort"
       >
         Сортировка
       </icon-btn-with-tip>
@@ -20,9 +20,9 @@
     </div>
     <v-divider></v-divider>
     <v-treeview
-      :active="active"
-      :items="sortedTree"
-      :open.sync="open"
+        :active="active"
+        :items="sortedTree"
+        :open.sync="open"
     >
       <template v-slot:label="{item}">
         <div>
@@ -38,7 +38,7 @@
       </template>
       <template v-slot:prepend="{ item }">
         <v-icon
-          v-text="`mdi-${item.root ? 'home-variant' : 'folder-network'}`"
+            v-text="`mdi-${item.root ? 'home-variant' : 'folder-network'}`"
         ></v-icon>
       </template>
       <template v-slot:append="{item}" v-if="$can('manage', 'Team')">
@@ -63,35 +63,35 @@
     </v-treeview>
 
     <app-popup
-      ref="editPopup"
+        ref="editPopup"
     >
       <template v-slot:default="{data, setResData, setSubmitDisable}">
         <v-form v-if="data" @input="(val) => setSubmitDisable(!val)">
           <v-text-field
-            :rules="[blankCheck]"
-            :value="data.title"
-            dense
-            flat
-            placeholder="Название команды"
-            single-line
+              :rules="[blankCheck]"
+              :value="data.title"
+              dense
+              flat
+              placeholder="Название команды"
+              single-line
 
-            @change="(val) => setResData('title', val)"
+              @change="(val) => setResData('title', val)"
           ></v-text-field>
           <v-select
-            :items="Object.values(users)"
-            :value="data.leaderId"
-            clearable
-            item-text="fullName"
-            item-value="uid"
-            placeholder="Выберите лидера"
-            @change="(val) => setResData('leaderId', val)"
+              :items="Object.values(users)"
+              :value="data.leaderId"
+              clearable
+              item-text="fullName"
+              item-value="uid"
+              placeholder="Выберите лидера"
+              @change="(val) => setResData('leaderId', val)"
           >
           </v-select>
         </v-form>
       </template>
     </app-popup>
     <app-popup
-      ref="deletePopup"
+        ref="deletePopup"
     >
       <template v-slot:default="{data, setResData}">
         Команда
@@ -100,11 +100,11 @@
         </span>
         будет удалена, продолжить?
         <v-checkbox
-          v-if="data && data.children && data.children.length > 0"
-          dense
-          hide-details
-          label="Удалить вложенные команды?"
-          @change="(val) => setResData('deleteChildren', val)"
+            v-if="data && data.children && data.children.length > 0"
+            dense
+            hide-details
+            label="Удалить вложенные команды?"
+            @change="(val) => setResData('deleteChildren', val)"
         ></v-checkbox>
       </template>
     </app-popup>
@@ -114,7 +114,7 @@
 <script>
 import {getShortUserNameByUID, teams, users, workspace} from '@/mixins/ComputedData';
 import {getUserNameById} from "@/mixins/dataHelper";
-import BaseWidget from "@/components/Administration/BaseWidget";
+import BaseWidget from "@/components/Organization/BaseWidget";
 import {inputValidations} from "@/mixins/InputValidations";
 import IconBtnWithTip from "@/components/IconBtnWithTip";
 import AppPopup from "@/components/AppPopup";
@@ -146,9 +146,13 @@ export default {
         let team = tempTeams[id]
         let parent = team.parent
 
-        if (parent === '') continue
+        if (parent === '') {
+          continue
+        }
 
-        if (!teams[parent].children) tempTeams[parent].children = []
+        if (!teams[parent].children) {
+          tempTeams[parent].children = []
+        }
         if (!tempTeams[parent].children.find(child => child.id === team.id)) {
           tempTeams[parent].children.push(team)
         }
@@ -160,14 +164,17 @@ export default {
     },
     sortedTree() {
       const {sort, tree} = this
-      if (sort === 0) return tree
+      if (sort === 0) {
+        return tree
+      }
 
       return [this.sortChildren(tree[0])]
     }
   },
   methods: {
     compare(item1, item2) {
-      let a = item1.title, b = item2.title
+      let a = item1.title,
+          b = item2.title
       return (this.sort === 1 ? a > b : a < b) ? 0 : -1
     },
     sortChildren(node) {
@@ -191,7 +198,9 @@ export default {
     },
 
     createTeam(parent) {
-      if (parent === this.workspace.id) parent = ''
+      if (parent === this.workspace.id) {
+        parent = ''
+      }
 
       this.editTeam({parent})
     },

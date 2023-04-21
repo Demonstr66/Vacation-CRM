@@ -4,7 +4,7 @@
       <template v-if="$vuetify.breakpoint.smAndUp">
         <span class="mr-1 text-subtitle-2">{{ label }}</span>
         <span
-            v-for="(group, idx) in groups"
+            v-for="(group, idx) in filteredGroups"
             :key="idx"
             :class="{
             'info--text': group.value === value
@@ -18,7 +18,7 @@
       </template>
       <template v-else>
         <v-select
-            :items="groups"
+            :items="filteredGroups"
             :value="value"
             @change="onInput"
 
@@ -49,12 +49,26 @@ export default {
       type: Array,
       default: () => DEFAULT_GROUPS
     },
+    hideGroups: {
+      type: Array,
+      default: () => []
+    },
     value: {
       type: String
     },
     label: {
       type: String,
       default: 'Группировать по'
+    }
+  },
+  computed: {
+    filteredGroups() {
+      let groups = this.groups
+      if (this.hideGroups.length) {
+        groups = groups.filter(g => this.hideGroups.indexOf(g.value) === -1)
+      }
+
+      return groups
     }
   },
   methods: {

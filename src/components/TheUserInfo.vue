@@ -25,10 +25,10 @@
             >
           </setting-row>
           <setting-row
+              v-if="!hideAdditionalFields"
               description="Соращенный вариант ФИО или любой другой удобный вариант, который будет отображаться в большинстве мест программы"
               label="Имя для отображения">
             <v-text-field
-                v-if="!hideAdditionalFields"
                 v-model="user.displayName"
                 :append-icon="disabled ? 'mdi-lock' : ''"
                 :disabled="disabled"
@@ -43,10 +43,12 @@
             </v-text-field
             >
           </setting-row>
-          <setting-row description="Этот вариант будет использоваться в шаблоне заявления на отпуск"
-                       label="Родительный падеж ФИО">
+          <setting-row
+              v-if="!hideAdditionalFields"
+              description="Этот вариант будет использоваться в шаблоне заявления на отпуск"
+              label="Родительный падеж ФИО"
+          >
             <v-text-field
-                v-if="!hideAdditionalFields"
                 v-model="user.templateName"
                 :append-icon="disabled ? 'mdi-lock' : ''"
                 :disabled="disabled"
@@ -63,55 +65,6 @@
             </v-text-field
             >
           </setting-row>
-
-
-          <!--          <v-text-field-->
-          <!--              v-model="user.fullName"-->
-          <!--              :append-icon="disabled ? 'mdi-lock' : ''"-->
-          <!--              :disabled="disabled"-->
-          <!--              :rules="[blankCheck]"-->
-          <!--              label="ФИО"-->
-
-          <!--              name="fullName"-->
-          <!--              @change="changed"-->
-          <!--          >-->
-          <!--            <template v-slot:prepend>-->
-          <!--              <v-icon color="blue-grey lighten-1">mdi-account</v-icon>-->
-          <!--            </template>-->
-          <!--          </v-text-field-->
-          <!--          >-->
-          <!--          <v-text-field-->
-          <!--              v-if="!hideAdditionalFields"-->
-          <!--              v-model="user.displayName"-->
-          <!--              :append-icon="disabled ? 'mdi-lock' : ''"-->
-          <!--              :disabled="disabled"-->
-          <!--              :rules="[blankCheck]"-->
-          <!--              label="Короткое имя"-->
-          <!--              name="displayName"-->
-          <!--              @change="changed"-->
-          <!--          >-->
-          <!--            <template v-slot:prepend>-->
-          <!--              <v-icon color="blue-grey lighten-1">mdi-account</v-icon>-->
-          <!--            </template>-->
-          <!--          </v-text-field-->
-          <!--          >-->
-          <!--          <v-text-field-->
-          <!--              v-if="!hideAdditionalFields"-->
-          <!--              v-model="user.templateName"-->
-          <!--              :append-icon="disabled ? 'mdi-lock' : ''"-->
-          <!--              :disabled="disabled"-->
-          <!--              :rules="[fioCheck]"-->
-          <!--              hint="От: "-->
-
-          <!--              label="ФИО для шаблона заявления"-->
-          <!--              name="templateName"-->
-          <!--              @change="changed"-->
-          <!--          >-->
-          <!--            <template v-slot:prepend>-->
-          <!--              <v-icon color="blue-grey lighten-1">mdi-account</v-icon>-->
-          <!--            </template>-->
-          <!--          </v-text-field-->
-          <!--          >-->
         </v-card-text>
         <v-card-actions v-if="!hideAction && !disabled && solo" class="mt-auto">
           <v-spacer></v-spacer>

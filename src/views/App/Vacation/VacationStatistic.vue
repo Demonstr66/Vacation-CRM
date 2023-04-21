@@ -6,7 +6,7 @@
     <app-block-with-right-navbar>
       <template v-slot:main>
         <app-base-sheet>
-          <app-group-toolbar v-model="groupBy">
+          <app-group-toolbar v-model="groupBy" :hide-groups="['active']">
             <btn-open-sidebar/>
           </app-group-toolbar>
           <v-data-table
@@ -16,9 +16,12 @@
               item-key="uid"
               :headers="$options.headers"
               :options="{itemsPerPage: 15}"
-              :group-by="groupBy"
+              :group-by.sync="groupBy"
               dense
           >
+            <template v-slot:group.header="data">
+              <app-table-group-header :data="data" :header="getGroupHeader(data.groupBy[0], data.group)"/>
+            </template>
             <template v-slot:item.vacationDays="{item}">
               <input-num-with-btns :min="-50" :disabled="!editMode"/>
             </template>
@@ -57,11 +60,15 @@ import BtnOpenSidebar from "@/components/UI/btn-open-sidebar";
 import IconBtnWithTip from "@/components/IconBtnWithTip";
 import BtnSubmit from "@/components/UI/btn-submit";
 import {CUSTOM_USER_FILTER} from "@/mixins/Filters";
+import AppTableGroupHeader from "@/components/UI/app-table-group-header";
+import {Team} from "@/plugins/servises/Team";
+import {Post} from "@/plugins/servises/Post";
 
 
 export default {
   name: "VacationStatistic",
   components: {
+    AppTableGroupHeader,
     BtnSubmit,
     IconBtnWithTip,
     BtnOpenSidebar,
@@ -86,6 +93,16 @@ export default {
     toggleEditMode() {
       this.editMode = !this.editMode
       this.allowSave = true
+    },
+    getGroupHeader(key, id) {
+      switch (key) {
+        case 'post':
+          return Post.getTitle(id);
+        case 'team':
+          return Team.getTitle(id);
+        default:
+          return id;
+      }
     }
   }
 }

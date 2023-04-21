@@ -1,6 +1,6 @@
 <template>
   <v-list-item
-      :to="{name: link.path}"
+      :to="link.to"
       link
   >
     <v-list-item-icon v-if="link.icon">
@@ -22,7 +22,7 @@ export default {
       type: Object,
       required: true,
       validator: (value) => {
-        return value.path && value.title
+        return value.to && value.title
       }
     }
   }

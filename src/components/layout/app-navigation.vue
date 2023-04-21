@@ -8,45 +8,31 @@
       app
   >
     <v-list v-if="!loading" dense nav>
-      <v-list-item
-          link
-          to="/"
-      >
-        <v-list-item-icon>
-          <v-icon>
-            mdi-home
-          </v-icon>
-        </v-list-item-icon>
-        <v-list-item-title>
-          На главную
-        </v-list-item-title>
-      </v-list-item>
-      <v-divider></v-divider>
       <template
-          v-for="(link, idx) in links"
+          v-for="(item, idx) in links"
       >
         <v-list-group
-            v-if="link.children && link.children.length"
+            v-if="item.children && item.children.length"
             :key="idx"
 
-            :value="isCurrentGroup(link.children)"
+            :value="item.module === $route.meta.module"
             no-action
-            :prepend-icon="link.icon"
+            :prepend-icon="item.icon"
         >
           <template v-slot:activator>
             <v-list-item-content>
-              <v-list-item-title>{{ link.header }}</v-list-item-title>
+              <v-list-item-title>{{ item.header }}</v-list-item-title>
             </v-list-item-content>
           </template>
           <app-navigation-link
-              v-for="(subLink, subIdx) in link.children"
+              v-for="(subLink, subIdx) in item.children"
               class="pl-6"
               :key="idx + '_' + subIdx"
               :link="subLink"
           />
-          <v-divider></v-divider>
         </v-list-group>
-        <app-navigation-link v-else :link="link" :key="idx"/>
+        <v-divider v-else-if="item.divider"></v-divider>
+        <app-navigation-link v-else :link="item" :key="idx"/>
       </template>
     </v-list>
     <v-list v-else dense nav>
@@ -59,6 +45,7 @@
           type="list-item"
       />
     </v-list>
+    <v-btn @click="console" text block outlined color="deep-purple">console</v-btn>
   </v-navigation-drawer>
 </template>
 
@@ -81,24 +68,34 @@ export default {
   data: () => ({
     links: [
       {
+        to: '/',
+        icon: 'mdi-home',
+        title: 'На главную'
+      },
+      {divider: true},
+      {
+        module: 'vacation',
         header: 'Отспуска',
         icon: 'mdi-calendar-outline',
         children: [
-          {path: 'Schedules', icon: 'mdi-folder', title: 'Графики'},
-          {path: 'Vacations', icon: 'mdi-star', title: 'Мои отпуска'},
-          {path: 'Stats', icon: 'mdi-chart-donut', title: 'Настройка '},
+          {to: {name: 'Schedules'}, icon: 'mdi-folder', title: 'Графики'},
+          {to: {name: 'Vacations'}, icon: 'mdi-star', title: 'Мои отпуска'},
+          {to: {name: 'Stats'}, icon: 'mdi-chart-donut', title: 'Настройка '},
         ]
       },
+      {divider: true},
       {
+        module: 'goals',
         header: 'Цели',
         icon: 'mdi-bullseye-arrow',
         children: [
-          {path: 'Intervals', icon: 'mdi-folder', title: 'Периоды'},
-          {path: 'GoalViewer', icon: 'mdi-chart-donut', title: 'Просмотр'},
-          {path: 'Goals', icon: 'mdi-star', title: 'Мои цели'}
+          {to: {name: 'Intervals'}, icon: 'mdi-folder', title: 'Периоды'},
+          {to: {name: 'GoalViewer'}, icon: 'mdi-chart-donut', title: 'Просмотр'},
+          {to: {name: 'Goals'}, icon: 'mdi-star', title: 'Мои цели'}
         ]
       },
-      {path: 'Tab1', icon: 'mdi-account-group', title: 'Команда'},
+      {divider: true},
+      {to: {name: 'OrganizationUsers'}, icon: 'mdi-account-group', title: 'Команда'},
     ]
   }),
   computed: {
@@ -114,9 +111,13 @@ export default {
     },
   },
   methods: {
-    isCurrentGroup(children) {
-      const currPathName = this.$route.name
-      return children.some(child => child.path === currPathName)
+    isCurrentGroup(module) {
+      const currModuleName = this.$route.meta.module
+      return currModuleName === module
+    },
+    console() {
+      console.log(this.$router)
+      console.log(this.$route)
     }
   }
 };

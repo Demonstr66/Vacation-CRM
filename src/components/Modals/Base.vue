@@ -1,15 +1,18 @@
 <template>
-  <v-dialog :fullscreen="$vuetify.breakpoint.smAndDown" transition="dialog-top-transition"
-            :max-width="large ? 1000 :
-  700"
-            v-model="isShow" persistent>
+  <v-dialog
+      :fullscreen="$vuetify.breakpoint.smAndDown"
+      transition="dialog-top-transition"
+      :max-width="large ? 1000 : 700"
+      v-model="isShow"
+      persistent
+  >
     <template v-slot:default>
       <v-card style="z-index: 10000 !important">
         <v-toolbar
-          color="accent"
-          dark
-          v-if="title != ''"
-          class="text-h4"
+            color="deep-purple accent-2"
+            dark
+            v-if="title != ''"
+            class="text-h4"
         >
           <span>{{ title }}</span>
         </v-toolbar>
@@ -21,18 +24,18 @@
           <v-form @submit.prevent="onSubmit">
             <v-spacer></v-spacer>
             <v-btn
-              color="error"
-              text
-              @click="onCancel"
-              :disabled="cancelDisable"
+                color="error"
+                text
+                @click="onCancel"
+                :disabled="cancelDisable"
             >
               {{ cancelText }}
             </v-btn>
             <v-btn
-              color="success"
-              text
-              @click="onSubmit"
-              :disabled="submitDisable"
+                color="success"
+                text
+                @click="onSubmit"
+                :disabled="submitDisable"
             >
               {{ submitText }}
             </v-btn>

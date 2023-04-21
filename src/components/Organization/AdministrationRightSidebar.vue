@@ -54,7 +54,7 @@
 <script>
 import IconBtnWithTip from "@/components/IconBtnWithTip"
 import {posts, tasks, teams} from "@/mixins/ComputedData";
-import AdministrationDragItems from "@/components/Administration/AdministrationDragItems";
+import AdministrationDragItems from "@/components/Organization/AdministrationDragItems";
 import {User} from "@/plugins/servises/User";
 import AppFilters from "@/components/UI/app-filters";
 
