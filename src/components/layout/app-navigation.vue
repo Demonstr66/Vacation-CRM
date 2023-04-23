@@ -51,6 +51,18 @@
 
 <script>
 import AppNavigationLink from "@/components/layout/app-navigation-link";
+import {vacationNavLinks} from "@/router/modules/vacation";
+import {goalNavLinks} from "@/router/modules/goals";
+
+const links = [
+  {to: '/', icon: 'mdi-home', title: 'На главную'},
+  vacationNavLinks,
+  {divider: true},
+  goalNavLinks,
+  {divider: true},
+  {to: {name: 'OrganizationEmployees'}, icon: 'mdi-account-group', title: 'Команда'},
+]
+
 
 export default {
   name: "SideNavigation",
@@ -66,37 +78,7 @@ export default {
     }
   },
   data: () => ({
-    links: [
-      {
-        to: '/',
-        icon: 'mdi-home',
-        title: 'На главную'
-      },
-      {divider: true},
-      {
-        module: 'vacation',
-        header: 'Отспуска',
-        icon: 'mdi-calendar-outline',
-        children: [
-          {to: {name: 'Schedules'}, icon: 'mdi-folder', title: 'Графики'},
-          {to: {name: 'Vacations'}, icon: 'mdi-star', title: 'Мои отпуска'},
-          {to: {name: 'Stats'}, icon: 'mdi-chart-donut', title: 'Настройка '},
-        ]
-      },
-      {divider: true},
-      {
-        module: 'goals',
-        header: 'Цели',
-        icon: 'mdi-bullseye-arrow',
-        children: [
-          {to: {name: 'Intervals'}, icon: 'mdi-folder', title: 'Периоды'},
-          {to: {name: 'GoalViewer'}, icon: 'mdi-chart-donut', title: 'Просмотр'},
-          {to: {name: 'Goals'}, icon: 'mdi-star', title: 'Мои цели'}
-        ]
-      },
-      {divider: true},
-      {to: {name: 'OrganizationUsers'}, icon: 'mdi-account-group', title: 'Команда'},
-    ]
+    links
   }),
   computed: {
     isExpand: {
@@ -111,10 +93,6 @@ export default {
     },
   },
   methods: {
-    isCurrentGroup(module) {
-      const currModuleName = this.$route.meta.module
-      return currModuleName === module
-    },
     console() {
       console.log(this.$router)
       console.log(this.$route)

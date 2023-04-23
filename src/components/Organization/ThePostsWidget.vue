@@ -1,13 +1,13 @@
 <template>
   <div>
     <list-with-add
-      :action="$can('manage', 'Post')"
-      :items="Object.values(posts)"
-      title="Должности"
-      @delete="onDelete"
-      @save="onSave"
-      @create="onCreate"
-      @edit="onEdit"
+        :action="$can('manage', 'Post')"
+        :items="Object.values(posts)"
+        title="Должности"
+        @delete="onDelete"
+        @save="onSave"
+        @create="onCreate"
+        @edit="onEdit"
     >
       <template #subtitle="{item}">
         <span>
@@ -58,7 +58,7 @@
 <script>
 
 import {posts} from "@/mixins/ComputedData";
-import ListWithAdd from "./BaseListWidget.vue";
+import ListWithAdd from "../BaseListWidget.vue";
 import {Post} from "@/plugins/servises/Post";
 import AppPopup from "@/components/AppPopup";
 import {Task} from "@/plugins/servises/Task";
@@ -90,8 +90,11 @@ export default {
       }
     },
     onSave(item) {
-      if (!item.id) Post.create(item)
-      else Post.update(item)
+      if (!item.id) {
+        Post.create(item)
+      } else {
+        Post.update(item)
+      }
     },
     async onDelete(id) {
       const post = this.posts[id]

@@ -12,6 +12,7 @@
         <v-icon color="white">mdi-close</v-icon>
       </v-btn>
     </v-system-bar>
+
     <component :is="layout" :loading="!appReady" :title="title">
       <router-view></router-view>
     </component>

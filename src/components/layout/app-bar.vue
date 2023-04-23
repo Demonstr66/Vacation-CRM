@@ -73,7 +73,7 @@ export default {
       this.signOut()
     },
     onAccount() {
-      if (this.$route.name == 'Account') {
+      if (this.$route.name == 'Settings') {
         return
       }
       this.$router.push({name: 'SettingProfile'});

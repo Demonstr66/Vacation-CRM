@@ -82,7 +82,7 @@ import {VForm} from "vuetify/lib/components";
 import {User} from "@/plugins/servises/User";
 import AppBaseSheet from "@/components/UI/app-base-sheet";
 import {posts} from "@/mixins/ComputedData";
-import SettingRow from "@/components/Account/setting-row";
+import SettingRow from "@/components/Settings/setting-row";
 import BtnSubmit from "@/components/UI/btn-submit";
 
 export default {

@@ -35,7 +35,7 @@
       </div>
       <v-card-actions class="px-0">
         <v-btn block color="primary" text @click="goto(item.id)" tag="a"
-               :to="{name: 'Vacation', params: {uid, id: item.id}}">
+               :to="{name: 'VacationViewer', params: {uid, id: item.id}}">
           открыть
         </v-btn>
       </v-card-actions>
@@ -48,7 +48,7 @@
 import AddVacationModal from "../components/Modals/AddVacation.vue";
 import TheCalendar from "@/components/TheCalendar";
 import {schedules} from "@/mixins/ComputedData";
-import BaseWidget from "@/components/Organization/BaseWidget";
+import BaseWidget from "@/components/BaseWidget";
 import IconBtnWithTip from "@/components/IconBtnWithTip";
 import AppBaseSheet from "@/components/UI/app-base-sheet";
 import {Schedule} from "@/plugins/servises/Schedule";
@@ -136,7 +136,7 @@ export default {
           }, 0)
     },
     goto(id) {
-      this.$router.push({name: 'Vacation', params: {uid: this.uid, id}})
+      this.$router.push({name: 'VacationViewer', params: {uid: this.uid, id}})
     },
   },
 };

@@ -38,11 +38,20 @@ import {Team} from "@/plugins/servises/Team";
 
 
 const FILTERS = [
-  {items: [{label: 1, id: 1}, {label: 2, id: 2}], key: 'vacationStatus', label: 'Статус', text: 'label', value: 'id'},
+  {
+    items: [{label: 1, id: '1'}, {label: 2, id: '2'}],
+    key: 'vacationStatus',
+    label: 'Статус',
+    text: 'label',
+    value: 'id'
+  },
   {items: Team.getAll(), key: 'userTeam', label: 'Команда', text: 'title', value: 'id'},
   {items: Post.getAll(), key: 'userPost', label: 'Должность', text: 'title', value: 'id'},
   {items: Task.getAll(), key: 'userTasks', label: 'Задача', text: 'title', value: 'id'},
 ]
+
+const selectedFilters = {}
+FILTERS.forEach(item => selectedFilters[item.key] = undefined)
 
 export default {
   name: "app-filters",
@@ -68,7 +77,19 @@ export default {
   },
   data() {
     return {
-      selectedFilters: {}
+      selectedFilters: selectedFilters
+    }
+  },
+  mounted() {
+    console.log('##########CREATED')
+    const query = this.$route.query
+    const keys = Object.keys(query)
+    console.log('##########', query)
+    console.log('##########', keys)
+    if (keys.length) {
+      keys.forEach(key => {
+        this.selectedFilters[key] = query[key]
+      })
     }
   },
   computed: {
@@ -90,8 +111,12 @@ export default {
     }
   },
   watch: {
-    selectedFilters() {
-      this.$emit('input', this.selectedFilters)
+    selectedFilters: {
+      deep: true,
+      handler() {
+        console.log('#########SELECTED', this.selectedFilters)
+        this.$emit('input', this.selectedFilters)
+      }
     }
   }
 }

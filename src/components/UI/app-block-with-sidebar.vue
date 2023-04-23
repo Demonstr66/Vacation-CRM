@@ -14,7 +14,7 @@
           :style="sideBlock"
       >
         <div class="side-block">
-          <slot name="navbar"/>
+          <slot name="sidebar"/>
         </div>
       </div>
     </div>

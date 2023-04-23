@@ -1,77 +1,37 @@
 <template>
   <div>
-    <app-base-sheet>
-      <v-tabs
-          v-model="activeTab"
-      >
-        <v-tab
-            v-for="tab in $options.TABS"
-            :key="tab.id"
-
-        >
-          {{ tab.name }}
-        </v-tab>
-      </v-tabs>
-    </app-base-sheet>
-    <v-tabs-items v-model="activeTab" style="background: inherit">
-      <v-tab-item
-          v-for="tab in $options.TABS"
-          :key="tab.id"
-      >
-        <component :is="tab.component"/>
-      </v-tab-item>
-    </v-tabs-items>
+    <app-tabs-nav v-model="currentTab" :tabs="$options.TABS"/>
+    <!--    <v-tabs-items v-model="currentTab" style="background: inherit">-->
+    <!--      <v-tab-item-->
+    <!--          v-for="tab in $options.TABS"-->
+    <!--          :key="tab.name"-->
+    <!--      >-->
+    <!--        <component :is="tab.component"/>-->
+    <!--      </v-tab-item>-->
+    <!--    </v-tabs-items>-->
+    <router-view/>
   </div>
 </template>
 
 <script>
-
-import Users from "@/components/Organization/Users";
-import Structure from "@/components/Organization/Structure";
+import Employees from "@/components/Organization/pages/Employees";
+import Structure from "@/components/Organization/pages/Structure";
 import AppBaseSheet from "@/components/UI/app-base-sheet";
+import AppTabsNav from "@/components/UI/app-tabs-nav";
 
 const TABS = [
-  {id: 1, name: "Сотрудники", route: 'OrganizationUsers', component: 'Users'},
-  {id: 2, name: "Структура", route: 'OrganizationStructure', component: 'Structure'}
+  {name: 'OrganizationEmployees', title: "Сотрудники", component: 'Employees'},
+  {name: 'OrganizationStructure', title: "Структура", component: 'Structure'}
 ]
 
 export default {
   name: "Administration",
-  components: {AppBaseSheet, Structure, Users},
-  props: {
-    sidebarData: {}
-  },
+  components: {AppTabsNav, AppBaseSheet, Structure, Employees},
   TABS,
-  data: () => ({
-    activeTab: 1,
-  }),
-  created() {
-    const name = this.$route.name
-    const id = this.$options.TABS.findIndex(tab => tab.route === name)
-    if (this.activeTab !== id) {
-      this.activeTab = id
-    }
-  },
-  watch: {
-    activeTab(id) {
-      const name = this.$options.TABS[id]?.route
-      if (this.$route.name !== name) {
-        this.$router.push({name})
-      }
+  data() {
+    return {
+      currentTab: 0
     }
   }
 };
 </script>
-
-<style scoped>
-.v-slide-group__prev--disabled {
-  display: none !important;
-}
-
-.v-window,
-.v-window__container,
-.v-window * {
-  overflow: initial !important;
-  overflow-x: clip !important;
-}
-</style>

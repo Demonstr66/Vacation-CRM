@@ -121,7 +121,7 @@ import {domain, posts, tasks, teams} from "@/mixins/ComputedData";
 import InputIcon from "@/components/InputIcon";
 import {User} from "@/plugins/servises/User";
 import AppBaseSheet from "@/components/UI/app-base-sheet";
-import SettingRow from "@/components/Account/setting-row";
+import SettingRow from "@/components/Settings/setting-row";
 import BtnSubmit from "@/components/UI/btn-submit";
 import {VForm} from "vuetify/lib/components";
 

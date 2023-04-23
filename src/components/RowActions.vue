@@ -1,9 +1,9 @@
 <template>
   <v-menu
-    v-if="$vuetify.breakpoint[breakpoint]"
-    content-class="no-sheet"
-    offset-y
-    top
+      v-if="$vuetify.breakpoint[breakpoint]"
+      content-class="no-sheet"
+      offset-y
+      top
 
   >
     <template v-slot:activator="{ on, attrs }">
@@ -15,7 +15,7 @@
       <slot></slot>
     </div>
   </v-menu>
-  <div v-else class="d-flex flex-nowrap justify-center">
+  <div v-else class="d-flex flex-nowrap justify-end" style="max-width: fit-content">
     <slot></slot>
   </div>
 </template>

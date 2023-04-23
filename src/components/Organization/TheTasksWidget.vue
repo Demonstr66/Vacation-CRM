@@ -1,13 +1,13 @@
 <template>
   <div>
     <list-with-add
-      :items="Object.values(tasks)"
-      :action="$can('manage', 'Task')"
-      title="Задачи"
-      @delete="onDelete"
-      @save="onSave"
-      @create="onCreate"
-      @edit="onEdit"
+        :items="Object.values(tasks)"
+        :action="$can('manage', 'Task')"
+        title="Задачи"
+        @delete="onDelete"
+        @save="onSave"
+        @create="onCreate"
+        @edit="onEdit"
     />
     <app-popup ref="listPopup">
       <template v-slot:default="{data}">
@@ -41,7 +41,7 @@
 
 <script>
 import {tasks} from "@/mixins/ComputedData";
-import ListWithAdd from "./BaseListWidget.vue";
+import ListWithAdd from "../BaseListWidget.vue";
 import {Task} from "@/plugins/servises/Task";
 import AppPopup from "@/components/AppPopup";
 import {Post} from "@/plugins/servises/Post";
@@ -55,8 +55,11 @@ export default {
   },
   methods: {
     onSave(item) {
-      if (!item.id) Task.create(item)
-      else Task.update(item)
+      if (!item.id) {
+        Task.create(item)
+      } else {
+        Task.update(item)
+      }
     },
     async onCreate() {
       let result = await this.$refs.listPopup2.open({title: ''})

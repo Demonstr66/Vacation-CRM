@@ -1,135 +1,46 @@
-const Vacations = () => import('@/views/App/Vacation/Vacations.vue')
-const Vacation = () => import('@/views/App/Vacation/Vacation.vue')
-const Schedules = () => import('@/views/App/Vacation/Schedules')
-const Schedule = () => import('@/views/App/Vacation/ScheduleViewer')
-const ScheduleEditor = () => import('@/views/App/Vacation/ScheduleEditor')
-const Viewer1 = () => import('@/components/ScheduleViewer/ListView'  )
-const Viewer2 = () => import('@/components/ScheduleViewer/TimelineView'  )
-const ScheduleStatistic = () => import('@/views/App/Vacation/ScheduleStatistic')
-const VacationsStats = () => import('@/views/App/Vacation/VacationStatistic')
+import {createRoute} from "@/router/utils";
+
+const VacationHome = () => import('@/views/App/Modules/Vacation/VacationHome')
+const VacationViewer = () => import('@/views/App/Modules/Vacation/VacationViewer')
+
+const VacationReport = () => import('@/views/App/Modules/Vacation/VacationReport')
+
+const ScheduleHome = () => import('@/views/App/Modules/Vacation/ScheduleHome')
+const ScheduleStatistic = () => import('@/components/Modules/Vacation/ScheduleViewer/pages/ScheduleStatistic')
+const ScheduleCreator = () => import('@/views/App/Modules/Vacation/ScheduleEditor')
+const ScheduleEditor = () => import('@/views/App/Modules/Vacation/ScheduleEditor')
+const ScheduleViewer = () => import('@/views/App/Modules/Vacation/ScheduleViewer')
+const ScheduleViewerList = () => import('@/components/Modules/Vacation/ScheduleViewer/pages/List'  )
+const ScheduleViewerTimeline = () => import('@/components/Modules/Vacation/ScheduleViewer/pages/Timeline'  )
 
 export const vacationRoutes = [
-  {
-    path: '/vacations',
-    name: 'Vacations',
-    component: Vacations,
-    meta: {
-      layout: 'MainEmptyLayout',
-      title: 'Мои отпуска',
-      protected: {
-        accessLevel: [2]
-      }
-    }
-  },
-  {
-    path: '/stats',
-    name: 'Stats',
-    component: VacationsStats,
-    meta: {
-      layout: 'MainEmptyLayout',
-      protected: {
-        accessLevel: [2]
-      }
-    }
-  },
-  {
-    path: '/vacation/:uid/:id',
-    name: 'Vacation',
-    component: Vacation,
-    meta: {
-      layout: 'MainEmptyLayout',
-      title: '',
-      protected: {
-        accessLevel: [2]
-      }
-    }
-  },
-  {
-    path: '/schedules',
-    name: 'Schedules',
-    component: Schedules,
-    meta: {
-      layout: 'MainEmptyLayout',
-      title: 'Графики отпусков',
-      protected: {
-        accessLevel: [2]
-      }
-    }
-  },
-  {
-    path: '/schedules/editor',
-    component: ScheduleEditor,
-    name: 'ScheduleCreate',
-    meta: {
-      layout: 'MainLayout',
-      title: 'Новый график',
-      protected: {
-        accessLevel: [2]
-      }
-    }
-  },
-  {
-    path: '/schedules/editor/:id',
-    component: ScheduleEditor,
-    name: 'ScheduleEditor',
-    meta: {
-      layout: 'MainLayout',
-      title: 'Редактирование',
-      protected: {
-        accessLevel: [2]
-      }
-    }
-  },
-  {
-    path: '/schedules/view',
-    component: Schedule,
-    name: 'ScheduleViewer',
-    children: [
-      {
-        path: '/',
-        redirect: {name: 'Viewer1'}
-      },
-      {
-        path: 'list/:id',
-        component: Viewer1,
-        name: 'Viewer1',
-        meta: {
-          layout: 'MainEmptyLayout',
-          title: '',
-          protected: {
-            accessLevel: [2]
-          }
-        }
-      }, {
-        path: 'timeline/:id',
-        component: Viewer2,
-        name: 'Viewer2',
-        meta: {
-          layout: 'MainEmptyLayout',
-          title: '',
-          protected: {
-            accessLevel: [2]
-          }
-        }
-      }],
-    meta: {
-      layout: 'MainEmptyLayout',
+  createRoute('/vacation', VacationHome, {title: 'Мои отпуска',}),
+  createRoute('/report', VacationReport),
+  createRoute('/vacation/:uid/:id', VacationViewer),
+  createRoute('/schedules', ScheduleHome, {title: 'Графики отпусков',}),
+  createRoute('/schedules/editor', ScheduleCreator, {title: 'Новый график',}),
+  createRoute('/schedules/editor/:id', ScheduleEditor, {title: 'Редактирование',}),
+  createRoute(
+    '/schedules/viewer',
+    ScheduleViewer,
+    {
       title: 'Просмотр',
-      protected: {
-        accessLevel: [2]
-      }
-    }
-  },
-  {
-    path: '/schedules/stat/:id',
-    component: ScheduleStatistic,
-    name: 'ScheduleStatistic',
-    meta: {
-      layout: 'MainEmptyLayout',
-      title: 'Статистика',
-      protected: {
-        accessLevel: [2]
-      }
-    }
-  }
+      children: [
+        ['/', false, {redirect: {name: 'ScheduleViewerList'}}],
+        ['list/:id', ScheduleViewerList,],
+        ['timeline/:id', ScheduleViewerTimeline,]
+      ],
+    }),
+  createRoute('/schedules/stat/:id', ScheduleStatistic, {title: 'Статистика',})
 ]
+
+export const vacationNavLinks = {
+  module: 'vacation',
+  header: 'Отспуска',
+  icon: 'mdi-calendar-outline',
+  children: [
+    {to: {name: 'ScheduleHome'}, icon: 'mdi-folder', title: 'Графики'},
+    {to: {name: 'VacationHome'}, icon: 'mdi-star', title: 'Мои отпуска'},
+    {to: {name: 'VacationReport'}, icon: 'mdi-file-chart-outline', title: 'Отчеты'},
+  ]
+}

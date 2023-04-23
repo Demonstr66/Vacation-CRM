@@ -11,6 +11,7 @@ import {firebaseConfig} from './plugins/secure'
 import VCalendar from 'v-calendar';
 
 import RichTextEditor from 'rich-text-editor-vuetify'
+import '@/assets/style.scss'
 
 Vue.use(RichTextEditor)
 

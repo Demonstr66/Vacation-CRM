@@ -3,7 +3,7 @@
     <template v-slot:main>
       <router-view/>
     </template>
-    <template v-slot:navbar>
+    <template v-slot:sidebar>
       <account-nav :items="$options.links"/>
     </template>
   </app-block-with-right-navbar>
@@ -18,7 +18,7 @@ import TheUserInfo from "@/components/TheUserInfo";
 import WorkspaceSetting from "@/components/workspace/Setting";
 import {User} from "@/plugins/servises/User";
 import AppBaseSheet from "@/components/UI/app-base-sheet";
-import AccountNav from "@/components/Account/account-nav";
+import AccountNav from "@/components/Settings/settings-nav";
 import AppBlockWithRightNavbar from "@/components/UI/app-block-with-sidebar";
 
 export default {
@@ -36,15 +36,15 @@ export default {
   },
   links: [
     {header: 'Основные'},
-    {text: 'Личные данные', to: {name: 'profile'}, icon: ''},
-    {text: 'Параметры пространства', to: {name: 'workspace'}, icon: ''},
+    {text: 'Личные данные', to: {name: 'SettingProfile'}, icon: ''},
+    {text: 'Параметры пространства', to: {name: 'SettingWorkspace'}, icon: ''},
     {divider: true},
     {header: 'Отпуска'},
-    {text: 'Шаблон для заявления', to: {name: 'v-template'}, icon: ''},
-    {text: 'Уведомления', to: {name: 'v-rss'}, icon: ''},
+    {text: 'Шаблон для заявления', to: {name: 'SettingVacationTemplate'}, icon: ''},
+    {text: 'Уведомления', to: {name: 'SettingVacationNotification'}, icon: ''},
     {header: 'Общие'},
     {divider: true},
-    {text: 'Разрешения', to: {name: 'permission'}, icon: ''},
+    {text: 'Разрешения', to: {name: 'SettingAccessPermission'}, icon: ''},
   ],
   data() {
     return {}

@@ -114,7 +114,7 @@
 <script>
 import {getShortUserNameByUID, teams, users, workspace} from '@/mixins/ComputedData';
 import {getUserNameById} from "@/mixins/dataHelper";
-import BaseWidget from "@/components/Organization/BaseWidget";
+import BaseWidget from "@/components/BaseWidget";
 import {inputValidations} from "@/mixins/InputValidations";
 import IconBtnWithTip from "@/components/IconBtnWithTip";
 import AppPopup from "@/components/AppPopup";

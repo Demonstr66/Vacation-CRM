@@ -6,7 +6,7 @@
     />
     <Appbar :expand="expandNavigation" :title="title" app @click="onExpandClick"/>
     <the-app-loader v-if="loading"></the-app-loader>
-    <v-main>
+    <v-main v-else>
       <div class="mt-0 mt-md-8 px-0 px-md-8">
         <span v-if="$vuetify.breakpoint.smAndUp && !!title" class="display-1 ml-1 mb-1">
           {{ title }}</span>

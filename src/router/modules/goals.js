@@ -1,6 +1,6 @@
-const Intervals = () => import('@/views/App/Goals/Intervals')
-const GoalViewer = () => import('@/views/App/Goals/GoalViewer')
-const Goals = () => import('@/views/App/Goals/Goals')
+const Intervals = () => import('@/views/App/Modules/Goals/Intervals')
+const GoalViewer = () => import('@/views/App/Modules/Goals/GoalViewer')
+const Goals = () => import('@/views/App/Modules/Goals/Goals')
 
 export const goalsRoutes = [
 
@@ -45,3 +45,14 @@ export const goalsRoutes = [
     }
   }
 ]
+
+export const goalNavLinks = {
+  module: 'goals',
+  header: 'Цели',
+  icon: 'mdi-bullseye-arrow',
+  children: [
+    {to: {name: 'Intervals'}, icon: 'mdi-folder', title: 'Периоды'},
+    {to: {name: 'GoalViewer'}, icon: 'mdi-chart-donut', title: 'Просмотр'},
+    {to: {name: 'Goals'}, icon: 'mdi-star', title: 'Мои цели'}
+  ]
+}

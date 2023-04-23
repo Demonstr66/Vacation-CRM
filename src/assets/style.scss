@@ -1,0 +1,97 @@
+$borderGrey: #e0e0e0;
+
+.border-left {
+  border-left: thin solid $borderGrey !important;
+}
+
+.v-slide-group__prev--disabled {
+  display: none !important;
+}
+
+.v-window,
+.v-window__container,
+.v-window * {
+  overflow: initial !important;
+  overflow-x: clip !important;
+}
+
+
+.th-xs-pa-0 {
+  @media screen and (max-width: 600px) {
+    & th {
+      padding: 0 4px !important;
+    }
+  }
+}
+
+.table-d-block {
+  @media screen and (max-width: 600px) {
+    & table {
+      display: block;
+    }
+  }
+}
+
+.no-sheet {
+  box-shadow: none !important;
+  overflow-x: initial !important;
+  overflow-y: initial !important;
+  contain: initial !important;
+}
+
+.dropRow {
+  position: relative;
+}
+
+.fit-content {
+  width: fit-content;
+}
+
+.border-left {
+  border-left: thin solid #e0e0e0;
+}
+
+.droppable::after {
+  content: "";
+  position: absolute;
+  box-sizing: border-box;
+  margin: 3px;
+
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  border-width: 2px;
+
+  background-color: rgba(138, 255, 255, 0.1);
+  border-radius: 5px;
+  border-style: dashed;
+  border-color: rgba(58, 247, 247, .5);
+  z-index: 10;
+
+  &:hover {
+    background-color: rgba(138, 255, 255, 0.25);
+  }
+}
+
+.droppable--active::after {
+  content: "";
+  position: absolute;
+  box-sizing: border-box;
+  margin: 3px;
+
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+
+  background-color: rgba(138, 255, 255, 0.45);
+  border-radius: 5px;
+  border-style: dashed;
+  border-color: rgba(58, 247, 247, .5);
+  z-index: 10;
+
+  &:hover {
+    background-color: rgba(138, 255, 255, 0.45);
+  }
+}
