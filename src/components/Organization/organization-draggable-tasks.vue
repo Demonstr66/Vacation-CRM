@@ -1,5 +1,5 @@
 <template>
-  <div>
+  <app-base-sheet v-if="Object.values(tasks).length">
     <v-chip
         v-for="task in tasks"
         :key="task.id"
@@ -15,13 +15,15 @@
         {{ task.title }}
         </span>
     </v-chip>
-  </div>
+  </app-base-sheet>
 </template>
 <script>
 import {tasks} from "@/mixins/ComputedData";
+import AppBaseSheet from "@/components/UI/app-base-sheet";
 
 export default {
   name: 'AdministrationDragItems',
+  components: {AppBaseSheet},
   mixins: [tasks],
   props: {
     value: {

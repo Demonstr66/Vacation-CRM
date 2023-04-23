@@ -5,26 +5,32 @@ export default [
     cellClass: 'pa-0 px-2',
     class: 'text-no-wrap',
     align: 'start',
-    groupable: false
+    groupable: false,
+    width: '40%'
   },
   {
     text: 'Должность',
     value: 'post',
     class: 'text-no-wrap',
     align: 'center',
+    width: '10%',
+    visible: ['lg', 'xl']
   },
   {
     text: 'Команда',
     value: 'team',
     class: 'text-no-wrap',
     align: 'center',
+    width: '10%',
+    visible: ['lg', 'xl']
   },
   {
     text: 'Задачи',
     value: 'tasks',
     align: 'center',
     class: 'text-no-wrap',
-    groupable: false
+    groupable: false,
+    width: '40%'
   },
   {
     text: 'Статус',

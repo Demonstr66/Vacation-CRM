@@ -117,23 +117,6 @@ export default {
     }
   },
   watch: {
-    filter: {
-      deep: true,
-      handler(newVal) {
-        const query = {}
-        Object.keys(newVal)
-            .filter(key => !!newVal[key])
-            .forEach(key => query[key] = newVal[key])
-
-        const currentRoute = this.$route;
-        if (!Tools.isEqual(query, currentRoute.query)) {
-          this.$router.replace({
-            path: currentRoute.path,
-            query
-          });
-        }
-      }
-    },
     appReady() {
       this.initialize()
     },
