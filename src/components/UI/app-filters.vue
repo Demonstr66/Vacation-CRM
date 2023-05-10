@@ -35,8 +35,7 @@ import AppBaseSheet from "@/components/UI/app-base-sheet";
 import {Task} from "@/plugins/servises/Task";
 import {Post} from "@/plugins/servises/Post";
 import {Team} from "@/plugins/servises/Team";
-import Tools from "@/plugins/tools";
-import {posts, tasks, teams} from "@/mixins/ComputedData";
+import {posts, tasks, teams, updateQuery} from "@/mixins/ComputedData";
 
 const FILTERS = [
   {
@@ -57,7 +56,7 @@ FILTERS.forEach(item => selectedFilters[item.key] = undefined)
 export default {
   name: "app-filters",
   components: {AppBaseSheet},
-  mixins: [teams, posts, tasks],
+  mixins: [teams, posts, tasks, updateQuery],
   props: {
     headerText: {
       type: String,
@@ -79,16 +78,19 @@ export default {
   },
   data() {
     return {
-      selectedFilters
+      selectedFilters: {
+        userTeam: undefined,
+        userPost: undefined,
+        userTasks: undefined,
+      }
     }
   },
   mounted() {
     const query = this.$route.query
-    const keys = Object.keys(query)
-    if (keys.length) {
-      keys.forEach(key => {
+    for (let key in this.selectedFilters) {
+      if (query[key]) {
         this.selectedFilters[key] = query[key]
-      })
+      }
     }
   },
   beforeDestroy() {
@@ -133,18 +135,9 @@ export default {
       handler(filters) {
         this.$emit('input', filters)
 
-        const query = {}
-        Object.keys(filters)
-            .filter(key => !!filters[key])
-            .forEach(key => query[key] = filters[key])
-
-        const currentRoute = this.$route;
-        if (!Tools.isEqual(query, currentRoute.query)) {
-          this.$router.replace({
-            path: currentRoute.path,
-            query
-          });
-        }
+        Object.keys(filters).map(key => {
+          this.updateQuery(key, filters[key])
+        })
       }
     }
   }

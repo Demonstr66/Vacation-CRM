@@ -1,4 +1,5 @@
 import {mapGetters} from "vuex";
+import Tools from "@/plugins/tools";
 
 export const appReady = {
   computed: {
@@ -151,17 +152,43 @@ export const getChiefOf = {
       const team = user.team ? teams[user.team] : null
 
       if (team) {
-        if (team.leaderId !== uid) res.push({lvl, uid: team.leaderId})
+        if (team.leaderId !== uid) {
+          res.push({lvl, uid: team.leaderId})
+        }
 
         while (team.parent) {
           lvl++
           let nextTeam = teams[team.parent]
-          if (nextTeam.leaderId !== uid) res.push({lvl, uid: nextTeam.leaderId})
+          if (nextTeam.leaderId !== uid) {
+            res.push({lvl, uid: nextTeam.leaderId})
+          }
         }
       }
 
       return res
     }
+  }
+}
+
+export const updateQuery = {
+  methods: {
+    updateQuery(key, val) {
+      const route = this.$route
+      const path = route.path
+      const query = Object.assign({}, route.query, {})
+
+      if (!val) {
+        if (query.hasOwnProperty(key)) {
+          delete query[key]
+        }
+      } else {
+        query[key] = val
+      }
+
+      if (!Tools.isEqual(query, route.query)) {
+        this.$router.replace({path, query})
+      }
+    },
   }
 }
 
@@ -176,9 +203,11 @@ export const calendar = {
         days.push(this.$moment(currDay))
 
         const m = currDay.get('month')
-        if (!months[m]) months[m] = {
-          title: currDay.format('MMMM'),
-          days: 0
+        if (!months[m]) {
+          months[m] = {
+            title: currDay.format('MMMM'),
+            days: 0
+          }
         }
         months[m].days += 1
 

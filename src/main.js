@@ -12,6 +12,7 @@ import VCalendar from 'v-calendar';
 
 import RichTextEditor from 'rich-text-editor-vuetify'
 import '@/assets/style.scss'
+import '@/assets/TL.scss'
 
 Vue.use(RichTextEditor)
 
@@ -32,6 +33,15 @@ const analytics = getAnalytics(app);
 
 const moment = require('moment')
 require('moment/locale/ru')
+moment.prototype.normal = function () {
+  return this.format('DD-MM-YYYY')
+}
+moment.prototype.weekDay = function (short = true) {
+  const weekDayShort = ['ВС', 'ПН', 'ВТ', 'СР', 'ЧТ', 'ПТ', 'СБ']
+  const weekDay = ['Воскресенье', 'Понедельник', 'Вторник', 'Среда', 'Четверг', 'Пятница', 'Суббота']
+  const day = this.day()
+  return short ? weekDayShort[day] : weekDay[day];
+}
 Vue.use(require('vue-moment'), {
   moment
 })

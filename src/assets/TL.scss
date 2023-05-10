@@ -1,0 +1,197 @@
+:root {
+  --cell-width: 30px;
+  --cell-height: 40px;
+  --header-width: 250px;
+  --event-gap: 2px;
+}
+
+$row-month-height: 28px;
+$border-clr: #ccc;
+$month-clr: #f4f4f4;
+$header-clr: #fafafa;
+$side-clr: #fff;
+
+@for $size from 25 through 35 {
+  .grid-span-#{$size} {
+    grid-column: span $size;
+  }
+}
+
+
+@for $days from 360 through 370 {
+  .grid-cols-#{$days} {
+    grid-template-columns: repeat($days, 1fr);
+  }
+}
+
+.tl {
+  border-radius: 5px 0 5px 5px;
+  overflow: hidden;
+
+  &-wrapper {
+    display: grid;
+    position: relative;
+    grid-template-columns: var(--header-width) auto;
+    overflow-x: auto;
+  }
+
+  &-row {
+    display: contents;
+
+    &-side {
+      position: sticky;
+      left: 0;
+      min-width: var(--header-width);
+      background-color: $side-clr;
+      z-index: 5;
+      white-space: nowrap;
+      transition: background-color .1s ease-in-out;
+      border: 1px solid lighten($border-clr, 13.5%);
+      border-top: none;
+
+      .tl-wrapper > div:first-of-type > & {
+        border-top: 1px solid lighten($border-clr, 13.5%);
+        border-bottom: none;
+        border-top-left-radius: 4px;
+      }
+
+      .tl-wrapper > div:last-of-type & {
+        //border-bottom-left-radius: 4px;
+      }
+
+      &.clickable:hover {
+        transition: background-color .1s ease-in-out;
+        background-color: #eeeeee;
+        cursor: pointer;
+      }
+    }
+
+    &-month {
+      height: $row-month-height;
+      position: relative;
+      text-align: center;
+      background-color: $month-clr;
+      border: 2px solid $border-clr;
+      border-top-left-radius: 4px;
+      border-top-right-radius: 4px;
+      border-bottom: none;
+
+      & span {
+        position: sticky;
+        left: calc(var(--header-width) + 10px);
+        right: 10px;
+        padding: 0 10px;
+      }
+    }
+
+    &-day_header {
+      background-color: $header-clr;
+      border-bottom-style: solid !important;
+
+      &_weekend {
+        color: #FF5252;
+      }
+
+      &_workday {
+        color: #FFC107;
+      }
+
+      &_holiday {
+        color: #1976D2;
+      }
+    }
+
+    &-cells {
+      display: grid;
+      position: relative;
+    }
+
+    &-cell {
+      width: var(--cell-width);
+      text-align: center;
+      border: 1px dashed $border-clr;
+      border-left: none;
+      border-top: none;
+      min-height: var(--cell-height);
+
+      &-today {
+        $today-border-radius: 5px;
+        $today-color: rgb(103 58 199);
+        text-align: center;
+
+        &:before {
+          content: "";
+          position: absolute;
+          top: 0;
+          height: 100%;
+          width: 1px;
+          background-image: linear-gradient(180deg, $today-color, $today-color 75%, transparent 75%, transparent 100%);
+          background-size: 1px 10px;
+          background-repeat-y: repeat;
+          box-shadow: 0 0 2px 1px rgb(103 58 199 / 15%);
+          z-index: 4;
+        }
+
+        &:after {
+          content: "";
+          position: absolute;
+          background-color: $today-color;
+          transform: translateX(calc(-50% + 1px));
+          z-index: 4;
+        }
+
+        .tl-row:nth-child(3) > div > &:after {
+          top: -1px;
+          width: $today-border-radius * 2;
+          height: $today-border-radius;
+          border-radius: 0 0 $today-border-radius $today-border-radius;
+
+        }
+
+        .tl-row:last-child > div > &:after {
+          bottom: 0;
+          width: $today-border-radius * 2;
+          height: $today-border-radius;
+          border-radius: $today-border-radius $today-border-radius 0 0;
+        }
+      }
+
+      &_month {
+        &-end {
+          border-right-style: solid;
+          border-right-width: 2px;
+          border-color: $border-clr;
+        }
+
+        &-start {
+          border-left-style: solid;
+          border-left-width: 2px;
+          border-color: $border-clr;
+        }
+      }
+    }
+  }
+
+  &-event {
+    position: absolute;
+    margin: var(--event-gap) calc(var(--event-gap) + 1px) calc(var(--event-gap) + 1px) var(--event-gap);
+    height: calc(100% - var(--event-gap) * 2 - 1px);
+    width: calc(100% - var(--event-gap) * 2 - 1px);
+    background: linear-gradient(45deg, #2196f3, #6ebfff);
+    border-radius: 3px;
+
+    &:hover {
+      cursor: pointer;
+      box-shadow: 0 0 5px blue;
+    }
+  }
+
+  &-corner {
+    position: absolute;
+    top: -1 * $row-month-height + 1px;
+    bottom: 0;
+    width: 100%;
+    padding: 4px;
+  }
+}
+

@@ -36,11 +36,15 @@
 </template>
 
 <script>
+import {updateQuery} from "@/mixins/ComputedData";
+
+const queryKey = 'groupBy';
 const DEFAULT_GROUPS = [
   {value: 'post', text: 'Должноcтям'},
   {value: 'team', text: 'Командам'},
   {value: 'active', text: 'Статусу'}
 ]
+
 
 export default {
   name: "app-group-toolbar",
@@ -61,6 +65,13 @@ export default {
       default: 'Группировать по'
     }
   },
+  mixins: [updateQuery],
+  mounted() {
+    const query = this.$route.query
+    if (query[queryKey]) {
+      this.onInput(query[queryKey])
+    }
+  },
   computed: {
     filteredGroups() {
       let groups = this.groups
@@ -73,7 +84,13 @@ export default {
   },
   methods: {
     onInput(val) {
-      this.$emit('input', val !== this.value ? val : null)
+      const newVal = val !== this.value ? val : null
+      this.$emit('input', newVal)
+    }
+  },
+  watch: {
+    value(newVal) {
+      this.updateQuery(queryKey, newVal)
     }
   }
 }
